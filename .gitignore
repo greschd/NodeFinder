@@ -1,0 +1,23 @@
+# Python binaries
+*.pyc
+*.pyo
+*__pycache__*
+
+# hidden files garbage
+*~
+.fuse*
+
+# Installation/setup/doc related
+dist
+build
+*egg**
+MANIFEST
+*.tar.gz
+files*.txt
+
+# pytest caches
+tests/.cache
+.cache/v/cache
+.coverage
+.coverage*
+htmlcov
