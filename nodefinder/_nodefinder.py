@@ -13,10 +13,11 @@ class NodalPoint(SimpleNamespace):
         self.gap = gap
 
 class NodeFinder:
-    def __init__(self, gap_fct, *, gap_threshold=1e-6, mesh_size=(10, 10, 10)):
+    def __init__(self, gap_fct, *, gap_threshold=1e-6, mesh_size=(10, 10, 10), feature_size=1e-3):
         self.gap_fct = gap_fct
         self._gap_threshold = gap_threshold
         self._mesh_size = tuple(mesh_size)
+        self._feature_size = feature_size
         self._nodal_points = []
         self._initialize()
 
@@ -44,9 +45,9 @@ class NodeFinder:
         # * Change the minimization to contain the dynamic cutoff criterion
         # * Make cutoff values configurable
         # * Allow setting the other starting vertices of the Nelder-Mead algorithm
-        res = so.minimize(self.gap_fct, x0=starting_point, method='Nelder-Mead', tol=1e-8, options=dict(maxfev=20))
-        if res.fun < 0.1:
-            res = so.minimize(self.gap_fct, x0=res.x, method='Nelder-Mead', tol=1e-8, options=dict(maxfev=100))
-            if res.fun < 1e-2:
-                res = so.minimize(self.gap_fct, x0=res.x, method='Nelder-Mead', tol=1e-8)
+        # res = so.minimize(self.gap_fct, x0=starting_point, method='Nelder-Mead', tol=1e-8, options=dict(maxfev=20))
+        # if res.fun < 0.1:
+        #     res = so.minimize(self.gap_fct, x0=res.x, method='Nelder-Mead', tol=1e-8, options=dict(maxfev=100))
+        #     if res.fun < 1e-2:
+        res = so.minimize(self.gap_fct, x0=starting_point, method='Nelder-Mead', tol=1e-8)
         return res
