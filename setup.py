@@ -16,7 +16,8 @@ setup(
     author='Dominik Gresch, TODO',
     author_email='greschd@gmx.ch, TODO',
     description='TODO',
-    install_requires=[],
+    install_requires=['numpy', 'scipy'],
+    extras_require={'test': ['pytest']},
     long_description=readme,
     classifiers=[
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
@@ -31,5 +32,5 @@ setup(
     ],
     license='GPL',
     keywords=[],
-    packages=find_packages
+    packages=find_packages()
 )

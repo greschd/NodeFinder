@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import itertools
 from types import SimpleNamespace
 
+import numpy as np
 import scipy.optimize as so
 
 class NodalPoint(SimpleNamespace):
-    __slots__ = ['k', 'gap']
-
     def __init__(self, k, gap):
         self.k = tuple(np.array(k) % 1)
         self.gap = gap
@@ -44,11 +44,9 @@ class NodeFinder:
         # * Change the minimization to contain the dynamic cutoff criterion
         # * Make cutoff values configurable
         # * Allow setting the other starting vertices of the Nelder-Mead algorithm
-        res = so.minimize(self.gap_fct, x0=starting_pt, method='Nelder-Mead', tol=1e-8, options=dict(maxfev=20))
+        res = so.minimize(self.gap_fct, x0=starting_point, method='Nelder-Mead', tol=1e-8, options=dict(maxfev=20))
         if res.fun < 0.1:
-            print('stage 2')
             res = so.minimize(self.gap_fct, x0=res.x, method='Nelder-Mead', tol=1e-8, options=dict(maxfev=100))
             if res.fun < 1e-2:
-                print('stage 3')
                 res = so.minimize(self.gap_fct, x0=res.x, method='Nelder-Mead', tol=1e-8)
         return res
