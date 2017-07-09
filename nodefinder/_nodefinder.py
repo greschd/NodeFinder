@@ -5,7 +5,7 @@ import itertools
 from types import SimpleNamespace
 
 import numpy as np
-import scipy.optimize as so
+from ._nelder_mead import root_nelder_mead
 
 class NodalPoint(SimpleNamespace):
     def __init__(self, k, gap):
@@ -49,5 +49,6 @@ class NodeFinder:
         # if res.fun < 0.1:
         #     res = so.minimize(self.gap_fct, x0=res.x, method='Nelder-Mead', tol=1e-8, options=dict(maxfev=100))
         #     if res.fun < 1e-2:
-        res = so.minimize(self.gap_fct, x0=starting_point, method='Nelder-Mead', tol=1e-8)
+        res = root_nelder_mead(self.gap_fct, x0=starting_point)
+        print(res)
         return res
