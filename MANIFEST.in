@@ -1,0 +1,19 @@
+# examples are provided via GitHub
+prune examples
+
+# tests are used for development only
+prune tests
+
+# random stuff
+prune clear.sh
+
+# Documentation is provided online
+prune doc
+
+# installation related
+exclude MANIFEST.in
+
+# Licenses & README
+include README.md
+include LICENSE.txt
+include ADDITIONAL_TERMS.txt
