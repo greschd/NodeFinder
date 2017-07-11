@@ -39,17 +39,14 @@ class OptimizeResult(dict):
         underlying solver. Refer to `message` for details.
     message : str
         Description of the cause of the termination.
-    fun, jac, hess: ndarray
-        Values of objective function, its Jacobian and its Hessian (if
-        available). The Hessians may be approximations, see the documentation
-        of the function in question.
-    nfev, njev, nhev : int
-        Number of evaluations of the objective functions and of its
-        Jacobian and Hessian.
+    fun : ndarray
+        Values of objective function.
+    nfev : int
+        Number of evaluations of the objective functions.
     nit : int
         Number of iterations performed by the optimizer.
-    maxcv : float
-        The maximum constraint violation.
+    final_simplex :
+        Final simplex positions and values.
 
     Notes
     -----
