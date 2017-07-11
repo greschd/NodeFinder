@@ -8,7 +8,8 @@
 # guarantee implied provided you keep this notice in all copies.
 # *****END NOTICE************
 #
-# The additional license terms given in ADDITIONAL_TERMS.txt apply to this file.
+# The additional license terms given in ADDITIONAL_TERMS.txt apply to this
+# file.
 
 __all__ = ['root_nelder_mead']
 
@@ -42,10 +43,6 @@ class OptimizeResult(dict):
         Values of objective function, its Jacobian and its Hessian (if
         available). The Hessians may be approximations, see the documentation
         of the function in question.
-    hess_inv : object
-        Inverse of the objective function's Hessian; may be an approximation.
-        Not available for all solvers. The type of this attribute may be
-        either np.ndarray or scipy.sparse.linalg.LinearOperator.
     nfev, njev, nhev : int
         Number of evaluations of the objective functions and of its
         Jacobian and Hessian.
@@ -61,6 +58,7 @@ class OptimizeResult(dict):
     with attribute accessors, one can see which attributes are available
     using the `keys()` method.
     """
+
     def __getattr__(self, name):
         try:
             return self[name]
@@ -78,8 +76,10 @@ class OptimizeResult(dict):
         else:
             return self.__class__.__name__ + "()"
 
+
 class OptimizeWarning(UserWarning):
     pass
+
 
 def wrap_function(function, args):
     ncalls = [0]
@@ -92,9 +92,10 @@ def wrap_function(function, args):
 
     return ncalls, function_wrapper
 
+
 def root_nelder_mead(func, x0, args=(), callback=None,
-                         xtol=1e-4, ftol=1e-4, maxiter=None, maxfev=None,
-                         disp=False, return_all=False):
+                     xtol=1e-4, ftol=1e-4, maxiter=None, maxfev=None,
+                     disp=False, return_all=False):
     """
     Minimization of scalar function of one or more variables using the
     Nelder-Mead algorithm.
@@ -111,7 +112,6 @@ def root_nelder_mead(func, x0, args=(), callback=None,
         Maximum number of iterations to perform.
     maxfev : int
         Maximum number of function evaluations to make.
-
     """
     maxfun = maxfev
     retall = return_all
@@ -141,7 +141,7 @@ def root_nelder_mead(func, x0, args=(), callback=None,
     for k in range(0, N):
         y = np.array(x0, copy=True)
         if y[k] != 0:
-            y[k] = (1 + nonzdelt)*y[k]
+            y[k] = (1 + nonzdelt) * y[k]
         else:
             y[k] = zdelt
 
