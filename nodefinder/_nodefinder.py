@@ -9,15 +9,20 @@ from ._nelder_mead import root_nelder_mead
 
 
 class NodalPoint(SimpleNamespace):
-
     def __init__(self, k, gap):
         self.k = tuple(np.array(k) % 1)
         self.gap = gap
 
 
 class NodeFinder:
-
-    def __init__(self, gap_fct, *, gap_threshold=1e-6, mesh_size=(10, 10, 10), feature_size=1e-3):
+    def __init__(
+        self,
+        gap_fct,
+        *,
+        gap_threshold=1e-6,
+        mesh_size=(10, 10, 10),
+        feature_size=1e-3
+    ):
         self.gap_fct = gap_fct
         self._gap_threshold = gap_threshold
         self._mesh_size = tuple(mesh_size)
@@ -27,16 +32,18 @@ class NodeFinder:
 
     def _initialize(self):
         self._calculate_box(
-            box_position=((0, 1),) * 3,
+            box_position=((0, 1), ) * 3,
             mesh_size=self._mesh_size,
             periodic=True
         )
 
     def _calculate_box(self, *, box_position, mesh_size, periodic=False):
-        mesh = itertools.product(*[
-            np.linspace(min_val, max_val, N, endpoint=not periodic)
-            for (min_val, max_val), N in zip(box_position, mesh_size)
-        ])
+        mesh = itertools.product(
+            *[
+                np.linspace(min_val, max_val, N, endpoint=not periodic)
+                for (min_val, max_val), N in zip(box_position, mesh_size)
+            ]
+        )
         for m in mesh:
             trial_point = self._minimize(starting_point=m)
             if trial_point.fun < self._gap_threshold:

@@ -16,13 +16,15 @@ __all__ = ['root_nelder_mead']
 import numpy as np
 
 # standard status messages of optimizers
-_status_message = {'success': 'Optimization terminated successfully.',
-                   'maxfev': 'Maximum number of function evaluations has '
-                              'been exceeded.',
-                   'maxiter': 'Maximum number of iterations has been '
-                              'exceeded.',
-                   'pr_loss': 'Desired error not necessarily achieved due '
-                              'to precision loss.'}
+_status_message = {
+    'success': 'Optimization terminated successfully.',
+    'maxfev': 'Maximum number of function evaluations has '
+    'been exceeded.',
+    'maxiter': 'Maximum number of iterations has been '
+    'exceeded.',
+    'pr_loss': 'Desired error not necessarily achieved due '
+    'to precision loss.'
+}
 
 
 class OptimizeResult(dict):
@@ -68,8 +70,9 @@ class OptimizeResult(dict):
     def __repr__(self):
         if self.keys():
             m = max(map(len, list(self.keys()))) + 1
-            return '\n'.join([k.rjust(m) + ': ' + repr(v)
-                              for k, v in sorted(self.items())])
+            return '\n'.join([
+                k.rjust(m) + ': ' + repr(v) for k, v in sorted(self.items())
+            ])
         else:
             return self.__class__.__name__ + "()"
 
@@ -90,9 +93,18 @@ def wrap_function(function, args):
     return ncalls, function_wrapper
 
 
-def root_nelder_mead(func, x0, args=(), callback=None,
-                     xtol=1e-4, ftol=1e-4, maxiter=None, maxfev=None,
-                     disp=False, return_all=False):
+def root_nelder_mead(
+    func,
+    x0,
+    args=(),
+    callback=None,
+    xtol=1e-4,
+    ftol=1e-4,
+    maxiter=None,
+    maxfev=None,
+    disp=False,
+    return_all=False
+):
     """
     Minimization of scalar function of one or more variables using the
     Nelder-Mead algorithm.
@@ -128,7 +140,7 @@ def root_nelder_mead(func, x0, args=(), callback=None,
     one2np1 = list(range(1, N + 1))
 
     sim = np.zeros((N + 1, N), dtype=x0.dtype)
-    fsim = np.zeros((N + 1,), float)
+    fsim = np.zeros((N + 1, ), float)
     sim[0] = x0
     if retall:
         allvecs = [sim[0]]
@@ -235,9 +247,16 @@ def root_nelder_mead(func, x0, args=(), callback=None,
             print("         Iterations: %d" % iterations)
             print("         Function evaluations: %d" % fcalls[0])
 
-    result = OptimizeResult(fun=fval, nit=iterations, nfev=fcalls[0],
-                            status=warnflag, success=(warnflag == 0),
-                            message=msg, x=x, final_simplex=(sim, fsim))
+    result = OptimizeResult(
+        fun=fval,
+        nit=iterations,
+        nfev=fcalls[0],
+        status=warnflag,
+        success=(warnflag == 0),
+        message=msg,
+        x=x,
+        final_simplex=(sim, fsim)
+    )
     if retall:
         result['allvecs'] = allvecs
     return result
