@@ -1,24 +1,23 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+"""Usage: pip install .[dev]"""
 
 import re
 from setuptools import setup, find_packages
 
-readme = r"""TODO"""
+README = r"""TODO"""
 
-with open('./nodefinder/_version.py', 'r') as f:
-    match_expr = "__version__[^'" + '"]+([' + "'" + r'"])([^\1]+)\1'
-    version = re.search(match_expr, f.read()).group(2).strip()
+with open('./nodefinder/__init__.py', 'r') as f:
+    MATCH_EXPR = "__version__[^'\"]+(['\"])([^'\"]+)"
+    VERSION = re.search(MATCH_EXPR, f.read()).group(2).strip()
 
 setup(
     name='nodefinder',
-    version=version,
+    version=VERSION,
     author='Dominik Gresch, TODO',
     author_email='greschd@gmx.ch, TODO',
     description='TODO',
     install_requires=['numpy', 'scipy'],
     extras_require={'dev': ['pytest', 'yapf', 'pre-commit']},
-    long_description=readme,
+    long_description=README,
     classifiers=[
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English', 'Operating System :: Unix',

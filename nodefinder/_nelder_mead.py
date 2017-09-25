@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 # ******NOTICE***************
 # optimize.py module by Travis E. Oliphant
 #
@@ -10,6 +7,8 @@
 #
 # The additional license terms given in ADDITIONAL_TERMS.txt apply to this
 # file.
+
+# pylint: skip-file
 
 __all__ = ['root_nelder_mead']
 

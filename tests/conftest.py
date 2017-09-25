@@ -1,10 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+"""pytest configuration file for NodeFinder tests."""
+# pylint: disable=unused-argument,protected-access,redefined-outer-name
+
+import json
+import operator
 
 import pytest
-import numpy as np
-
-import nodefinder
 
 
 @pytest.fixture
@@ -21,24 +21,12 @@ def compare_data(request, test_name, scope="session"):
         full_name = test_name + (tag or '')
         val = request.config.cache.get(full_name, None)
         if val is None:
-            request.config.cache.set(
-                full_name,
-                json.
-                loads(json.dumps(data, default=phasemap.io._encoding.encode))
-            )
+            request.config.cache.set(full_name, json.loads(json.dumps(data)))
             raise ValueError('Reference data does not exist.')
         else:
-            val = json.loads(
-                json.dumps(val, default=phasemap.io._encoding.encode),
-                object_hook=phasemap.io._encoding.decode
-            )
-            assert compare_fct(
-                val,
-                json.loads(
-                    json.dumps(data, default=phasemap.io._encoding.encode),
-                    object_hook=phasemap.io._encoding.decode
-                )
-            )  # get rid of json-specific quirks
+            val = json.loads(json.dumps(val))
+            assert compare_fct(val, json.loads(json.dumps(data))
+                               )  # get rid of json-specific quirks
 
     return inner
 
