@@ -27,6 +27,9 @@ class NodeFinder:
     :param gap_threshold: Threshold when the gap is considered to be closed.
     :type gap_threshold: float
 
+    :param initial_box_position: Initial box within which the minimization starting points are selected.
+    :type initial_box_position: tuple(tuple(float))
+
     :param mesh_size: Initial mesh of starting points.
     :type mesh_size: tuple[int]
 
@@ -39,19 +42,22 @@ class NodeFinder:
         gap_fct,
         *,
         gap_threshold=1e-6,
+        initial_box_position=((0, 1), ) * 3,
         mesh_size=(10, 10, 10),
-        feature_size=1e-3
+        feature_size=1e-3,
+        **nelder_mead_kwargs
     ):
         self.gap_fct = gap_fct
         self._gap_threshold = gap_threshold
         self._mesh_size = tuple(mesh_size)
         self._feature_size = feature_size
         self._nodal_points = []
-        self._initialize()
+        self._nelder_mead_kwargs = nelder_mead_kwargs
+        self._initialize(initial_box_position=initial_box_position)
 
-    def _initialize(self):
+    def _initialize(self, initial_box_position):
         self._calculate_box(
-            box_position=((0, 1), ) * 3,
+            box_position=initial_box_position,
             mesh_size=self._mesh_size,
             periodic=True
         )
@@ -88,6 +94,8 @@ class NodeFinder:
         # if res.fun < 0.1:
         #     res = so.minimize(self.gap_fct, x0=res.x, method='Nelder-Mead', tol=1e-8, options=dict(maxfev=100))
         #     if res.fun < 1e-2:
-        res = root_nelder_mead(self.gap_fct, x0=starting_point)
+        res = root_nelder_mead(
+            self.gap_fct, x0=starting_point, **self._nelder_mead_kwargs
+        )
         # print(res)
         return res
