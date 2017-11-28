@@ -18,7 +18,8 @@ def test_single_node():
         return la.norm(np.array(x) - node_position)
 
     node_finder = NodeFinder(gap_fct=gap_fct)
-    nodes = node_finder._nodal_points  # pylint: disable=protected-access
+    node_finder.run()
+    nodes = node_finder.nodal_points
     assert len(nodes) == 1
     node = nodes[0]
     assert np.isclose(node.gap, 0)
