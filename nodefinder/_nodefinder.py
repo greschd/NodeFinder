@@ -33,7 +33,7 @@ class NodalPointContainer:
         if nodal_point.gap < self._gap_threshold:
             k = np.array(nodal_point.k)
             if all(
-                la.norm(k - n.k) > self._feature_size
+                periodic_distance(k, n.k) > self._feature_size
                 for n in self._nodal_points
             ):
                 self._nodal_points.append(nodal_point)
@@ -102,6 +102,7 @@ class NodeFinder:
             self._nodal_point_container.clear_new_points()
             if not new_points:
                 break
+            print('{} new points found'.format(len(new_points)))
             for new_node in new_points:
                 self._calculate_box(
                     box_position=tuple((
@@ -151,3 +152,13 @@ class NodeFinder:
     @property
     def nodal_points(self):
         return self._nodal_point_container.get_nodes()
+
+
+def periodic_distance(k1, k2):
+    return la.norm([_periodic_distance_1d(a, b) for a, b in zip(k1, k2)])
+
+
+def _periodic_distance_1d(k1, k2):
+    k1 %= 1
+    k2 %= 1
+    return min((k1 - k2) % 1, (k2 - k1) % 1)
