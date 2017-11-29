@@ -4,21 +4,21 @@ import asyncio
 
 import pytest
 
-from nodefinder._calculation_batcher import CalculationBatcher
+from nodefinder._batch_submit import BatchSubmitter
 
 
 @pytest.fixture
-def default_echo_batcher():
+def echo_submitter():
     echo = lambda x: x
-    with CalculationBatcher(echo) as func:
+    with BatchSubmitter(echo) as func:
         yield func
 
 
 @pytest.mark.parametrize('num_inputs', [10, 150, 300, 600])
-def test_simple_submit(default_echo_batcher, num_inputs):
+def test_simple_submit(echo_submitter, num_inputs):
     loop = asyncio.get_event_loop()
     input_ = list(range(num_inputs))
-    fut = asyncio.gather(*[default_echo_batcher(i) for i in input_])
+    fut = asyncio.gather(*[echo_submitter(i) for i in input_])
     loop.run_until_complete(fut)
     assert fut.result() == input_
 
@@ -28,6 +28,6 @@ def test_failing_run():
         raise ValueError
 
     loop = asyncio.get_event_loop()
-    with CalculationBatcher(func) as f:
+    with BatchSubmitter(func) as f:
         with pytest.raises(ValueError):
             loop.run_until_complete(f(1))

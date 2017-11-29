@@ -2,7 +2,7 @@ import time
 import asyncio
 
 
-class CalculationBatcher:
+class BatchSubmitter:
     def __init__(
         self,
         func,

@@ -11,7 +11,7 @@ import numpy as np
 import scipy.linalg as la
 
 from ._nelder_mead import root_nelder_mead
-from ._calculation_batcher import CalculationBatcher
+from ._batch_submit import BatchSubmitter
 
 
 class NodalPoint(SimpleNamespace):
@@ -89,8 +89,8 @@ class NodeFinder:
         else:
             listable_gap_fct = lambda input_list: [gap_fct(x) for x in input_list]
 
-        self._calculation_batcher = CalculationBatcher(listable_gap_fct)
-        self._func = self._calculation_batcher.submit
+        self._batch_submitter = BatchSubmitter(listable_gap_fct)
+        self._func = self._batch_submitter.submit
         self._mesh_size = tuple(mesh_size)
         self._refinement_dist = refinement_box_size / 2
         self._refinement_mesh_size = refinement_mesh_size
@@ -102,7 +102,7 @@ class NodeFinder:
 
     def run(self):
         loop = asyncio.get_event_loop()
-        with self._calculation_batcher:
+        with self._batch_submitter:
             loop.run_until_complete(self._run())
 
     async def _run(self):
