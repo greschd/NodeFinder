@@ -10,6 +10,7 @@ from types import SimpleNamespace
 import numpy as np
 import scipy.linalg as la
 
+from ._logging import _LOGGER
 from ._nelder_mead import root_nelder_mead
 from ._batch_submit import BatchSubmitter
 
@@ -117,7 +118,7 @@ class NodeFinder:
             self._nodal_point_container.clear_new_points()
             if not new_points:
                 break
-            print('{} new points found'.format(len(new_points)))
+            _LOGGER.info('{num_pts} new points found', num_pts=len(new_points))
             await asyncio.gather(
                 *[
                     self._calculate_box(
@@ -170,7 +171,6 @@ class NodeFinder:
         res = await root_nelder_mead(
             self._func, x0=starting_point, **self._nelder_mead_kwargs
         )
-        # print(res)
         return res
 
     @property

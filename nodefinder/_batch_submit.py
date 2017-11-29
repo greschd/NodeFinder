@@ -1,6 +1,9 @@
 import time
 import asyncio
 
+import logging
+_LOGGER = logging.getLogger('nodefinder._batch_submit')
+
 
 class BatchSubmitter:
     def __init__(
@@ -46,7 +49,6 @@ class BatchSubmitter:
             await self._wait_for_tasks()
             inputs = []
             futures = []
-            print('calc', self._tasks.qsize())
             for _ in range(self._max_batch_size):
                 try:
                     key, fut = self._tasks.get_nowait()
@@ -56,6 +58,7 @@ class BatchSubmitter:
                     break
 
             try:
+                _LOGGER.info('Submitting {num_calls} call(s).', num_calls=len(inputs))
                 results = self._func(inputs)
                 for fut, res in zip(futures, results):
                     fut.set_result(res)
