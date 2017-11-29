@@ -7,19 +7,19 @@ class CalculationBatcher:
         self,
         func,
         *,
-        loop,
-        timeout=1.,
+        loop=None,
+        timeout=0.,
         sleep_time=0.1,
         min_batch_size=100,
         max_batch_size=200
     ):
         self._func = func
-        self._loop = loop
+        self._loop = loop or asyncio.get_event_loop()
         self._timeout = timeout
         self._sleep_time = sleep_time
         self._min_batch_size = min_batch_size
         self._max_batch_size = max_batch_size
-        self._tasks = {}
+        self._tasks = asyncio.Queue()
         self._step_task = None
 
     def start(self):
@@ -36,18 +36,21 @@ class CalculationBatcher:
 
     async def step(self):
         while True:
+            # make sure that the event loop is always released
+            await asyncio.sleep(0)
             start_time = time.time()
-            while (len(self._tasks) < self._min_batch_size
-                   ) and (time.time() - start_time < self._timeout):
+            while ((self._tasks.qsize() < self._min_batch_size) and
+                   (time.time() - start_time < self._timeout)
+                   ) or (self._tasks.qsize() == 0):
                 await asyncio.sleep(self._sleep_time)
             inputs = []
             futures = []
             for _ in range(self._max_batch_size):
                 try:
-                    key, fut = self._tasks.popitem()
+                    key, fut = self._tasks.get_nowait()
                     inputs.append(key)
                     futures.append(fut)
-                except KeyError:
+                except asyncio.QueueEmpty:
                     break
 
             results = self._func(inputs)
@@ -56,5 +59,5 @@ class CalculationBatcher:
 
     async def submit(self, x):
         fut = self._loop.create_future()
-        self._tasks[x] = fut
+        self._tasks.put_nowait((x, fut))
         return await fut

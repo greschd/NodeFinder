@@ -12,6 +12,8 @@
 
 __all__ = ['root_nelder_mead']
 
+import asyncio
+
 import numpy as np
 
 # standard status messages of optimizers
@@ -82,17 +84,15 @@ class OptimizeWarning(UserWarning):
 
 def wrap_function(function, args):
     ncalls = [0]
-    if function is None:
-        return ncalls, None
 
-    def function_wrapper(*wrapper_args):
+    async def function_wrapper(*wrapper_args):
         ncalls[0] += 1
-        return function(*(wrapper_args + args))
+        return await function(*(wrapper_args + args))
 
     return ncalls, function_wrapper
 
 
-def root_nelder_mead(
+async def root_nelder_mead(
     func,
     x0,
     args=(),
@@ -143,7 +143,7 @@ def root_nelder_mead(
     sim[0] = x0
     if retall:
         allvecs = [sim[0]]
-    fsim[0] = func(x0)
+    fsim[0] = await func(x0)
     nonzdelt = 0.05
     zdelt = 0.00025
     for k in range(0, N):
@@ -154,7 +154,7 @@ def root_nelder_mead(
             y[k] = zdelt
 
         sim[k + 1] = y
-        f = func(y)
+        f = await func(y)
         fsim[k + 1] = f
 
     ind = np.argsort(fsim)
@@ -171,12 +171,12 @@ def root_nelder_mead(
 
         xbar = np.add.reduce(sim[:-1], 0) / N
         xr = (1 + rho) * xbar - rho * sim[-1]
-        fxr = func(xr)
+        fxr = await func(xr)
         doshrink = 0
 
         if fxr < fsim[0]:
             xe = (1 + rho * chi) * xbar - rho * chi * sim[-1]
-            fxe = func(xe)
+            fxe = await func(xe)
 
             if fxe < fxr:
                 sim[-1] = xe
@@ -192,7 +192,7 @@ def root_nelder_mead(
                 # Perform contraction
                 if fxr < fsim[-1]:
                     xc = (1 + psi * rho) * xbar - psi * rho * sim[-1]
-                    fxc = func(xc)
+                    fxc = await func(xc)
 
                     if fxc <= fxr:
                         sim[-1] = xc
@@ -202,7 +202,7 @@ def root_nelder_mead(
                 else:
                     # Perform an inside contraction
                     xcc = (1 - psi) * xbar + psi * sim[-1]
-                    fxcc = func(xcc)
+                    fxcc = await func(xcc)
 
                     if fxcc < fsim[-1]:
                         sim[-1] = xcc
@@ -213,7 +213,7 @@ def root_nelder_mead(
                 if doshrink:
                     for j in one2np1:
                         sim[j] = sim[0] + sigma * (sim[j] - sim[0])
-                        fsim[j] = func(sim[j])
+                        fsim[j] = await func(sim[j])
 
         ind = np.argsort(fsim)
         sim = np.take(sim, ind, 0)

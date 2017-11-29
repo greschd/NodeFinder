@@ -20,6 +20,7 @@ def test_nodal_line():
 
     node_finder = NodeFinder(
         gap_fct=gap_fct,
+        fct_listable=False,
         feature_size=1e-2,
         refinement_box_size=5e-2,
         xtol=xtol

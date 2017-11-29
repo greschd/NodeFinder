@@ -17,7 +17,7 @@ def test_single_node():
     def gap_fct(x):
         return la.norm(np.array(x) - node_position)
 
-    node_finder = NodeFinder(gap_fct=gap_fct)
+    node_finder = NodeFinder(gap_fct=gap_fct, fct_listable=False)
     node_finder.run()
     nodes = node_finder.nodal_points
     assert len(nodes) == 1

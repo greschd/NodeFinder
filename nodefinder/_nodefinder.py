@@ -3,12 +3,15 @@ Implements the node finding algorithm.
 """
 
 import copy
+import asyncio
 import itertools
 from types import SimpleNamespace
 
 import numpy as np
 import scipy.linalg as la
+
 from ._nelder_mead import root_nelder_mead
+from ._calculation_batcher import CalculationBatcher
 
 
 class NodalPoint(SimpleNamespace):
@@ -72,6 +75,7 @@ class NodeFinder:
         self,
         gap_fct,
         *,
+        fct_listable=True,
         gap_threshold=1e-6,
         feature_size=1e-3,
         initial_box_position=((0, 1), ) * 3,
@@ -80,7 +84,13 @@ class NodeFinder:
         refinement_mesh_size=(2, 2, 2),
         **nelder_mead_kwargs
     ):
-        self.gap_fct = gap_fct
+        if fct_listable:
+            listable_gap_fct = gap_fct
+        else:
+            listable_gap_fct = lambda input_list: [gap_fct(x) for x in input_list]
+
+        self._calculation_batcher = CalculationBatcher(listable_gap_fct)
+        self._func = self._calculation_batcher.submit
         self._mesh_size = tuple(mesh_size)
         self._refinement_dist = refinement_box_size / 2
         self._refinement_mesh_size = refinement_mesh_size
@@ -91,7 +101,14 @@ class NodeFinder:
         self._initial_box_position = initial_box_position
 
     def run(self):
-        self._calculate_box(
+        loop = asyncio.get_event_loop()
+        self._calculation_batcher.start()
+        loop.run_until_complete(self._run())
+        self._calculation_batcher.stop()
+
+    async def _run(self):
+        print('_run')
+        await self._calculate_box(
             box_position=self._initial_box_position,
             mesh_size=self._mesh_size,
             periodic=
@@ -104,7 +121,7 @@ class NodeFinder:
                 break
             print('{} new points found'.format(len(new_points)))
             for new_node in new_points:
-                self._calculate_box(
+                await self._calculate_box(
                     box_position=tuple((
                         ki - self._refinement_dist, ki + self._refinement_dist
                     ) for ki in new_node.k),
@@ -112,13 +129,14 @@ class NodeFinder:
                     periodic=False
                 )
 
-    def _calculate_box(self, *, box_position, mesh_size, periodic=False):
+    async def _calculate_box(self, *, box_position, mesh_size, periodic=False):
         """
         Search for minima, with starting positions in a mesh of a given box.
 
         :param box_position: Boundaries of the box, given as list of tuples, e.g. [(min_x, max_x), (min_y, max_y), (min_z, max_z)].
         :type box_position: list[tuple[float]]
         """
+        print('calculate_box')
         mesh = itertools.product(
             *[
                 np.linspace(min_val, max_val, N, endpoint=not periodic)
@@ -126,12 +144,12 @@ class NodeFinder:
             ]
         )
         for starting_point in mesh:
-            trial_point = self._minimize(starting_point=starting_point)
+            trial_point = await self._minimize(starting_point=starting_point)
             self._nodal_point_container.add(
                 NodalPoint(k=trial_point.x, gap=trial_point.fun)
             )
 
-    def _minimize(self, starting_point):
+    async def _minimize(self, starting_point):
         """
         Minimize the gap function from the given starting point.
         """
@@ -143,8 +161,9 @@ class NodeFinder:
         # if res.fun < 0.1:
         #     res = so.minimize(self.gap_fct, x0=res.x, method='Nelder-Mead', tol=1e-8, options=dict(maxfev=100))
         #     if res.fun < 1e-2:
-        res = root_nelder_mead(
-            self.gap_fct, x0=starting_point, **self._nelder_mead_kwargs
+        print('minimize')
+        res = await root_nelder_mead(
+            self._func, x0=starting_point, **self._nelder_mead_kwargs
         )
         # print(res)
         return res
