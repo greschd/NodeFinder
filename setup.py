@@ -21,7 +21,8 @@ setup(
     description='TODO',
     install_requires=['numpy', 'scipy'],
     extras_require={
-        'dev': ['pytest', 'yapf==0.20', 'pre-commit', 'prospector']
+        'dev':
+        ['pytest', 'pytest-cov', 'yapf==0.20', 'pre-commit', 'prospector']
     },
     long_description=README,
     classifiers=[
