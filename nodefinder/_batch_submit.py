@@ -58,7 +58,9 @@ class BatchSubmitter:
                     break
 
             try:
-                _LOGGER.info('Submitting {num_calls} call(s).', num_calls=len(inputs))
+                _LOGGER.info(
+                    'Submitting {num_calls} call(s).', num_calls=len(inputs)
+                )
                 results = self._func(inputs)
                 for fut, res in zip(futures, results):
                     fut.set_result(res)
