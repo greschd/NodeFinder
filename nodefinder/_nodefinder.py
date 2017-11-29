@@ -107,7 +107,6 @@ class NodeFinder:
         self._calculation_batcher.stop()
 
     async def _run(self):
-        print('_run')
         await self._calculate_box(
             box_position=self._initial_box_position,
             mesh_size=self._mesh_size,
@@ -120,14 +119,18 @@ class NodeFinder:
             if not new_points:
                 break
             print('{} new points found'.format(len(new_points)))
-            for new_node in new_points:
-                await self._calculate_box(
-                    box_position=tuple((
-                        ki - self._refinement_dist, ki + self._refinement_dist
-                    ) for ki in new_node.k),
-                    mesh_size=self._refinement_mesh_size,
-                    periodic=False
-                )
+            await asyncio.gather(
+                *[
+                    self._calculate_box(
+                        box_position=tuple((
+                            ki - self._refinement_dist,
+                            ki + self._refinement_dist
+                        ) for ki in new_node.k),
+                        mesh_size=self._refinement_mesh_size,
+                        periodic=False
+                    ) for new_node in new_points
+                ]
+            )
 
     async def _calculate_box(self, *, box_position, mesh_size, periodic=False):
         """
@@ -136,17 +139,21 @@ class NodeFinder:
         :param box_position: Boundaries of the box, given as list of tuples, e.g. [(min_x, max_x), (min_y, max_y), (min_z, max_z)].
         :type box_position: list[tuple[float]]
         """
-        print('calculate_box')
         mesh = itertools.product(
             *[
                 np.linspace(min_val, max_val, N, endpoint=not periodic)
                 for (min_val, max_val), N in zip(box_position, mesh_size)
             ]
         )
-        for starting_point in mesh:
-            trial_point = await self._minimize(starting_point=starting_point)
+        trial_points = await asyncio.gather(
+            *[
+                self._minimize(starting_point=starting_point)
+                for starting_point in mesh
+            ]
+        )
+        for point in trial_points:
             self._nodal_point_container.add(
-                NodalPoint(k=trial_point.x, gap=trial_point.fun)
+                NodalPoint(k=point.x, gap=point.fun)
             )
 
     async def _minimize(self, starting_point):
@@ -161,7 +168,6 @@ class NodeFinder:
         # if res.fun < 0.1:
         #     res = so.minimize(self.gap_fct, x0=res.x, method='Nelder-Mead', tol=1e-8, options=dict(maxfev=100))
         #     if res.fun < 1e-2:
-        print('minimize')
         res = await root_nelder_mead(
             self._func, x0=starting_point, **self._nelder_mead_kwargs
         )
