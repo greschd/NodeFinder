@@ -22,6 +22,13 @@ class CalculationBatcher:
         self._tasks = asyncio.Queue()
         self._step_task = None
 
+    def __enter__(self):
+        self.start()
+        return self.submit
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop()
+
     def start(self):
         self._step_task = asyncio.Task(self.step(), loop=self._loop)
 

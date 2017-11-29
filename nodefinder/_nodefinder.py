@@ -102,9 +102,8 @@ class NodeFinder:
 
     def run(self):
         loop = asyncio.get_event_loop()
-        self._calculation_batcher.start()
-        loop.run_until_complete(self._run())
-        self._calculation_batcher.stop()
+        with self._calculation_batcher:
+            loop.run_until_complete(self._run())
 
     async def _run(self):
         await self._calculate_box(
