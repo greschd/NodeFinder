@@ -1,7 +1,11 @@
 """Usage: pip install .[dev]"""
 
 import re
+import sys
 from setuptools import setup, find_packages
+
+if sys.version_info < (3, 5):
+    raise 'Must use Python version 3.5 or higher.'
 
 README = r"""TODO"""
 
