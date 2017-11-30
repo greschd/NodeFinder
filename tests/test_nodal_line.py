@@ -2,9 +2,12 @@
 Tests with a single nodal point.
 """
 
-import numpy as np
+import logging
 
+import numpy as np
 from nodefinder import NodeFinder, periodic_distance
+
+logging.getLogger('nodefinder').setLevel(logging.INFO)
 
 
 def test_nodal_line():

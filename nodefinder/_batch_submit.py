@@ -59,7 +59,9 @@ class BatchSubmitter:
 
             try:
                 _LOGGER.info(
-                    'Submitting {num_calls} call(s).', num_calls=len(inputs)
+                    'Submitting %(num_calls)i call(s).', {
+                        'num_calls': len(inputs)
+                    }
                 )
                 results = self._func(inputs)
                 for fut, res in zip(futures, results):

@@ -118,7 +118,11 @@ class NodeFinder:
             self._nodal_point_container.clear_new_points()
             if not new_points:
                 break
-            _LOGGER.info('{num_pts} new points found', num_pts=len(new_points))
+            _LOGGER.info(
+                '%(num_pts)i new points found', {
+                    'num_pts': len(new_points)
+                }
+            )
             await asyncio.gather(
                 *[
                     self._calculate_box(
