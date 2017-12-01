@@ -26,13 +26,14 @@ def test_nodal_line():
         fct_listable=False,
         feature_size=1e-2,
         refinement_box_size=5e-2,
-        xtol=xtol
+        xtol=xtol,
+        num_minimize_parallel=100
     )
-    node_finder.run()
-    all_nodes = node_finder.nodal_points
+    result = node_finder.run()
+    all_nodes = result.nodal_points
     assert len(all_nodes) > 32
     for node in all_nodes:
         assert np.isclose(node.gap, 0, atol=1e-6)
         assert np.isclose(
-            periodic_distance(node.k, (0, 0, 0)), radius, atol=2 * xtol
+            periodic_distance(node.k, (0, 0, 0)), radius, atol=3 * xtol
         )

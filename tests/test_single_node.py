@@ -18,8 +18,8 @@ def test_single_node():
         return la.norm(np.array(x) - node_position)
 
     node_finder = NodeFinder(gap_fct=gap_fct, fct_listable=False)
-    node_finder.run()
-    nodes = node_finder.nodal_points
+    result = node_finder.run()
+    nodes = result.nodal_points
     assert len(nodes) == 1
     node = nodes[0]
     assert np.isclose(node.gap, 0)

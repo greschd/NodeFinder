@@ -5,84 +5,16 @@ Implements the node finding algorithm.
 import copy
 import asyncio
 import itertools
-from types import SimpleNamespace
+import contextlib
 
 import numpy as np
 import scipy.linalg as la
-from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
+from fsc.hdf5_io import save, load
 
 from ._logging import _LOGGER
+from ._result import NodeFinderResult, StartingPoint, NodalPoint
 from ._nelder_mead import root_nelder_mead
 from ._batch_submit import BatchSubmitter
-
-
-@subscribe_hdf5('nodefinder.nodal_point')
-class NodalPoint(SimpleNamespace, HDF5Enabled):
-    """
-    Result class for a nodal point.
-    """
-
-    def __init__(self, k, gap):
-        super().__init__()
-        self.k = tuple(np.array(k) % 1)
-        self.gap = gap
-
-    def to_hdf5(self, hdf5_handle):
-        hdf5_handle['k'] = self.k
-        hdf5_handle['gap'] = self.gap
-
-    @classmethod
-    def from_hdf5(cls, hdf5_handle):
-        return cls(k=hdf5_handle['k'].value, gap=hdf5_handle['gap'].value)
-
-
-@subscribe_hdf5('nodefinder.nodal_point_container')
-class NodalPointContainer(HDF5Enabled):
-    def __init__(
-        self, *, feature_size, gap_threshold, nodal_points=(), new_points=()
-    ):
-        self._feature_size = feature_size
-        self._gap_threshold = gap_threshold
-        self._nodal_points = list(nodal_points)
-        self._new_points = list(new_points)
-
-    def add(self, nodal_point):
-        if nodal_point.gap < self._gap_threshold:
-            k = np.array(nodal_point.k)
-            if all(
-                periodic_distance(k, n.k) > self._feature_size
-                for n in self._nodal_points
-            ):
-                self._nodal_points.append(nodal_point)
-                self._new_points.append(nodal_point)
-                return True
-        return False
-
-    def get_new_points(self):
-        return copy.copy(self._new_points)
-
-    def clear_new_points(self):
-        self._new_points = []
-
-    def get_nodes(self):
-        return copy.copy(self._nodal_points)
-
-    def to_hdf5(self, hdf5_handle):
-        nodal_points = hdf5_handle.create_group('nodal_points')
-        to_hdf5(self._nodal_points, nodal_points)
-        new_points = hdf5_handle.create_group('new_points')
-        to_hdf5(self._new_points, new_points)
-        hdf5_handle['feature_size'] = self._feature_size
-        hdf5_handle['gap_threshold'] = self._gap_threshold
-
-    @classmethod
-    def from_hdf5(cls, hdf5_handle):
-        return cls(
-            feature_size=hdf5_handle['feature_size'].value,
-            gap_threshold=hdf5_handle['gap_threshold'].value,
-            nodal_points=from_hdf5(hdf5_handle['nodal_points']),
-            new_points=from_hdf5(hdf5_handle['new_points']),
-        )
 
 
 class NodeFinder:
@@ -98,8 +30,8 @@ class NodeFinder:
     :param initial_box_position: Initial box within which the minimization starting points are selected.
     :type initial_box_position: tuple(tuple(float))
 
-    :param mesh_size: Initial mesh of starting points.
-    :type mesh_size: tuple[int]
+    :param initial_mesh_size: Initial mesh of starting points.
+    :type initial_mesh_size: tuple[int]
     """
 
     def __init__(
@@ -109,10 +41,15 @@ class NodeFinder:
         fct_listable=True,
         gap_threshold=1e-6,
         feature_size=1e-3,
-        initial_box_position=((0, 1), ) * 3,
-        mesh_size=(10, 10, 10),
         refinement_box_size=5e-3,
         refinement_mesh_size=(2, 2, 2),
+        initial_result=None,
+        save_file=None,
+        load=False,
+        load_quiet=True,
+        initial_box_position=((0, 1), ) * 3,
+        initial_mesh_size=(10, 10, 10),
+        num_minimize_parallel=50,
         **nelder_mead_kwargs
     ):
         if fct_listable:
@@ -122,72 +59,105 @@ class NodeFinder:
 
         self._batch_submitter = BatchSubmitter(listable_gap_fct)
         self._func = self._batch_submitter.submit
-        self._mesh_size = tuple(mesh_size)
+
         self._refinement_dist = refinement_box_size / 2
         self._refinement_mesh_size = refinement_mesh_size
-        self._nodal_point_container = NodalPointContainer(
-            feature_size=feature_size, gap_threshold=gap_threshold
+
+        self._save_file = save_file
+        self._create_result(
+            feature_size=feature_size,
+            gap_threshold=gap_threshold,
+            initial_result=initial_result,
+            load=load,
+            load_quiet=load_quiet,
+            initial_mesh_size=initial_mesh_size,
+            initial_box_position=initial_box_position
         )
+        self._num_minimize_parallel = num_minimize_parallel
         self._nelder_mead_kwargs = nelder_mead_kwargs
-        self._initial_box_position = initial_box_position
+
+    def _create_result(
+        self, feature_size, gap_threshold, initial_result, load, load_quiet,
+        initial_mesh_size, initial_box_position
+    ):
+        if load and initial_result:
+            raise ValueError("Cannot set both 'load=True' and 'init_result'.")
+        if load:
+            try:
+                initial_result = load(self._save_file)
+            except IOError as e:
+                if not load_quiet:
+                    raise e
+        if initial_result:
+            self._result = NodeFinderResult(
+                gap_threshold=gap_threshold,
+                feature_size=feature_size,
+                nodal_points=initial_result.nodal_points,
+                starting_points=initial_result.starting_points
+            )
+        else:
+            self._result = NodeFinderResult(
+                gap_threshold=gap_threshold,
+                feature_size=feature_size,
+                starting_points=self._get_box_starting_points(
+                    mesh_size=initial_mesh_size,
+                    box_position=initial_box_position,
+                )
+            )
+        self._save()
+
+    def _save(self):
+        if self._save_file:
+            save(self._result, self._save_file)
 
     def run(self):
         loop = asyncio.get_event_loop()
         with self._batch_submitter:
-            loop.run_until_complete(self._run())
+            loop.run_until_complete(self._run(loop))
+        return self._result
 
-    async def _run(self):
-        await self._calculate_box(
-            box_position=self._initial_box_position,
-            mesh_size=self._mesh_size,
-            periodic=
-            True  # TODO: Change this depending on the value of initial_box_position.
-        )
-        while True:
-            new_points = self._nodal_point_container.get_new_points()
-            self._nodal_point_container.clear_new_points()
-            if not new_points:
-                break
-            _LOGGER.info(
-                '%(num_pts)i new points found', {
-                    'num_pts': len(new_points)
-                }
-            )
-            await asyncio.gather(
+    async def _run(self, loop):
+        all_minimize_tasks = []
+        while not self._result.finished:
+            if self._result.num_running < self._num_minimize_parallel:
+                if self._result.has_queued_points:
+                    all_minimize_tasks.append(
+                        loop.create_task(
+                            self._run_starting_point(
+                                self._result.pop_queued_starting_point()
+                            )
+                        )
+                    )
+            await asyncio.sleep(0)
+        await asyncio.gather(*all_minimize_tasks)
+
+    def _get_box_starting_points(self, *, box_position, mesh_size):
+        periodic = np.allclose(box_position, [[0, 1]] * len(box_position))
+        return [
+            StartingPoint(k=k)
+            for k in itertools.product(
                 *[
-                    self._calculate_box(
-                        box_position=tuple((
-                            ki - self._refinement_dist,
-                            ki + self._refinement_dist
-                        ) for ki in new_node.k),
-                        mesh_size=self._refinement_mesh_size,
-                        periodic=False
-                    ) for new_node in new_points
+                    np.linspace(min_val, max_val, N, endpoint=not periodic)
+                    for (min_val, max_val), N in zip(box_position, mesh_size)
                 ]
             )
+        ]
 
-    async def _calculate_box(self, *, box_position, mesh_size, periodic=False):
-        """
-        Search for minima, with starting positions in a mesh of a given box.
-
-        :param box_position: Boundaries of the box, given as list of tuples, e.g. [(min_x, max_x), (min_y, max_y), (min_z, max_z)].
-        :type box_position: list[tuple[float]]
-        """
-        mesh = itertools.product(
-            *[
-                np.linspace(min_val, max_val, N, endpoint=not periodic)
-                for (min_val, max_val), N in zip(box_position, mesh_size)
-            ]
+    async def _run_starting_point(self, starting_point):
+        res = await self._minimize(starting_point)
+        k = res.x
+        is_new_node = self._result.add_result(
+            starting_point=starting_point,
+            nodal_point=NodalPoint(k=k, gap=res.fun)
         )
-        trial_points = await asyncio.gather(
-            *[
-                self._minimize(starting_point=starting_point)
-                for starting_point in mesh
-            ]
-        )
-        for point in trial_points:
-            self._nodal_point_container.add(
-                NodalPoint(k=point.x, gap=point.fun)
+        if is_new_node:
+            self._result.add_starting_points(
+                self._get_box_starting_points(
+                    box_position=[(
+                        ki - self._refinement_dist, ki + self._refinement_dist
+                    ) for ki in k],
+                    mesh_size=self._refinement_mesh_size
+                )
             )
 
     async def _minimize(self, starting_point):
@@ -202,21 +172,6 @@ class NodeFinder:
         # if res.fun < 0.1:
         #     res = so.minimize(self.gap_fct, x0=res.x, method='Nelder-Mead', tol=1e-8, options=dict(maxfev=100))
         #     if res.fun < 1e-2:
-        res = await root_nelder_mead(
-            self._func, x0=starting_point, **self._nelder_mead_kwargs
+        return await root_nelder_mead(
+            self._func, x0=starting_point.k, **self._nelder_mead_kwargs
         )
-        return res
-
-    @property
-    def nodal_points(self):
-        return self._nodal_point_container.get_nodes()
-
-
-def periodic_distance(k1, k2):
-    return la.norm([_periodic_distance_1d(a, b) for a, b in zip(k1, k2)])
-
-
-def _periodic_distance_1d(k1, k2):
-    k1 %= 1
-    k2 %= 1
-    return min((k1 - k2) % 1, (k2 - k1) % 1)
