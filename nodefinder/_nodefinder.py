@@ -2,14 +2,11 @@
 Implements the node finding algorithm.
 """
 
-import copy
 import asyncio
 import itertools
-import contextlib
 
 import numpy as np
-import scipy.linalg as la
-from fsc.hdf5_io import save, load
+import fsc.hdf5_io
 
 from ._logging import _LOGGER
 from ._result import NodeFinderResult, StartingPoint, NodalPoint
@@ -75,8 +72,9 @@ class NodeFinder:
         )
         self._num_minimize_parallel = num_minimize_parallel
         self._nelder_mead_kwargs = nelder_mead_kwargs
+        self._needs_saving = False
 
-    def _create_result(
+    def _create_result(  # pylint: disable=too-many-arguments
         self, feature_size, gap_threshold, initial_result, load, load_quiet,
         initial_mesh_size, initial_box_position
     ):
@@ -84,10 +82,10 @@ class NodeFinder:
             raise ValueError("Cannot set both 'load=True' and 'init_result'.")
         if load:
             try:
-                initial_result = load(self._save_file)
-            except IOError as e:
+                initial_result = fsc.hdf5_io.load(self._save_file)
+            except IOError as exc:
                 if not load_quiet:
-                    raise e
+                    raise exc
         if initial_result:
             self._result = NodeFinderResult(
                 gap_threshold=gap_threshold,
@@ -104,11 +102,6 @@ class NodeFinder:
                     box_position=initial_box_position,
                 )
             )
-        self._save()
-
-    def _save(self):
-        if self._save_file:
-            save(self._result, self._save_file)
 
     def run(self):
         loop = asyncio.get_event_loop()
@@ -117,21 +110,35 @@ class NodeFinder:
         return self._result
 
     async def _run(self, loop):
+        save_task = loop.create_task(self._save_loop())
         all_minimize_tasks = []
         while not self._result.finished:
             if self._result.num_running < self._num_minimize_parallel:
                 if self._result.has_queued_points:
+                    starting_point = self._result.pop_queued_starting_point()
+                    _LOGGER.info(
+                        'Submitting minization with starting point k={}.'.
+                        format(starting_point.k)
+                    )
                     all_minimize_tasks.append(
                         loop.create_task(
-                            self._run_starting_point(
-                                self._result.pop_queued_starting_point()
-                            )
+                            self._run_starting_point(starting_point)
                         )
                     )
+            # check for exceptions
+            for task in all_minimize_tasks:
+                try:
+                    exc = task.exception()
+                except asyncio.InvalidStateError:
+                    continue
+                if exc is not None:
+                    raise exc
             await asyncio.sleep(0)
         await asyncio.gather(*all_minimize_tasks)
+        save_task.cancel()
 
-    def _get_box_starting_points(self, *, box_position, mesh_size):
+    @staticmethod
+    def _get_box_starting_points(*, box_position, mesh_size):
         periodic = np.allclose(box_position, [[0, 1]] * len(box_position))
         return [
             StartingPoint(k=k)
@@ -159,6 +166,7 @@ class NodeFinder:
                     mesh_size=self._refinement_mesh_size
                 )
             )
+        self._needs_saving = True
 
     async def _minimize(self, starting_point):
         """
@@ -175,3 +183,14 @@ class NodeFinder:
         return await root_nelder_mead(
             self._func, x0=starting_point.k, **self._nelder_mead_kwargs
         )
+
+    async def _save_loop(self):
+        try:
+            if not self._save_file:
+                return
+            while True:
+                await asyncio.sleep(1.)
+                if self._needs_saving:
+                    fsc.hdf5_io.save(self._result, self._save_file)
+        except asyncio.CancelledError:
+            fsc.hdf5_io.save(self._result, self._save_file)

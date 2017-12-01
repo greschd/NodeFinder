@@ -19,7 +19,7 @@ def test_nodal_line():
 
     def gap_fct(x):
         kx, ky, kz = x
-        return np.abs(kx**2 + ky**2 - radius**2) + kz**2
+        return np.sqrt(np.abs(kx**2 + ky**2 - radius**2) + kz**2)
 
     node_finder = NodeFinder(
         gap_fct=gap_fct,
@@ -35,5 +35,5 @@ def test_nodal_line():
     for node in all_nodes:
         assert np.isclose(node.gap, 0, atol=1e-6)
         assert np.isclose(
-            periodic_distance(node.k, (0, 0, 0)), radius, atol=3 * xtol
+            periodic_distance(node.k, (0, 0, 0)), radius, atol=2 * xtol
         )
