@@ -55,6 +55,10 @@ class NodalPointContainer:
         return copy.copy(self._nodal_points)
 
 
+    def to_hdf5(self, hdf5_handle):
+        pass
+
+
 class NodeFinder:
     """
     :param gap_fct: Function that returns the gap, given a k-point.

@@ -19,7 +19,7 @@ setup(
     author='Dominik Gresch, TODO',
     author_email='greschd@gmx.ch, TODO',
     description='TODO',
-    install_requires=['numpy', 'scipy'],
+    install_requires=['numpy', 'scipy', 'h5py', 'fsc.hdf5-io'],
     extras_require={
         'dev':
         ['pytest', 'pytest-cov', 'yapf==0.20', 'pre-commit', 'prospector']

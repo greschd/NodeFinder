@@ -5,17 +5,17 @@ python:
   - "3.6"
   - "3.6-dev"
 
+env:
+  - TEST_TYPE="test"
+matrix:
+  include:
+    - python: 3.6
+      env: TEST_TYPE="compliance"
+
 install:
-  - pip install .[dev]
+  - pip install git+https://github.com/FrescolinoGroup/pyhdf5io.git#egg=fsc.hdf5-io
+  - pip install .
 
 script:
-  - cd tests
-  - py.test
-
-jobs:
-  include:
-    - stage: compliance
-      script: pre-commit run --all-files
-stages:
-  - compliance
-  - test
+  - if [ "$TEST_TYPE" == "compliance" ] ; then pip install .[dev]; pre-commit run --all-files ; fi
+  - if [ "$TEST_TYPE" == "test" ] ; then cd tests; py.test ; fi
