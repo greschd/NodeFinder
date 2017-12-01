@@ -9,13 +9,15 @@ from types import SimpleNamespace
 
 import numpy as np
 import scipy.linalg as la
+from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
 
 from ._logging import _LOGGER
 from ._nelder_mead import root_nelder_mead
 from ._batch_submit import BatchSubmitter
 
 
-class NodalPoint(SimpleNamespace):
+@subscribe_hdf5('nodefinder.nodal_point')
+class NodalPoint(SimpleNamespace, HDF5Enabled):
     """
     Result class for a nodal point.
     """
@@ -25,13 +27,24 @@ class NodalPoint(SimpleNamespace):
         self.k = tuple(np.array(k) % 1)
         self.gap = gap
 
+    def to_hdf5(self, hdf5_handle):
+        hdf5_handle['k'] = self.k
+        hdf5_handle['gap'] = self.gap
 
-class NodalPointContainer:
-    def __init__(self, *, feature_size, gap_threshold):
+    @classmethod
+    def from_hdf5(cls, hdf5_handle):
+        return cls(k=hdf5_handle['k'].value, gap=hdf5_handle['gap'].value)
+
+
+@subscribe_hdf5('nodefinder.nodal_point_container')
+class NodalPointContainer(HDF5Enabled):
+    def __init__(
+        self, *, feature_size, gap_threshold, nodal_points=(), new_points=()
+    ):
         self._feature_size = feature_size
         self._gap_threshold = gap_threshold
-        self._nodal_points = []
-        self._new_points = []
+        self._nodal_points = list(nodal_points)
+        self._new_points = list(new_points)
 
     def add(self, nodal_point):
         if nodal_point.gap < self._gap_threshold:
@@ -54,9 +67,22 @@ class NodalPointContainer:
     def get_nodes(self):
         return copy.copy(self._nodal_points)
 
-
     def to_hdf5(self, hdf5_handle):
-        pass
+        nodal_points = hdf5_handle.create_group('nodal_points')
+        to_hdf5(self._nodal_points, nodal_points)
+        new_points = hdf5_handle.create_group('new_points')
+        to_hdf5(self._new_points, new_points)
+        hdf5_handle['feature_size'] = self._feature_size
+        hdf5_handle['gap_threshold'] = self._gap_threshold
+
+    @classmethod
+    def from_hdf5(cls, hdf5_handle):
+        return cls(
+            feature_size=hdf5_handle['feature_size'].value,
+            gap_threshold=hdf5_handle['gap_threshold'].value,
+            nodal_points=from_hdf5(hdf5_handle['nodal_points']),
+            new_points=from_hdf5(hdf5_handle['new_points']),
+        )
 
 
 class NodeFinder:

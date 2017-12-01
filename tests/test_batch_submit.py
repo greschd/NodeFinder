@@ -7,10 +7,10 @@ import pytest
 from nodefinder._batch_submit import BatchSubmitter
 
 
-@pytest.fixture
-def echo_submitter():
+@pytest.fixture(params=[0., 1.])
+def echo_submitter(request):
     echo = lambda x: x
-    with BatchSubmitter(echo) as func:
+    with BatchSubmitter(echo, timeout=request.param) as func:
         yield func
 
 
