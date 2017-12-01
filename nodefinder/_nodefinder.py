@@ -113,7 +113,7 @@ class NodeFinder:
         save_task = loop.create_task(self._save_loop())
         all_minimize_tasks = []
         while not self._result.finished:
-            if self._result.num_running < self._num_minimize_parallel:
+            while self._result.num_running < self._num_minimize_parallel:
                 if self._result.has_queued_points:
                     starting_point = self._result.pop_queued_starting_point()
                     _LOGGER.info(
@@ -125,6 +125,8 @@ class NodeFinder:
                             self._run_starting_point(starting_point)
                         )
                     )
+                else:
+                    break
             # check for exceptions
             for task in all_minimize_tasks:
                 try:
