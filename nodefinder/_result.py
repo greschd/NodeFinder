@@ -83,7 +83,6 @@ class NodeFinderResult(HDF5Enabled):
                 for n in self.nodal_points
             ):
                 self.nodal_points.append(nodal_point)
-                self._queued_starting_points.add(StartingPoint(k=k))
                 return True
         return False
 

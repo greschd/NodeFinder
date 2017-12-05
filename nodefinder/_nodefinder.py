@@ -46,6 +46,7 @@ class NodeFinder:
         load_quiet=True,
         initial_box_position=((0, 1), ) * 3,
         initial_mesh_size=(10, 10, 10),
+        force_initial_mesh=False,
         num_minimize_parallel=50,
         **nelder_mead_kwargs
     ):
@@ -68,7 +69,8 @@ class NodeFinder:
             load=load,
             load_quiet=load_quiet,
             initial_mesh_size=initial_mesh_size,
-            initial_box_position=initial_box_position
+            initial_box_position=initial_box_position,
+            force_initial_mesh=force_initial_mesh,
         )
         self._num_minimize_parallel = num_minimize_parallel
         self._nelder_mead_kwargs = nelder_mead_kwargs
@@ -76,7 +78,7 @@ class NodeFinder:
 
     def _create_result(  # pylint: disable=too-many-arguments
         self, feature_size, gap_threshold, initial_result, load, load_quiet,
-        initial_mesh_size, initial_box_position
+        initial_mesh_size, initial_box_position, force_initial_mesh
     ):
         if load and initial_result:
             raise ValueError("Cannot set both 'load=True' and 'init_result'.")
@@ -93,6 +95,11 @@ class NodeFinder:
                 nodal_points=initial_result.nodal_points,
                 starting_points=initial_result.starting_points
             )
+            if force_initial_mesh:
+                self._result.add_starting_points(self._get_box_starting_points(
+                    mesh_size=initial_mesh_size,
+                    box_position=initial_box_position,
+                ))
         else:
             self._result = NodeFinderResult(
                 gap_threshold=gap_threshold,
