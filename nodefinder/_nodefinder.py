@@ -88,6 +88,11 @@ class NodeFinder:
             except IOError as exc:
                 if not load_quiet:
                     raise exc
+
+        initial_mesh_points = self._get_box_starting_points(
+            mesh_size=initial_mesh_size,
+            box_position=initial_box_position,
+        )
         if initial_result:
             self._result = NodeFinderResult(
                 gap_threshold=gap_threshold,
@@ -96,18 +101,12 @@ class NodeFinder:
                 starting_points=initial_result.starting_points
             )
             if force_initial_mesh:
-                self._result.add_starting_points(self._get_box_starting_points(
-                    mesh_size=initial_mesh_size,
-                    box_position=initial_box_position,
-                ))
+                self._result.add_starting_points(initial_mesh_points)
         else:
             self._result = NodeFinderResult(
                 gap_threshold=gap_threshold,
                 feature_size=feature_size,
-                starting_points=self._get_box_starting_points(
-                    mesh_size=initial_mesh_size,
-                    box_position=initial_box_position,
-                )
+                starting_points=initial_mesh_points
             )
 
     def run(self):
@@ -124,7 +123,7 @@ class NodeFinder:
                 if self._result.has_queued_points:
                     starting_point = self._result.pop_queued_starting_point()
                     _LOGGER.info(
-                        'Submitting minization with starting point k={}.'.
+                        'Submitting minimization with starting point k={}.'.
                         format(starting_point.k)
                     )
                     all_minimize_tasks.append(

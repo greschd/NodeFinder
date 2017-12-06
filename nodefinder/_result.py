@@ -3,6 +3,7 @@ Implements the node finding algorithm.
 """
 
 import uuid
+from collections import deque
 from types import SimpleNamespace
 
 import numpy as np
@@ -70,7 +71,7 @@ class NodeFinderResult(HDF5Enabled):
         self._feature_size = feature_size
         self._gap_threshold = gap_threshold
         self.nodal_points = list(nodal_points)
-        self._queued_starting_points = set(starting_points)
+        self._queued_starting_points = deque(starting_points)
         self._running_starting_points = set()
 
     def add_result(self, starting_point, nodal_point):
@@ -87,16 +88,19 @@ class NodeFinderResult(HDF5Enabled):
         return False
 
     def pop_queued_starting_point(self):
-        starting_point = self._queued_starting_points.pop()
+        starting_point = self._queued_starting_points.popleft()
         self._running_starting_points.add(starting_point)
         return starting_point
 
     def add_starting_points(self, starting_points):
-        self._queued_starting_points.update(starting_points)
+        self._queued_starting_points.extend(starting_points)
 
     @property
     def starting_points(self):
-        return self._queued_starting_points | self._running_starting_points
+        # Give running points first, so that they will be re-queued first when
+        # restarting a calculation.
+        return list(self._running_starting_points
+                    ) + list(self._queued_starting_points)
 
     @property
     def num_running(self):
