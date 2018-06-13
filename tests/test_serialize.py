@@ -9,6 +9,7 @@ import tempfile
 import pytest
 from fsc.hdf5_io import save, load
 
+from nodefinder._cell_list import CellList
 from nodefinder._result import NodalPoint, StartingPoint, NodeFinderResult
 
 
@@ -38,6 +39,20 @@ def test_starting_point(save_load):
     point = StartingPoint(k=(0.2, 0.9, 1.1))
     pt_copy = save_load(point)
     assert point == pt_copy
+
+
+def test_cell_list(save_load):
+    """
+    Test saving a CellList of NodalPoints.
+    """
+    points = [
+        NodalPoint(k=(1.5, 0.9, 0.2), gap=1e-3),
+        NodalPoint(k=(0.9, 0.2, 0.1), gap=1e-4)
+    ]
+    cell_list = CellList(cell_size=1e-3, points=points)
+    cell_list_copy = save_load(cell_list)
+    assert cell_list._num_cells == cell_list_copy._num_cells
+    assert cell_list._cells == cell_list_copy._cells
 
 
 def test_result(save_load):

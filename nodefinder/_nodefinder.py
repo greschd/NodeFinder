@@ -198,7 +198,10 @@ class NodeFinder:
                 return
             while True:
                 await asyncio.sleep(1.)
-                if self._needs_saving:
-                    fsc.hdf5_io.save(self._result, self._save_file)
+                self._do_save()
         except asyncio.CancelledError:
+            self._do_save()
+
+    def _do_save(self):
+        if self._needs_saving:
             fsc.hdf5_io.save(self._result, self._save_file)

@@ -146,6 +146,7 @@ async def root_nelder_mead(
     fsim[0] = await func(x0)
     nonzdelt = 0.05
     zdelt = 0.00025
+    # TODO: Change initial simplex size depending on the current mesh size.
     for k in range(0, N):
         y = np.array(x0, copy=True)
         if y[k] != 0:

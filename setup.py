@@ -16,14 +16,15 @@ with open('./nodefinder/__init__.py', 'r') as f:
 setup(
     name='nodefinder',
     version=VERSION,
-    author='Dominik Gresch, TODO',
-    author_email='greschd@gmx.ch, TODO',
+    author='Dominik Gresch',
+    author_email='greschd@gmx.ch',
     description='TODO',
-    install_requires=['numpy', 'scipy', 'h5py', 'fsc.hdf5-io'],
+    install_requires=['numpy', 'scipy', 'h5py', 'fsc.hdf5-io>=0.2.3'],
     extras_require={
         'dev':
-        ['pytest', 'pytest-cov', 'yapf==0.20', 'pre-commit', 'prospector']
+        ['pytest', 'pytest-cov', 'pytest-score', 'yapf==0.20', 'pre-commit', 'prospector']
     },
+    dependency_links=['git+https://github.com/greschd/pytest-score.git@master#egg=pytest-score-0.0.0'],
     long_description=README,
     classifiers=[
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
