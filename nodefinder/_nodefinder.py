@@ -18,19 +18,19 @@ from ._batch_submit import BatchSubmitter
 @export
 class NodeFinder:
     """
-    :param gap_fct: Function that returns the gap, given a k-point.
 
-    :param gap_threshold: Threshold when the gap is considered to be closed.
-    :type gap_threshold: float
-
-    :param feature_size: Minimum distance between nodal features for them to be considered distinct.
-    :type feature_size: float
-
-    :param initial_box_position: Initial box within which the minimization starting points are selected.
-    :type initial_box_position: tuple(tuple(float))
-
-    :param initial_mesh_size: Initial mesh of starting points.
-    :type initial_mesh_size: tuple[int]
+    Arguments
+    ---------
+    gap_fct : Callable
+        Function that returns the gap, given a k-point.
+    gap_threshold : float
+        Threshold when the gap is considered to be closed.
+    feature_size : float
+        Minimum distance between nodal features for them to be considered distinct.
+    initial_box_position : tuple[tuple[float]]
+        Initial box within which the minimization starting points are selected.
+    initial_mesh_size : tuple[int]
+        Initial mesh of starting points.
     """
 
     def __init__(
