@@ -10,11 +10,9 @@
 
 # pylint: skip-file
 
-__all__ = ['root_nelder_mead']
-
-import asyncio
 
 import numpy as np
+from fsc.export import export
 
 # standard status messages of optimizers
 _status_message = {
@@ -28,6 +26,7 @@ _status_message = {
 }
 
 
+@export
 class OptimizeResult(dict):
     """ Represents the optimization result.
 
@@ -50,13 +49,6 @@ class OptimizeResult(dict):
         Number of iterations performed by the optimizer.
     final_simplex :
         Final simplex positions and values.
-
-    Notes
-    -----
-    There may be additional attributes not listed above depending of the
-    specific solver. Since this class is essentially a subclass of dict
-    with attribute accessors, one can see which attributes are available
-    using the `keys()` method.
     """
 
     def __getattr__(self, name):
@@ -92,6 +84,7 @@ def wrap_function(function, args):
     return ncalls, function_wrapper
 
 
+@export
 async def root_nelder_mead(
     func,
     x0,
@@ -108,8 +101,8 @@ async def root_nelder_mead(
     Minimization of scalar function of one or more variables using the
     Nelder-Mead algorithm.
 
-    Options
-    -------
+    Arguments
+    ---------
     disp : bool
         Set to True to print convergence messages.
     xtol : float
@@ -120,6 +113,11 @@ async def root_nelder_mead(
         Maximum number of iterations to perform.
     maxfev : int
         Maximum number of function evaluations to make.
+
+    Returns
+    -------
+    OptimizeResult:
+        The result of the optimization.
     """
     maxfun = maxfev
     retall = return_all

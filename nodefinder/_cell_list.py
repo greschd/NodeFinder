@@ -2,7 +2,6 @@ import itertools
 import contextlib
 
 import numpy as np
-import scipy.linalg as la
 from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
 
 from ._utils import periodic_distance

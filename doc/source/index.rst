@@ -1,27 +1,26 @@
-.. title:: Overview
+.. _home:
 
-.. container:: section
+NodeFinder
+==========
+
+TODO: description
+
+.. contents::
+    :local:
 
 
-.. rubric:: Parts of the documentation
+Installation
+~~~~~~~~~~~~
 
-| :ref:`tutorial`
-| start here
-|
-| :ref:`reference`
-| detailed description of the classes and functions
-|
+You can install this tool with pip:
 
-.. rubric:: Indices and tables
+.. code:: python
 
-| :ref:`genindex`
-| list of all functions and classes
-|
-| :ref:`modindex`
-| list of all modules and submodules
+    pip install nodefinder
+
 
 .. toctree::
-    :maxdepth: 2
     :hidden:
 
+    Usage <self>
     reference.rst

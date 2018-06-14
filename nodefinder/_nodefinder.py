@@ -7,6 +7,7 @@ import itertools
 
 import numpy as np
 import fsc.hdf5_io
+from fsc.export import export
 
 from ._logging import _LOGGER
 from ._result import NodeFinderResult, StartingPoint, NodalPoint
@@ -14,6 +15,7 @@ from ._nelder_mead import root_nelder_mead
 from ._batch_submit import BatchSubmitter
 
 
+@export
 class NodeFinder:
     """
     :param gap_fct: Function that returns the gap, given a k-point.
