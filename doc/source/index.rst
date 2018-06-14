@@ -23,4 +23,5 @@ You can install this tool with pip:
     :hidden:
 
     Usage <self>
+    tutorial.rst
     reference.rst
