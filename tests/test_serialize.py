@@ -15,6 +15,10 @@ from nodefinder._result import NodalPoint, StartingPoint, NodeFinderResult
 
 @pytest.fixture
 def save_load():
+    """
+    Fixture that saves an object to a temporary file, then loads and returns it.
+    """
+
     def inner(x):
         with tempfile.NamedTemporaryFile() as named_file:
             save(x, named_file.name)
@@ -51,8 +55,8 @@ def test_cell_list(save_load):
     ]
     cell_list = CellList(cell_size=1e-3, points=points)
     cell_list_copy = save_load(cell_list)
-    assert cell_list._num_cells == cell_list_copy._num_cells
-    assert cell_list._cells == cell_list_copy._cells
+    assert cell_list._num_cells == cell_list_copy._num_cells  # pylint: disable=protected-access
+    assert cell_list._cells == cell_list_copy._cells  # pylint: disable=protected-access
 
 
 def test_result(save_load):

@@ -8,11 +8,11 @@ import itertools
 import numpy as np
 import fsc.hdf5_io
 from fsc.export import export
+from fsc.async_tools import wrap_to_coroutine
 
 from ._logging import _LOGGER
 from ._result import NodeFinderResult, StartingPoint, NodalPoint
 from ._nelder_mead import root_nelder_mead
-from ._batch_submit import BatchSubmitter
 
 
 @export
@@ -37,7 +37,6 @@ class NodeFinder:
         self,
         gap_fct,
         *,
-        fct_listable=True,
         gap_threshold=1e-6,
         feature_size=1e-3,
         refinement_box_size=5e-3,
@@ -52,13 +51,7 @@ class NodeFinder:
         num_minimize_parallel=50,
         **nelder_mead_kwargs
     ):
-        if fct_listable:
-            listable_gap_fct = gap_fct
-        else:
-            listable_gap_fct = lambda input_list: [gap_fct(x) for x in input_list]
-
-        self._batch_submitter = BatchSubmitter(listable_gap_fct)
-        self._func = self._batch_submitter.submit
+        self._func = wrap_to_coroutine(gap_fct)
 
         self._refinement_dist = refinement_box_size / 2
         self._refinement_mesh_size = refinement_mesh_size
@@ -82,6 +75,10 @@ class NodeFinder:
         self, feature_size, gap_threshold, initial_result, load, load_quiet,
         initial_mesh_size, initial_box_position, force_initial_mesh
     ):
+        """
+        Load or create the initial 'NodeFinderResult' instance.
+        """
+
         if load and initial_result:
             raise ValueError("Cannot set both 'load=True' and 'init_result'.")
         if load:
@@ -113,11 +110,14 @@ class NodeFinder:
 
     def run(self):
         loop = asyncio.get_event_loop()
-        with self._batch_submitter:
-            loop.run_until_complete(self._run(loop))
+        loop.run_until_complete(self._run(loop=loop))
         return self._result
 
     async def _run(self, loop):
+        """
+        Run the minimization of all starting points.
+        """
+
         save_task = loop.create_task(self._save_loop())
         all_minimize_tasks = []
         while not self._result.finished:
@@ -161,6 +161,9 @@ class NodeFinder:
         ]
 
     async def _run_starting_point(self, starting_point):
+        """
+        Run the minimization for a given starting point.
+        """
         res = await self._minimize(starting_point)
         k = res.x
         is_new_node = self._result.add_result(

@@ -28,7 +28,11 @@ def gap_fct(node_position):
 
 @pytest.fixture
 def check_result(node_position):
-    def inner(result):
+    """
+    Checks that the result matches a given node position.
+    """
+
+    def inner(result):  # pylint: disable=missing-docstring
         nodes = result.nodal_points
         assert len(nodes) == 1
         node = nodes[0]
@@ -43,7 +47,7 @@ def test_single_node(gap_fct, node_position, check_result):
     """
     Test that a single nodal point is found.
     """
-    node_finder = NodeFinder(gap_fct=gap_fct, fct_listable=False)
+    node_finder = NodeFinder(gap_fct=gap_fct)
     check_result(node_finder.run())
 
 
@@ -52,9 +56,7 @@ def test_save(gap_fct, node_position, check_result):
     Test saving to a file
     """
     with tempfile.NamedTemporaryFile() as named_file:
-        node_finder = NodeFinder(
-            gap_fct=gap_fct, fct_listable=False, save_file=named_file.name
-        )
+        node_finder = NodeFinder(gap_fct=gap_fct, save_file=named_file.name)
         check_result(node_finder.run())
 
 
@@ -67,9 +69,7 @@ def test_restart(gap_fct, node_position, check_result):
         raise ValueError
 
     with tempfile.NamedTemporaryFile() as named_file:
-        node_finder = NodeFinder(
-            gap_fct=gap_fct, fct_listable=False, save_file=named_file.name
-        )
+        node_finder = NodeFinder(gap_fct=gap_fct, save_file=named_file.name)
         result = node_finder.run()
         check_result(result)
 
