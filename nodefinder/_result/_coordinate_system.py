@@ -1,7 +1,10 @@
 import numpy as np
 import scipy.linalg as la
+from fsc.export import export
 from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5
 
+
+@export
 @subscribe_hdf5('nodefinder.coordinate_system')
 class CoordinateSystem(HDF5Enabled):
     def __init__(self, *, limits, periodic=False):
@@ -43,8 +46,28 @@ class CoordinateSystem(HDF5Enabled):
             ])
         return la.norm(pos2 - pos1)
 
+    def normalize_position(self, pos):
+        if self.periodic:
+            return ((pos - self._lower_limits) %
+                    self.size) + self._lower_limits
+        else:
+            if np.all(pos >= self._lower_limits) and np.all(pos <= self._upper_limits):
+                return pos
+            raise ValueError("Position '{}' is not within the limits '{}'".format(pos, self._limits))
+
     @staticmethod
     def _periodic_distance_1d(p1, p2, size):
         p1 %= size
         p2 %= size
         return min((p1 - p2) % size, (p2 - p2) % size)
+
+    def to_hdf5(self, hdf5_handle):
+        hdf5_handle['limits'] = self._limits
+        hdf5_handle['periodic'] = self.periodic
+
+    @classmethod
+    def from_hdf5(cls, hdf5_handle):
+        return cls(
+            limits=hdf5_handle['limits'].value,
+            periodic=hdf5_handle['periodic'].value
+        )

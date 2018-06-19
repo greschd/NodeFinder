@@ -24,11 +24,14 @@ class CellList:
     def get_index(self, frac):
         return np.array(frac * self.num_cells, dtype=int)
 
-    @property
     def values(self):
         return sum(self._cells.values(), [])
 
-    def get_neighbour_values(self, idx, periodic=False):
+    def __iter__(self):
+        return iter(self.values())
+
+    def get_neighbour_values(self, frac, periodic=False):
+        idx = self.get_index(frac)
         return sum((
             self._cells[cell_idx] for cell_idx in
             self.get_neighbour_indices(idx=idx, periodic=periodic)

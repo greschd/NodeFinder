@@ -10,8 +10,11 @@
 
 # pylint: skip-file
 
+
 import numpy as np
 from fsc.export import export
+
+from ._result import MinimizationResult
 
 # standard status messages of optimizers
 _status_message = {
@@ -24,53 +27,6 @@ _status_message = {
     'to precision loss.'
 }
 
-
-@export
-class OptimizeResult(dict):
-    """ Represents the optimization result.
-
-    Attributes
-    ----------
-    x : ndarray
-        The solution of the optimization.
-    success : bool
-        Whether or not the optimizer exited successfully.
-    status : int
-        Termination status of the optimizer. Its value depends on the
-        underlying solver. Refer to `message` for details.
-    message : str
-        Description of the cause of the termination.
-    fun : ndarray
-        Values of objective function.
-    nfev : int
-        Number of evaluations of the objective functions.
-    nit : int
-        Number of iterations performed by the optimizer.
-    final_simplex :
-        Final simplex positions and values.
-    """
-
-    def __getattr__(self, name):
-        try:
-            return self[name]
-        except KeyError:
-            raise AttributeError(name)
-
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__
-
-    def __repr__(self):
-        if self.keys():
-            m = max(map(len, list(self.keys()))) + 1
-            return '\n'.join([
-                k.rjust(m) + ': ' + repr(v) for k, v in sorted(self.items())
-            ])
-        else:
-            return self.__class__.__name__ + "()"
-
-
-class OptimizeWarning(UserWarning):
-    pass
 
 
 def wrap_function(function, args):
@@ -93,8 +49,7 @@ async def root_nelder_mead(
     ftol=1e-4,
     maxiter=None,
     maxfev=None,
-    disp=False,
-    return_all=False
+    keep_history=True
 ):
     """
     Minimization of scalar function of one or more variables using the
@@ -102,8 +57,6 @@ async def root_nelder_mead(
 
     Arguments
     ---------
-    disp : bool
-        Set to True to print convergence messages.
     xtol : float
         Relative error in solution `xopt` acceptable for convergence.
     ftol : float
@@ -119,7 +72,6 @@ async def root_nelder_mead(
         The result of the optimization.
     """
     maxfun = maxfev
-    retall = return_all
 
     fcalls, func = wrap_function(func, args)
     x0 = np.asfarray(x0).flatten()
@@ -138,9 +90,10 @@ async def root_nelder_mead(
     sim = np.zeros((N + 1, N), dtype=x0.dtype)
     fsim = np.zeros((N + 1, ), float)
     sim[0] = x0
-    if retall:
-        allvecs = [sim[0]]
     fsim[0] = await func(x0)
+    if keep_history:
+        simplex_history = [np.copy(sim)]
+        fun_simplex_history = [np.copy(fsim)]
     nonzdelt = 0.05
     zdelt = 0.00025
     # TODO: Change initial simplex size depending on the current mesh size.
@@ -219,8 +172,9 @@ async def root_nelder_mead(
         if callback is not None:
             callback(sim[0])
         iterations += 1
-        if retall:
-            allvecs.append(sim[0])
+        if keep_history:
+            simplex_history.append(np.copy(sim))
+            fun_simplex_history.append(np.copy(fsim))
 
     x = sim[0]
     fval = np.min(fsim)
@@ -229,31 +183,22 @@ async def root_nelder_mead(
     if fcalls[0] >= maxfun:
         warnflag = 1
         msg = _status_message['maxfev']
-        if disp:
-            print('Warning: ' + msg)
     elif iterations >= maxiter:
         warnflag = 2
         msg = _status_message['maxiter']
-        if disp:
-            print('Warning: ' + msg)
     else:
         msg = _status_message['success']
-        if disp:
-            print(msg)
-            print("         Current function value: %f" % fval)
-            print("         Iterations: %d" % iterations)
-            print("         Function evaluations: %d" % fcalls[0])
 
-    result = OptimizeResult(
-        fun=fval,
-        nit=iterations,
-        nfev=fcalls[0],
+    result = MinimizationResult(
+        pos=x,
+        value=fval,
+        num_iter=iterations,
+        num_fev=fcalls[0],
         status=warnflag,
         success=(warnflag == 0),
         message=msg,
-        x=x,
-        final_simplex=(sim, fsim)
     )
-    if retall:
-        result['allvecs'] = allvecs
+    if keep_history:
+        result['simplex_history'] = np.array(simplex_history)
+        result['fun_simplex_history'] = np.array(fun_simplex_history)
     return result

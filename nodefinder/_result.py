@@ -9,27 +9,6 @@ from types import SimpleNamespace
 import numpy as np
 from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
 
-from ._utils import periodic_distance
-
-
-@subscribe_hdf5('nodefinder.nodal_point')
-class NodalPoint(SimpleNamespace, HDF5Enabled):
-    """
-    Result class for a nodal point.
-    """
-
-    def __init__(self, k, gap):
-        super().__init__()
-        self.k = tuple(np.array(k) % 1)
-        self.gap = gap
-
-    def to_hdf5(self, hdf5_handle):
-        hdf5_handle['k'] = self.k
-        hdf5_handle['gap'] = self.gap
-
-    @classmethod
-    def from_hdf5(cls, hdf5_handle):
-        return cls(k=hdf5_handle['k'].value, gap=hdf5_handle['gap'].value)
 
 
 @subscribe_hdf5('nodefinder.starting_point')
@@ -71,8 +50,6 @@ class NodeFinderResult(HDF5Enabled):
         self._feature_size = feature_size
         self._gap_threshold = gap_threshold
         self.nodal_points = list(nodal_points)
-        self._queued_starting_points = deque(starting_points)
-        self._running_starting_points = set()
 
     def add_result(self, starting_point, nodal_point):
         self._running_starting_points.remove(starting_point)
@@ -106,13 +83,6 @@ class NodeFinderResult(HDF5Enabled):
     def num_running(self):
         return len(self._running_starting_points)
 
-    @property
-    def has_queued_points(self):
-        return bool(self._queued_starting_points)
-
-    @property
-    def finished(self):
-        return not self.starting_points
 
     def to_hdf5(self, hdf5_handle):
         nodal_points = hdf5_handle.create_group('nodal_points')
