@@ -29,12 +29,12 @@ _status_message = {
 }
 
 
-def wrap_function(function, args):
+def wrap_function(function):
     ncalls = [0]
 
-    async def function_wrapper(*wrapper_args):
+    async def function_wrapper(*args):
         ncalls[0] += 1
-        return await function(*(wrapper_args + args))
+        return await function(*args)
 
     return ncalls, function_wrapper
 
@@ -43,7 +43,6 @@ def wrap_function(function, args):
 async def root_nelder_mead(
     func,
     initial_simplex,
-    args=(),
     callback=None,
     xtol=1e-4,
     ftol=1e-4,
@@ -73,7 +72,7 @@ async def root_nelder_mead(
     """
     maxfun = maxfev
 
-    fcalls, func = wrap_function(func, args)
+    fcalls, func = wrap_function(func)
     N = len(initial_simplex[0])
     if maxiter is None:
         maxiter = N * 200
