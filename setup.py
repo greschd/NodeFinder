@@ -27,7 +27,7 @@ setup(
     author_email='greschd@gmx.ch',
     description='TODO',
     install_requires=[
-        'numpy', 'scipy', 'fsc.export', 'fsc.hdf5-io>=0.2.3', 'fsc.async_tools'
+        'numpy', 'scipy', 'fsc.export', 'fsc.hdf5-io>=0.2.4', 'fsc.async_tools'
     ],
     extras_require=EXTRAS_REQUIRE,
     dependency_links=[
