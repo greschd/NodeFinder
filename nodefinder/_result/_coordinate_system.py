@@ -51,9 +51,14 @@ class CoordinateSystem(HDF5Enabled):
             return ((pos - self._lower_limits) %
                     self.size) + self._lower_limits
         else:
-            if np.all(pos >= self._lower_limits) and np.all(pos <= self._upper_limits):
+            if np.all(pos >= self._lower_limits
+                      ) and np.all(pos <= self._upper_limits):
                 return pos
-            raise ValueError("Position '{}' is not within the limits '{}'".format(pos, self._limits))
+            raise ValueError(
+                "Position '{}' is not within the limits '{}'".format(
+                    pos, self._limits
+                )
+            )
 
     @staticmethod
     def _periodic_distance_1d(p1, p2, size):

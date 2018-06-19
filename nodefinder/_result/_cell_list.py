@@ -10,6 +10,7 @@ class CellList:
     """
     Cell list container for the NodalPoint objects.
     """
+
     def __init__(self, num_cells):
         self.num_cells = np.array(num_cells, dtype=int)
         assert np.all(num_cells > 0)
@@ -33,7 +34,8 @@ class CellList:
     def get_neighbour_values(self, frac, periodic=False):
         idx = self.get_index(frac)
         return sum((
-            self._cells[cell_idx] for cell_idx in
+            self._cells[cell_idx]
+            for cell_idx in
             self.get_neighbour_indices(idx=idx, periodic=periodic)
         ), [])
 
@@ -43,7 +45,8 @@ class CellList:
             return list(set(i % self._num_cells for i in indices))
         else:
             return [
-                i for i in indices if np.all(0 <= i) and np.all(i < self._num_cells)
+                i for i in indices
+                if np.all(0 <= i) and np.all(i < self._num_cells)
             ]
 
     @lru_cache

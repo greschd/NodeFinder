@@ -13,6 +13,7 @@ from types import SimpleNamespace
 from fsc.export import export
 from fsc.hdf5_io import subscribe_hdf5, HDF5Enabled
 
+
 @export
 @subscribe_hdf5('nodefinder.optimize_result')
 class MinimizationResult(SimpleNamespace, HDF5Enabled):
@@ -44,7 +45,6 @@ class MinimizationResult(SimpleNamespace, HDF5Enabled):
     def to_hdf5(self, hdf5_handle):
         for key, val in self.__dict__.items():
             hdf5_handle[key] = val
-
 
     @classmethod
     def from_hdf5(cls, hdf5_handle):

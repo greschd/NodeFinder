@@ -65,5 +65,7 @@ class Result(HDF5Enabled):
             coordinate_system=from_hdf5(hdf5_handle['coordinate_system']),
             gap_threshold=hdf5_handle['gap_threshold'].value,
             dist_cutoff=hdf5_handle['dist_cutoff'].value,
-            minimization_results=from_hdf5(hdf5_handle['minimization_results']),
+            minimization_results=from_hdf5(
+                hdf5_handle['minimization_results']
+            ),
         )

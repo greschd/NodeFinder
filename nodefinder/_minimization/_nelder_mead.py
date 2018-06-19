@@ -10,6 +10,7 @@
 
 # pylint: skip-file
 
+import asyncio
 
 import numpy as np
 from fsc.export import export
@@ -28,7 +29,6 @@ _status_message = {
 }
 
 
-
 def wrap_function(function, args):
     ncalls = [0]
 
@@ -42,7 +42,7 @@ def wrap_function(function, args):
 @export
 async def root_nelder_mead(
     func,
-    x0,
+    initial_simplex,
     args=(),
     callback=None,
     xtol=1e-4,
@@ -74,8 +74,7 @@ async def root_nelder_mead(
     maxfun = maxfev
 
     fcalls, func = wrap_function(func, args)
-    x0 = np.asfarray(x0).flatten()
-    N = len(x0)
+    N = len(initial_simplex[0])
     if maxiter is None:
         maxiter = N * 200
     if maxfun is None:
@@ -87,31 +86,20 @@ async def root_nelder_mead(
     sigma = 0.5
     one2np1 = list(range(1, N + 1))
 
-    sim = np.zeros((N + 1, N), dtype=x0.dtype)
-    fsim = np.zeros((N + 1, ), float)
-    sim[0] = x0
-    fsim[0] = await func(x0)
-    if keep_history:
-        simplex_history = [np.copy(sim)]
-        fun_simplex_history = [np.copy(fsim)]
-    nonzdelt = 0.05
-    zdelt = 0.00025
-    # TODO: Change initial simplex size depending on the current mesh size.
-    for k in range(0, N):
-        y = np.array(x0, copy=True)
-        if y[k] != 0:
-            y[k] = (1 + nonzdelt) * y[k]
-        else:
-            y[k] = zdelt
+    sim = np.array(initial_simplex)
+    assert sim.shape == (N + 1, N)
 
-        sim[k + 1] = y
-        f = await func(y)
-        fsim[k + 1] = f
+    fsim = np.array(await asyncio.gather(*[func(x) for x in sim]), dtype=float)
+    assert fsim.shape == (N + 1, )
 
     ind = np.argsort(fsim)
     fsim = np.take(fsim, ind, 0)
     # sort so sim[0,:] has the lowest function value
     sim = np.take(sim, ind, 0)
+
+    if keep_history:
+        simplex_history = [np.copy(sim)]
+        fun_simplex_history = [np.copy(fsim)]
 
     iterations = 1
 

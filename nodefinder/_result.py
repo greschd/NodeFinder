@@ -10,7 +10,6 @@ import numpy as np
 from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
 
 
-
 @subscribe_hdf5('nodefinder.starting_point')
 class StartingPoint(SimpleNamespace, HDF5Enabled):
     """
@@ -82,7 +81,6 @@ class NodeFinderResult(HDF5Enabled):
     @property
     def num_running(self):
         return len(self._running_starting_points)
-
 
     def to_hdf5(self, hdf5_handle):
         nodal_points = hdf5_handle.create_group('nodal_points')
