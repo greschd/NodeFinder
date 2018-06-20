@@ -19,14 +19,14 @@ class CellList:
             self._cells.flat[i] = []
 
     def add_point(self, frac, value):
-        idx = self._get_index(frac)
+        idx = self.get_index(frac)
         self._cells[idx].append(value)
 
     def get_index(self, frac):
-        return np.array(frac * self.num_cells, dtype=int)
+        return tuple(np.array(frac * self.num_cells, dtype=int))
 
     def values(self):
-        return sum(self._cells.values(), [])
+        return sum(self._cells.flat, [])
 
     def __iter__(self):
         return iter(self.values())
@@ -49,7 +49,7 @@ class CellList:
                 if np.all(0 <= i) and np.all(i < self._num_cells)
             ]
 
-    @lru_cache
+    @lru_cache(maxsize=None)
     def _get_offsets(self):
         return [
             np.array(o)

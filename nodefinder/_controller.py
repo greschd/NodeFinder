@@ -1,13 +1,14 @@
 import asyncio
 import itertools
+from collections import ChainMap
 
 import numpy as np
 from fsc.export import export
 import fsc.hdf5_io
 from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
-from fsc.async_tools import PeriodicTask
+from fsc.async_tools import PeriodicTask, wrap_to_coroutine
 
-from ._queue import StartingPointQueue
+from ._queue import SimplexQueue
 from ._result import Result
 from ._coordinate_system import CoordinateSystem
 from ._minimization import run_minimization
@@ -62,7 +63,7 @@ class Controller:
         initial_mesh_size, force_initial_mesh, gap_threshold, feature_size,
         fake_potential, nelder_mead_kwargs, num_minimize_parallel
     ):
-        self.gap_fct = gap_fct
+        self.gap_fct = wrap_to_coroutine(gap_fct)
         self.fake_potential = fake_potential
         self.coordinate_system = CoordinateSystem(limits=limits, periodic=True)
         self.save_file = save_file
@@ -74,13 +75,25 @@ class Controller:
             initial_mesh_size=initial_mesh_size,
             force_initial_mesh=force_initial_mesh,
             gap_threshold=gap_threshold,
+            dist_cutoff=getattr(self.fake_potential, 'dist_cutoff', 0.)
         )
         self.num_minimize_parallel = num_minimize_parallel
-        self.nelder_mead_kwargs = nelder_mead_kwargs
+        self.nelder_mead_kwargs = ChainMap(
+            nelder_mead_kwargs,
+            dict(ftol=0.1 * gap_threshold, xtol=0.1 * feature_size)
+        )
 
     def create_state(
-        self, *, initial_state, load, load_quiet, limits, initial_mesh_size,
-        force_initial_mesh, gap_threshold
+        self,
+        *,
+        initial_state,
+        load,
+        load_quiet,
+        limits,
+        initial_mesh_size,
+        force_initial_mesh,
+        gap_threshold,
+        dist_cutoff,
     ):
         if load:
             if initial_state is not None:
@@ -97,11 +110,11 @@ class Controller:
                 coordinate_system=self.coordinate_system,
                 minimization_results=initial_state.result.minimization_results,
                 gap_threshold=gap_threshold,
-                dist_cutoff=self.fake_potential.dist_cutoff,
+                dist_cutoff=dist_cutoff
             )
-            queue = StartingPointQueue(initial_state.queue)
+            queue = SimplexQueue(initial_state.queue)
             if force_initial_mesh:
-                queue.add_starting_points(
+                queue.add_simplices(
                     self.get_initial_simplices(
                         initial_mesh_size=initial_mesh_size
                     )
@@ -110,9 +123,9 @@ class Controller:
             result = Result(
                 coordinate_system=self.coordinate_system,
                 gap_threshold=gap_threshold,
-                dist_cutoff=self.fake_potential.dist_cutoff,
+                dist_cutoff=dist_cutoff,
             )
-            queue = StartingPointQueue()
+            queue = SimplexQueue(self.get_initial_simplices(initial_mesh_size))
         return ControllerState(result=result, queue=queue)
 
     def get_initial_simplices(self, initial_mesh_size):
@@ -124,7 +137,7 @@ class Controller:
         simplex_distances = 1 / (2 * np.array(initial_mesh_size))
         simplex_stencil = np.zeros(shape=(dim + 1, dim))
         for i, dist in enumerate(simplex_distances):
-            simplex_stencil[i + 1] = dist
+            simplex_stencil[i + 1][i] = dist
         return [
             self.coordinate_system.get_pos(v + simplex_stencil)
             for v in vertices_frac
@@ -135,7 +148,7 @@ class Controller:
         loop.run_until_complete(self.create_tasks())
 
     async def create_tasks(self):
-        futures = []
+        futures = set()
         async with PeriodicTask(self.save, delay=5.):
             while not self.state.queue.finished:
                 while (
@@ -143,21 +156,28 @@ class Controller:
                     self.state.queue.num_running < self.num_minimize_parallel
                 ):
                     simplex = self.state.queue.pop_queued()
-                    futures.append(
+                    futures.add(
                         asyncio.ensure_future(self.run_simplex(simplex))
                     )
                 await asyncio.sleep(0.)
+                # print('not finished', self.state.queue.num_running, len(self.state.queue._queued_simplices))
+                # retrieve exceptions
+                for fut in futures:
+                    if fut.done():
+                        await fut
         await asyncio.gather(*futures)
 
     async def run_simplex(self, simplex):
+        # print('running')
         result = await run_minimization(
             self.gap_fct,
             initial_simplex=simplex,
             fake_potential=self.fake_potential,
             nelder_mead_kwargs=self.nelder_mead_kwargs
         )
+        # print('done')
         self.process_result(result)
-        self.queue.set_finished(simplex)
+        self.state.queue.set_finished(simplex)
 
     def process_result(self, result):
         self.state.result.add_result(result)

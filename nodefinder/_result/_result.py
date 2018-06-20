@@ -22,19 +22,28 @@ class Result(HDF5Enabled):
         self.gap_threshold = gap_threshold
         self.dist_cutoff = dist_cutoff
 
-        num_cells = np.minimum(
-            100,
-            np.maximum(
-                1,
-                np.array(
-                    self.coordinate_system.size / self.dist_cutoff, dtype=int
+        if dist_cutoff == 0:
+            num_cells = np.full_like(self.coordinate_system.size, 100)
+        else:
+            num_cells = np.minimum(
+                100,
+                np.maximum(
+                    1,
+                    np.array(
+                        self.coordinate_system.size / self.dist_cutoff,
+                        dtype=int
+                    )
                 )
             )
-        )
         self.nodes = CellList(num_cells=num_cells)
         self.rejected_results = []
         for res in minimization_results:
             self.add_result(res)
+
+    def __repr__(self):
+        return 'Result(coordinate_system={0.coordinate_system}, minimization_results={0.results!r}, gap_threshold={0.gap_threshold!r}, dist_cutoff={0.dist_cutoff!r})'.format(
+            self
+        )
 
     @classmethod
     def from_result(cls, result, **kwargs):

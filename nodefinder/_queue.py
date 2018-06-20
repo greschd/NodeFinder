@@ -5,46 +5,51 @@ from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
 
 
 @export
-@subscribe_hdf5('nodefinder.starting_point_queue')
-class StartingPointQueue(HDF5Enabled):
-    def __init__(self, starting_points=frozenset()):
-        self._queued_starting_points = deque(starting_points)
-        self._running_starting_points = set()
+@subscribe_hdf5('nodefinder.simplex_queue')
+class SimplexQueue(HDF5Enabled):
+    def __init__(self, simplices=frozenset()):
+        self._queued_simplices = deque(self.convert_to_tuples(simplices))
+        self._running_simplices = set()
+
+    @staticmethod
+    def convert_to_tuples(simplices):
+        return [
+            tuple(tuple(coord) for coord in simplex) for simplex in simplices
+        ]
 
     @property
-    def starting_points(self):
-        # Give running points first, so that they will be re-queued first when
+    def simplices(self):
+        # Give running simplices first, so that they will be re-queued first when
         # restarting a calculation.
-        return list(self._running_starting_points
-                    ) + list(self._queued_starting_points)
+        return list(self._running_simplices) + list(self._queued_simplices)
 
     def pop_queued(self):
-        starting_point = self._queued_starting_points.popleft()
-        self._running_starting_points.add(starting_point)
+        starting_point = self._queued_simplices.popleft()
+        self._running_simplices.add(starting_point)
         return starting_point
 
-    def add_starting_points(self, starting_points):
-        self._queued_starting_points.extend(starting_points)
+    def add_simplices(self, simplices):
+        self._queued_simplices.extend(self.convert_to_tuples(simplices))
 
-    def set_finished(self, starting_point):
-        self._running_starting_points.remove(starting_point)
+    def set_finished(self, simplex):
+        self._running_simplices.remove(simplex)
 
     @property
     def has_queued_points(self):
-        return bool(self._queued_starting_points)
+        return bool(self._queued_simplices)
 
     @property
     def finished(self):
-        return not self.starting_points
+        return not self.simplices
 
     @property
     def num_running(self):
-        return len(self._running_starting_points)
+        return len(self._running_simplices)
 
     def to_hdf5(self, hdf5_handle):
-        starting_points = hdf5_handle.create_group('starting_points')
-        to_hdf5(self.starting_points, starting_points)
+        simplices = hdf5_handle.create_group('simplices')
+        to_hdf5(self.simplices, simplices)
 
     @classmethod
     def from_hdf5(cls, hdf5_handle):
-        return cls(starting_points=from_hdf5(hdf5_handle['starting_points']), )
+        return cls(simplices=from_hdf5(hdf5_handle['simplices']), )

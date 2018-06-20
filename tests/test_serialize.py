@@ -63,12 +63,12 @@ def test_result(save_load):
     """
     Test saving a NodeFinderResult.
     """
-    starting_points = [
+    simplices = [
         StartingPoint(k=(0.1, 0.5, 0.2)),
         StartingPoint(k=(0.1, 0.3, 0.2)),
     ]
     result = NodeFinderResult(
-        gap_threshold=1e-4, feature_size=1e-2, starting_points=starting_points
+        gap_threshold=1e-4, feature_size=1e-2, simplices=simplices
     )
     running_pt = result.pop_queued_starting_point()
     result.add_result(
@@ -78,6 +78,6 @@ def test_result(save_load):
     result_copy = save_load(result)
     # pylint: disable=protected-access
     assert result_copy.nodal_points == result.nodal_points
-    assert result_copy.starting_points == result.starting_points
+    assert result_copy.simplices == result.simplices
     assert result_copy._gap_threshold == result._gap_threshold
     assert result_copy._feature_size == result._feature_size

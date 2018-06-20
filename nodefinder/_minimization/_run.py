@@ -12,6 +12,7 @@ async def run_minimization(
     fake_potential=None,
     nelder_mead_kwargs=MappingProxyType({}),
 ):
+    # print('run_minimization')
     if fake_potential is not None:
         raise NotImplementedError
     return await root_nelder_mead(

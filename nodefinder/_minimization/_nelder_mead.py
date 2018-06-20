@@ -43,7 +43,6 @@ def wrap_function(function):
 async def root_nelder_mead(
     func,
     initial_simplex,
-    callback=None,
     xtol=1e-4,
     ftol=1e-4,
     maxiter=None,
@@ -156,8 +155,6 @@ async def root_nelder_mead(
         ind = np.argsort(fsim)
         sim = np.take(sim, ind, 0)
         fsim = np.take(fsim, ind, 0)
-        if callback is not None:
-            callback(sim[0])
         iterations += 1
         if keep_history:
             simplex_history.append(np.copy(sim))
@@ -186,6 +183,6 @@ async def root_nelder_mead(
         message=msg,
     )
     if keep_history:
-        result['simplex_history'] = np.array(simplex_history)
-        result['fun_simplex_history'] = np.array(fun_simplex_history)
+        result.simplex_history = np.array(simplex_history)
+        result.fun_simplex_history = np.array(fun_simplex_history)
     return result
