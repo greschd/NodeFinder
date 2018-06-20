@@ -10,6 +10,7 @@ class CoordinateSystem(HDF5Enabled):
     def __init__(self, *, limits, periodic=False):
         self.limits = np.array([sorted(x) for x in limits])
         self.periodic = periodic
+        self.dim = len(self.limits)
 
     def __repr__(self):
         return 'CoordinateSystem(limits={0.limits!r}, periodic={0.periodic!r})'.format(

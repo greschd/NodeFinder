@@ -61,11 +61,15 @@ class Controller:
     def __init__(
         self, *, gap_fct, limits, initial_state, save_file, load, load_quiet,
         initial_mesh_size, force_initial_mesh, gap_threshold, feature_size,
-        fake_potential, nelder_mead_kwargs, num_minimize_parallel
+        fake_potential, nelder_mead_kwargs, num_minimize_parallel,
+        refinement_box_size, refinement_mesh_size
     ):
         self.gap_fct = wrap_to_coroutine(gap_fct)
         self.fake_potential = fake_potential
         self.coordinate_system = CoordinateSystem(limits=limits, periodic=True)
+        self.dim = self.check_dimensions(
+            limits, initial_mesh_size, refinement_mesh_size
+        )
         self.save_file = save_file
         self.state = self.create_state(
             initial_state=initial_state,
@@ -74,13 +78,33 @@ class Controller:
             initial_mesh_size=initial_mesh_size,
             force_initial_mesh=force_initial_mesh,
             gap_threshold=gap_threshold,
-            dist_cutoff=getattr(self.fake_potential, 'dist_cutoff', 0.)
+            dist_cutoff=max(
+                getattr(self.fake_potential, 'dist_cutoff', 0.), feature_size
+            )
+        )
+        self.feature_size = feature_size
+        self.refinement_stencil = self.create_refinement_stencil(
+            refinement_box_size=refinement_box_size,
+            refinement_mesh_size=refinement_mesh_size
         )
         self.num_minimize_parallel = num_minimize_parallel
         self.nelder_mead_kwargs = ChainMap(
             nelder_mead_kwargs,
             dict(ftol=0.1 * gap_threshold, xtol=0.1 * feature_size)
         )
+        self.task_futures = set()
+
+    @staticmethod
+    def check_dimensions(limits, mesh_size, refinement_mesh_size):
+        dim_limits = len(limits)
+        dim_mesh_size = len(mesh_size)
+        dim_refinement_mesh_size = len(refinement_mesh_size)
+        if not (dim_limits == dim_mesh_size == dim_refinement_mesh_size):
+            raise ValueError(
+                'Inconsistent dimensions given: limits: {}, mesh_size: {}, refinement_mesh_size: {}'.
+                format(dim_limits, dim_mesh_size, dim_refinement_mesh_size)
+            )
+        return dim_limits
 
     def create_state(
         self,
@@ -127,26 +151,42 @@ class Controller:
         return ControllerState(result=result, queue=queue)
 
     def get_initial_simplices(self, initial_mesh_size):
-        vertices_frac = list(
-            itertools.
-            product(*[np.linspace(0, 1, m) for m in initial_mesh_size])
+        return self.generate_simplices(
+            limits=self.coordinate_system.limits, mesh_size=initial_mesh_size
         )
-        dim = len(initial_mesh_size)
-        simplex_distances = 1 / (2 * np.array(initial_mesh_size))
-        simplex_stencil = np.zeros(shape=(dim + 1, dim))
+
+    def generate_simplices(self, limits, mesh_size):
+        vertices = list(
+            itertools.product(
+                *[
+                    np.linspace(lower, upper, m)
+                    for (lower, upper), m in zip(limits, mesh_size)
+                ]
+            )
+        )
+        size = np.array([upper - lower for lower, upper in limits])
+        simplex_distances = size / (2 * np.array(mesh_size))
+        simplex_stencil = np.zeros(shape=(self.dim + 1, self.dim))
         for i, dist in enumerate(simplex_distances):
             simplex_stencil[i + 1][i] = dist
-        return [
-            self.coordinate_system.get_pos(v + simplex_stencil)
-            for v in vertices_frac
-        ]
+        return [v + simplex_stencil for v in vertices]
+
+    def create_refinement_stencil(
+        self, refinement_box_size, refinement_mesh_size
+    ):
+        half_size = refinement_box_size / 2
+        return np.array(
+            self.generate_simplices(
+                limits=[(-half_size, half_size)] * self.dim,
+                mesh_size=refinement_mesh_size
+            )
+        )
 
     def run(self):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.create_tasks())
 
     async def create_tasks(self):
-        futures = set()
         async with PeriodicTask(self.save, delay=5.):
             while not self.state.queue.finished:
                 while (
@@ -154,32 +194,38 @@ class Controller:
                     self.state.queue.num_running < self.num_minimize_parallel
                 ):
                     simplex = self.state.queue.pop_queued()
-                    futures.add(
-                        asyncio.ensure_future(self.run_simplex(simplex))
-                    )
+                    self.schedule_minimization(simplex)
                 await asyncio.sleep(0.)
-                # print('not finished', self.state.queue.num_running, len(self.state.queue._queued_simplices))
                 # retrieve exceptions
-                for fut in futures:
+                for fut in list(self.task_futures):
                     if fut.done():
                         await fut
-        await asyncio.gather(*futures)
+                        self.task_futures.remove(fut)
+        await asyncio.gather(*self.task_futures)
+
+    def schedule_minimization(self, simplex):
+        self.task_futures.add(asyncio.ensure_future(self.run_simplex(simplex)))
 
     async def run_simplex(self, simplex):
-        # print('running')
         result = await run_minimization(
             self.gap_fct,
             initial_simplex=simplex,
             fake_potential=self.fake_potential,
             nelder_mead_kwargs=self.nelder_mead_kwargs
         )
-        # print('done')
         self.process_result(result)
         self.state.queue.set_finished(simplex)
 
     def process_result(self, result):
-        self.state.result.add_result(result)
-        # TODO: Implement refinement
+        is_node = self.state.result.add_result(result)
+        if is_node:
+            pos = result.pos
+            neighbours = self.state.result.get_node_neighbours(pos)
+            if all(
+                self.coordinate_system.distance(pos, n.pos) >=
+                self.feature_size for n in neighbours
+            ):
+                self.state.queue.add_simplices(pos + self.refinement_stencil)
 
     def save(self):
         if self.save_file:

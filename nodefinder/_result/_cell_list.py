@@ -37,16 +37,17 @@ class CellList:
     def get_neighbour_values(self, frac, periodic=False):
         idx = self.get_index(frac)
         return sum((
-            self._cells[cell_idx] for cell_idx in
+            self._cells[cell_idx]
+            for cell_idx in
             self.get_neighbour_indices(idx=idx, periodic=periodic)
         ), [])
 
     def get_neighbour_indices(self, idx, periodic=False):
         indices = [offset + idx for offset in self._get_offsets()]
         if periodic:
-            return list(set(i % self.num_cells for i in indices))
+            return list(set(tuple(i % self.num_cells) for i in indices))
         return [
-            i for i in indices
+            tuple(i) for i in indices
             if np.all(i >= 0) and np.all(i < self.num_cells)
         ]
 

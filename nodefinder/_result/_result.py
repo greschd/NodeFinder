@@ -61,10 +61,12 @@ class Result(HDF5Enabled):
 
     def add_result(self, res):
         res.pos = self.coordinate_system.normalize_position(res.pos)
-        if not res.success or res.value > self.gap_threshold:
+        if not res.success or res.value > self.gap_threshold:  # pylint: disable=no-else-return
             self.rejected_results.append(res)
+            return False
         else:
             self.nodes.add_point(self.coordinate_system.get_frac(res.pos), res)
+            return True
 
     @property
     def results(self):
@@ -76,7 +78,9 @@ class Result(HDF5Enabled):
         )
         return [
             c for c in candidates
-            if self.coordinate_system.distance(pos, c.pos) < self.dist_cutoff
+            if (
+                self.coordinate_system.distance(pos, c.pos) < self.dist_cutoff
+            ) and np.any(c.pos != pos)
         ]
 
     def to_hdf5(self, hdf5_handle):

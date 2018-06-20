@@ -16,8 +16,8 @@ def run_node_finder(
     load_quiet=True,
     initial_mesh_size=(10, 10, 10),
     force_initial_mesh=False,
-    # refinement_box_size=5e-3,
-    # refinement_mesh_size=(2, 2, 2),
+    refinement_box_size=1e-2,
+    refinement_mesh_size=(2, 2, 2),
     gap_threshold=1e-6,
     feature_size=1e-3,
     fake_potential=None,
@@ -37,7 +37,9 @@ def run_node_finder(
         feature_size=feature_size,
         fake_potential=fake_potential,
         nelder_mead_kwargs=nelder_mead_kwargs,
-        num_minimize_parallel=num_minimize_parallel
+        num_minimize_parallel=num_minimize_parallel,
+        refinement_box_size=refinement_box_size,
+        refinement_mesh_size=refinement_mesh_size
     )
     controller.run()
     return controller.state.result

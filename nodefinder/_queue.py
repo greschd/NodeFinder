@@ -10,6 +10,7 @@ class SimplexQueue(HDF5Enabled):
     def __init__(self, simplices=frozenset()):
         self._queued_simplices = deque(self.convert_to_tuples(simplices))
         self._running_simplices = set()
+        self._all_simplices = set(self._queued_simplices)
 
     @staticmethod
     def convert_to_tuples(simplices):
@@ -29,7 +30,13 @@ class SimplexQueue(HDF5Enabled):
         return starting_point
 
     def add_simplices(self, simplices):
-        self._queued_simplices.extend(self.convert_to_tuples(simplices))
+        new_simplices = self.convert_to_tuples(simplices)
+        new_simplices_filtered = [
+            simplex for simplex in new_simplices
+            if simplex not in self._all_simplices
+        ]
+        self._queued_simplices.extend(new_simplices_filtered)
+        self._all_simplices.update(new_simplices_filtered)
 
     def set_finished(self, simplex):
         self._running_simplices.remove(simplex)
