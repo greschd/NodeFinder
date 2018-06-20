@@ -6,4 +6,4 @@ __version__ = '0.0.0a0'
 
 from ._run import *
 
-__all__ = _run.__all__
+__all__ = _run.__all__  # pylint: disable=undefined-variable

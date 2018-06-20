@@ -35,7 +35,7 @@ class CoordinateSystem(HDF5Enabled):
         else:
             if clip_limits:
                 return np.maximum(0, np.minimum(frac, 1))
-            if not (np.all(0 <= frac) and np.all(frac <= 1)):
+            if not (np.all(frac >= 0) and np.all(frac <= 1)):
                 raise ValueError(
                     "Position '{}' is out of bounds for limits '{}'".format(
                         pos, self.limits
@@ -69,10 +69,10 @@ class CoordinateSystem(HDF5Enabled):
             )
 
     @staticmethod
-    def _periodic_distance_1d(p1, p2, size):
-        p1 %= size
-        p2 %= size
-        return min((p1 - p2) % size, (p2 - p2) % size)
+    def _periodic_distance_1d(x, y, size):
+        x %= size
+        y %= size
+        return min((x - y) % size, (y - x) % size)
 
     def to_hdf5(self, hdf5_handle):
         hdf5_handle['limits'] = self.limits

@@ -42,12 +42,11 @@ class CellList:
     def get_neighbour_indices(self, idx, periodic=False):
         indices = [offset + idx for offset in self._get_offsets()]
         if periodic:
-            return list(set(i % self._num_cells for i in indices))
-        else:
-            return [
-                i for i in indices
-                if np.all(0 <= i) and np.all(i < self._num_cells)
-            ]
+            return list(set(i % self.num_cells for i in indices))
+        return [
+            i for i in indices
+            if np.all(i >= 0) and np.all(i < self.num_cells)
+        ]
 
     @lru_cache(maxsize=None)
     def _get_offsets(self):
