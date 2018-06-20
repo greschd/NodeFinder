@@ -45,7 +45,7 @@ class NodeFinder:
         save_file=None,
         load=False,
         load_quiet=True,
-        initial_box_position=((0, 1), ) * 3,
+        limits=((0, 1), ) * 3,
         initial_mesh_size=(10, 10, 10),
         force_initial_mesh=False,
         num_minimize_parallel=50,

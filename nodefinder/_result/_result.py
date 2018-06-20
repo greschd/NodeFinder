@@ -1,3 +1,5 @@
+from collections import ChainMap
+
 import numpy as np
 from fsc.export import export
 from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
@@ -20,16 +22,33 @@ class Result(HDF5Enabled):
         self.gap_threshold = gap_threshold
         self.dist_cutoff = dist_cutoff
 
-        num_cells = np.maximum(
-            1,
-            np.array(
-                self.coordinate_system.size / self.dist_cutoff, dtype=int
+        num_cells = np.minimum(
+            100,
+            np.maximum(
+                1,
+                np.array(
+                    self.coordinate_system.size / self.dist_cutoff, dtype=int
+                )
             )
         )
         self.nodes = CellList(num_cells=num_cells)
         self.rejected_results = []
         for res in minimization_results:
             self.add_result(res)
+
+    @classmethod
+    def from_result(cls, result, **kwargs):
+        return cls(
+            **ChainMap(
+                kwargs,
+                dict(
+                    coordinate_system=result.coordinate_system,
+                    minimization_results=result.results,
+                    gap_threshold=result.gap_threshold,
+                    dist_cutoff=result.dist_cutoff,
+                )
+            )
+        )
 
     def add_result(self, res):
         res.pos = self.coordinate_system.normalize_position(res.pos)

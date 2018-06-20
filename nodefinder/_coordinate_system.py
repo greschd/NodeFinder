@@ -38,6 +38,9 @@ class CoordinateSystem(HDF5Enabled):
                 )
             return frac
 
+    def get_pos(self, frac):
+        return (frac * self._size) + self._lower_limits
+
     def distance(self, pos1, pos2):
         if self.periodic:
             return la.norm([

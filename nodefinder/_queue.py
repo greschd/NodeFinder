@@ -26,6 +26,9 @@ class StartingPointQueue(HDF5Enabled):
     def add_starting_points(self, starting_points):
         self._queued_starting_points.extend(starting_points)
 
+    def set_finished(self, starting_point):
+        self._running_starting_points.remove(starting_point)
+
     @property
     def has_queued_points(self):
         return bool(self._queued_starting_points)
@@ -33,6 +36,10 @@ class StartingPointQueue(HDF5Enabled):
     @property
     def finished(self):
         return not self.starting_points
+
+    @property
+    def num_running(self):
+        return len(self._running_starting_points)
 
     def to_hdf5(self, hdf5_handle):
         starting_points = hdf5_handle.create_group('starting_points')
