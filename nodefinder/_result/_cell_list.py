@@ -28,14 +28,16 @@ class CellList:
     def values(self):
         return sum(self._cells.flat, [])
 
+    def __len__(self):
+        return sum(len(cell) for cell in self._cells.flat)
+
     def __iter__(self):
         return iter(self.values())
 
     def get_neighbour_values(self, frac, periodic=False):
         idx = self.get_index(frac)
         return sum((
-            self._cells[cell_idx]
-            for cell_idx in
+            self._cells[cell_idx] for cell_idx in
             self.get_neighbour_indices(idx=idx, periodic=periodic)
         ), [])
 
