@@ -83,6 +83,17 @@ class Result(HDF5Enabled):
             ) and np.any(c.pos != pos)
         ]
 
+    def get_node_neighbour_distances(self, pos):
+        candidates = self.nodes.get_neighbour_values(
+            frac=self.coordinate_system.get_frac(pos)
+        )
+        distances = (
+            self.coordinate_system.distance(pos, c.pos) for c in candidates
+        )
+        return [
+            dist for dist in distances if dist > 0 and dist < self.dist_cutoff
+        ]
+
     def to_hdf5(self, hdf5_handle):
         coord_group = hdf5_handle.create_group('coordinate_system')
         to_hdf5(self.coordinate_system, coord_group)

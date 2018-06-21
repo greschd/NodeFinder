@@ -10,6 +10,7 @@
 
 from types import SimpleNamespace
 
+import numpy as np
 from fsc.export import export
 from fsc.hdf5_io import subscribe_hdf5, HDF5Enabled, to_hdf5, from_hdf5
 
@@ -27,9 +28,18 @@ class JoinedResult(HDF5Enabled):
 
     def __getattr__(self, key):
         if key in self.JOIN_KEYS:
-            return getattr(self.ancestor, key) + getattr(self.child, key)
+            return self._join(
+                getattr(self.ancestor, key), getattr(self.child, key)
+            )
         else:
             return getattr(self.child, key)
+
+    @staticmethod
+    def _join(obj1, obj2):
+        if isinstance(obj1, np.ndarray):
+            return np.concatenate([obj1, obj2])
+        else:
+            return obj1 + obj2
 
     def to_hdf5(self, hdf5_handle):
         child_group = hdf5_handle.create_group('child')

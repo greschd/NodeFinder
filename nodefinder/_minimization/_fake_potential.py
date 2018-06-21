@@ -13,9 +13,5 @@ class FakePotential:
         )
 
     def __call__(self, pos):
-        neighbours = self.result.get_node_neighbours(pos)
-        distances = [
-            self.result.coordinate_system.distance(pos, nb.pos)
-            for nb in neighbours
-        ]
+        distances = self.result.get_node_neighbour_distances(pos)
         return sum(self.get_fake_pot(dist) for dist in distances)

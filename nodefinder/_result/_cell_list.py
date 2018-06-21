@@ -17,22 +17,27 @@ class CellList:
         self._cells = np.empty(shape=self.num_cells, dtype=object)
         for i, _ in enumerate(self._cells.flat):
             self._cells.flat[i] = []
+        self._values_flat = []
 
     def add_point(self, frac, value):
         idx = self.get_index(frac)
         self._cells[idx].append(value)
+        self._values_flat.append(value)
 
     def get_index(self, frac):
         return tuple(np.array(frac * self.num_cells, dtype=int))
 
     def values(self):
-        return sum(self._cells.flat, [])
+        return self._values_flat
 
     def __len__(self):
-        return sum(len(cell) for cell in self._cells.flat)
+        return len(self._values_flat)
 
     def __iter__(self):
-        return iter(self.values())
+        return iter(self._values_flat)
+
+    def __getitem__(self, key):
+        return self._values_flat[key]
 
     def get_neighbour_values(self, frac, periodic=False):
         idx = self.get_index(frac)
