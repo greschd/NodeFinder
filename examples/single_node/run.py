@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
 import random
-from functools import partial
 
 import numpy as np
 import scipy.linalg as la
 import matplotlib.pyplot as plt
 from nodefinder import run_node_finder, plot
+
+from nodefinder._minimization._fake_potential import FakePotential
 
 
 def gap_fct(pos, noise_level=0.1):
@@ -15,7 +16,11 @@ def gap_fct(pos, noise_level=0.1):
 
 
 if __name__ == '__main__':
-    result = run_node_finder(gap_fct, initial_mesh_size=(3, 3, 3))
+    result = run_node_finder(
+        gap_fct,
+        initial_mesh_size=(3, 3, 3),
+        fake_potential_class=FakePotential
+    )
     print('Found', len(result.nodes), '(non-unique) nodes.')
     plot.plot_3d(result)
     plt.savefig('single_node.pdf', bbox_inches='tight')

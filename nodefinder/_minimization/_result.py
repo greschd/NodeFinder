@@ -11,11 +11,42 @@
 from types import SimpleNamespace
 
 from fsc.export import export
-from fsc.hdf5_io import subscribe_hdf5, HDF5Enabled
+from fsc.hdf5_io import subscribe_hdf5, HDF5Enabled, to_hdf5, from_hdf5
 
 
 @export
-@subscribe_hdf5('nodefinder.optimize_result')
+@subscribe_hdf5('nodefinder.joined_result')
+class JoinedResult(HDF5Enabled):
+    JOIN_KEYS = [
+        'num_fev', 'num_iter', 'simplex_history', 'fun_simplex_history'
+    ]
+
+    def __init__(self, *, child, ancestor):
+        self.child = child
+        self.ancestor = ancestor
+
+    def __getattr__(self, key):
+        if key in self.JOIN_KEYS:
+            return getattr(self.ancestor, key) + getattr(self.child, key)
+        else:
+            return getattr(self.child, key)
+
+    def to_hdf5(self, hdf5_handle):
+        child_group = hdf5_handle.create_group('child')
+        to_hdf5(self.child, child_group)
+        ancestor_group = hdf5_handle.create_group('ancestor')
+        to_hdf5(self.ancestor, ancestor_group)
+
+    @classmethod
+    def from_hdf5(cls, hdf5_handle):
+        return cls(
+            child=from_hdf5(hdf5_handle['child']),
+            ancestor=from_hdf5(hdf5_handle['ancestor']),
+        )
+
+
+@export
+@subscribe_hdf5('nodefinder.minimization_result')
 class MinimizationResult(SimpleNamespace, HDF5Enabled):
     """ Represents the optimization result.
 

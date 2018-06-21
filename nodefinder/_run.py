@@ -20,7 +20,7 @@ def run_node_finder(
     refinement_mesh_size=(2, 2, 2),
     gap_threshold=1e-6,
     feature_size=1e-3,
-    fake_potential=None,
+    fake_potential_class=None,
     nelder_mead_kwargs=MappingProxyType({}),
     num_minimize_parallel=50,
 ):
@@ -35,7 +35,7 @@ def run_node_finder(
         force_initial_mesh=force_initial_mesh,
         gap_threshold=gap_threshold,
         feature_size=feature_size,
-        fake_potential=fake_potential,
+        fake_potential_class=fake_potential_class,
         nelder_mead_kwargs=nelder_mead_kwargs,
         num_minimize_parallel=num_minimize_parallel,
         refinement_box_size=refinement_box_size,

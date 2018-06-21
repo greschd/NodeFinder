@@ -61,11 +61,11 @@ class Controller:
     def __init__(
         self, *, gap_fct, limits, initial_state, save_file, load, load_quiet,
         initial_mesh_size, force_initial_mesh, gap_threshold, feature_size,
-        fake_potential, nelder_mead_kwargs, num_minimize_parallel,
+        fake_potential_class, nelder_mead_kwargs, num_minimize_parallel,
         refinement_box_size, refinement_mesh_size
     ):
         self.gap_fct = wrap_to_coroutine(gap_fct)
-        self.fake_potential = fake_potential
+
         self.coordinate_system = CoordinateSystem(limits=limits, periodic=True)
         self.dim = self.check_dimensions(
             limits, initial_mesh_size, refinement_mesh_size
@@ -78,11 +78,14 @@ class Controller:
             initial_mesh_size=initial_mesh_size,
             force_initial_mesh=force_initial_mesh,
             gap_threshold=gap_threshold,
-            dist_cutoff=max(
-                getattr(self.fake_potential, 'dist_cutoff', 0.), feature_size
-            )
+            dist_cutoff=feature_size
         )
         self.feature_size = feature_size
+        self.fake_potential = fake_potential_class(
+            result=self.state.result,
+            width=self.feature_size,
+            height=gap_threshold
+        )
         self.refinement_stencil = self.create_refinement_stencil(
             refinement_box_size=refinement_box_size,
             refinement_mesh_size=refinement_mesh_size
@@ -99,7 +102,7 @@ class Controller:
         dim_limits = len(limits)
         dim_mesh_size = len(mesh_size)
         dim_refinement_mesh_size = len(refinement_mesh_size)
-        if not (dim_limits == dim_mesh_size == dim_refinement_mesh_size):
+        if not dim_limits == dim_mesh_size == dim_refinement_mesh_size:
             raise ValueError(
                 'Inconsistent dimensions given: limits: {}, mesh_size: {}, refinement_mesh_size: {}'.
                 format(dim_limits, dim_mesh_size, dim_refinement_mesh_size)

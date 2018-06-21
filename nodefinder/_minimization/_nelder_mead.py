@@ -47,7 +47,6 @@ async def root_nelder_mead(
     ftol=1e-4,
     maxiter=None,
     maxfev=None,
-    keep_history=True
 ):
     """
     Minimization of scalar function of one or more variables using the
@@ -95,9 +94,8 @@ async def root_nelder_mead(
     # sort so sim[0,:] has the lowest function value
     sim = np.take(sim, ind, 0)
 
-    if keep_history:
-        simplex_history = [np.copy(sim)]
-        fun_simplex_history = [np.copy(fsim)]
+    simplex_history = [np.copy(sim)]
+    fun_simplex_history = [np.copy(fsim)]
 
     iterations = 1
 
@@ -156,9 +154,8 @@ async def root_nelder_mead(
         sim = np.take(sim, ind, 0)
         fsim = np.take(fsim, ind, 0)
         iterations += 1
-        if keep_history:
-            simplex_history.append(np.copy(sim))
-            fun_simplex_history.append(np.copy(fsim))
+        simplex_history.append(np.copy(sim))
+        fun_simplex_history.append(np.copy(fsim))
 
     x = sim[0]
     fval = np.min(fsim)
@@ -181,8 +178,7 @@ async def root_nelder_mead(
         status=warnflag,
         success=(warnflag == 0),
         message=msg,
+        simplex_history=np.array(simplex_history),
+        fun_simplex_history=np.array(fun_simplex_history)
     )
-    if keep_history:
-        result.simplex_history = np.array(simplex_history)
-        result.fun_simplex_history = np.array(fun_simplex_history)
     return result
