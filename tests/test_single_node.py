@@ -11,6 +11,7 @@ import numpy as np
 import scipy.linalg as la
 
 from nodefinder import run_node_finder
+from nodefinder._minimization._fake_potential import FakePotential
 
 INITIAL_MESH_SIZE = (2, 2, 2)
 
@@ -42,17 +43,27 @@ def check_result(node_position):
     return inner
 
 
-def test_single_node(gap_fct, node_position, check_result):
+@pytest.fixture(params=[None, FakePotential])
+def fake_potential_class(request):
+    return request.param
+
+
+# @pytest.mark.parametrize('fake_potential_class', )
+def test_single_node(
+    gap_fct, node_position, check_result, fake_potential_class
+):
     """
     Test that a single nodal point is found.
     """
     result = run_node_finder(
-        gap_fct=gap_fct, initial_mesh_size=INITIAL_MESH_SIZE
+        gap_fct=gap_fct,
+        initial_mesh_size=INITIAL_MESH_SIZE,
+        fake_potential_class=fake_potential_class
     )
     check_result(result)
 
 
-def test_save(gap_fct, node_position, check_result):
+def test_save(gap_fct, node_position, check_result, fake_potential_class):
     """
     Test saving to a file
     """
@@ -60,12 +71,13 @@ def test_save(gap_fct, node_position, check_result):
         result = run_node_finder(
             gap_fct=gap_fct,
             save_file=named_file.name,
-            initial_mesh_size=INITIAL_MESH_SIZE
+            initial_mesh_size=INITIAL_MESH_SIZE,
+            fake_potential_class=fake_potential_class,
         )
         check_result(result)
 
 
-def test_restart(gap_fct, node_position, check_result):
+def test_restart(gap_fct, node_position, check_result, fake_potential_class):
     """
     Test that the calculation is done when restarting from a finished result.
     """
@@ -77,7 +89,8 @@ def test_restart(gap_fct, node_position, check_result):
         result = run_node_finder(
             gap_fct=gap_fct,
             save_file=named_file.name,
-            initial_mesh_size=INITIAL_MESH_SIZE
+            initial_mesh_size=INITIAL_MESH_SIZE,
+            fake_potential_class=fake_potential_class
         )
         check_result(result)
 
@@ -86,6 +99,7 @@ def test_restart(gap_fct, node_position, check_result):
             save_file=named_file.name,
             load=True,
             load_quiet=False,
-            initial_mesh_size=INITIAL_MESH_SIZE
+            initial_mesh_size=INITIAL_MESH_SIZE,
+            fake_potential_class=fake_potential_class
         )
         check_result(restart_result)
