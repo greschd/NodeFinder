@@ -13,5 +13,8 @@ class FakePotential:
         )
 
     def __call__(self, pos):
-        distances = self.result.get_node_neighbour_distances(pos)
-        return sum(self.get_fake_pot(dist) for dist in distances)
+        try:
+            min_distance = min(self.result.get_all_neighbour_distances(pos))
+            return self.get_fake_pot(min_distance)
+        except ValueError:
+            return 0

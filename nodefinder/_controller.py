@@ -1,4 +1,6 @@
+import os
 import asyncio
+import tempfile
 import itertools
 from collections import ChainMap
 
@@ -9,7 +11,7 @@ from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
 from fsc.async_tools import PeriodicTask, wrap_to_coroutine
 
 from ._queue import SimplexQueue
-from ._result import Result
+from ._result import ResultContainer
 from ._coordinate_system import CoordinateSystem
 from ._minimization import run_minimization
 
@@ -81,11 +83,14 @@ class Controller:
             dist_cutoff=feature_size
         )
         self.feature_size = feature_size
-        self.fake_potential = fake_potential_class(
-            result=self.state.result,
-            width=self.feature_size,
-            height=gap_threshold
-        )
+        if fake_potential_class is not None:
+            self.fake_potential = fake_potential_class(
+                result=self.state.result,
+                width=self.feature_size,
+                height=gap_threshold
+            )
+        else:
+            self.fake_potential = None
         self.refinement_stencil = self.create_refinement_stencil(
             refinement_box_size=refinement_box_size,
             refinement_mesh_size=refinement_mesh_size
@@ -131,13 +136,13 @@ class Controller:
                 if not load_quiet:
                     raise exc
         if initial_state is not None:
-            result = Result(
+            result = ResultContainer(
                 coordinate_system=self.coordinate_system,
                 minimization_results=initial_state.result.minimization_results,
                 gap_threshold=gap_threshold,
                 dist_cutoff=dist_cutoff
             )
-            queue = SimplexQueue(initial_state.queue)
+            queue = SimplexQueue(simplices=initial_state.queue.simplices)
             if force_initial_mesh:
                 queue.add_simplices(
                     self.get_initial_simplices(
@@ -145,7 +150,7 @@ class Controller:
                     )
                 )
         else:
-            result = Result(
+            result = ResultContainer(
                 coordinate_system=self.coordinate_system,
                 gap_threshold=gap_threshold,
                 dist_cutoff=dist_cutoff,
@@ -223,13 +228,21 @@ class Controller:
         is_node = self.state.result.add_result(result)
         if is_node:
             pos = result.pos
-            neighbours = self.state.result.get_node_neighbours(pos)
             if all(
-                self.coordinate_system.distance(pos, n.pos) >=
-                self.feature_size for n in neighbours
+                dist >= self.feature_size
+                for dist in
+                self.state.result.get_neighbour_distance_iterator(pos)
             ):
                 self.state.queue.add_simplices(pos + self.refinement_stencil)
 
     def save(self):
         if self.save_file:
-            fsc.hdf5_io.save(self.state, self.save_file)
+            with tempfile.NamedTemporaryFile(
+                dir=os.path.dirname(self.save_file), delete=False
+            ) as tmpf:
+                try:
+                    fsc.hdf5_io.save(self.state, tmpf.name)
+                    os.rename(tmpf.name, self.save_file)
+                except Exception as exc:
+                    os.remove(tmpf.name)
+                    raise exc

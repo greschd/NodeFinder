@@ -11,6 +11,7 @@ class CoordinateSystem(HDF5Enabled):
         self.limits = np.array([sorted(x) for x in limits])
         self.periodic = periodic
         self.dim = len(self.limits)
+        self.size = self._upper_limits - self._lower_limits
 
     def __repr__(self):
         return 'CoordinateSystem(limits={0.limits!r}, periodic={0.periodic!r})'.format(
@@ -24,10 +25,6 @@ class CoordinateSystem(HDF5Enabled):
     @property
     def _upper_limits(self):
         return self.limits[:, 1]
-
-    @property
-    def size(self):
-        return self._upper_limits - self._lower_limits
 
     def get_frac(self, pos, clip_limits=False):
         frac = (pos - self._lower_limits) / self.size
@@ -49,11 +46,11 @@ class CoordinateSystem(HDF5Enabled):
 
     def distance(self, pos1, pos2):
         if self.periodic:
-            return la.norm([
-                self._periodic_distance_1d(p1, p2, s)
-                for p1, p2, s in zip(pos1, pos2, self.size)
-            ])
-        return la.norm(pos2 - pos1)
+            delta = (pos2 - pos1) % self.size
+            delta = np.minimum(self.size - delta, delta)
+        else:
+            delta = pos2 - pos1
+        return la.norm(delta, axis=-1)
 
     def normalize_position(self, pos):
         if self.periodic:
@@ -68,12 +65,6 @@ class CoordinateSystem(HDF5Enabled):
                     pos, self.limits
                 )
             )
-
-    @staticmethod
-    def _periodic_distance_1d(x, y, size):
-        x %= size
-        y %= size
-        return min((x - y) % size, (y - x) % size)
 
     def to_hdf5(self, hdf5_handle):
         hdf5_handle['limits'] = self.limits

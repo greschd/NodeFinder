@@ -8,8 +8,8 @@ from ._cell_list import CellList
 
 
 @export
-@subscribe_hdf5('nodefinder.result')
-class Result(HDF5Enabled):
+@subscribe_hdf5('nodefinder.result_container')
+class ResultContainer(HDF5Enabled):
     def __init__(
         self,
         *,
@@ -41,7 +41,7 @@ class Result(HDF5Enabled):
             self.add_result(res)
 
     def __repr__(self):
-        return 'Result(coordinate_system={0.coordinate_system}, minimization_results={0.results!r}, gap_threshold={0.gap_threshold!r}, dist_cutoff={0.dist_cutoff!r})'.format(
+        return 'ResultContainer(coordinate_system={0.coordinate_system}, minimization_results={0.minimization_results!r}, gap_threshold={0.gap_threshold!r}, dist_cutoff={0.dist_cutoff!r})'.format(
             self
         )
 
@@ -52,7 +52,7 @@ class Result(HDF5Enabled):
                 kwargs,
                 dict(
                     coordinate_system=result.coordinate_system,
-                    minimization_results=result.results,
+                    minimization_results=result.minimization_results,
                     gap_threshold=result.gap_threshold,
                     dist_cutoff=result.dist_cutoff,
                 )
@@ -69,30 +69,25 @@ class Result(HDF5Enabled):
             return True
 
     @property
-    def results(self):
+    def minimization_results(self):
         return self.nodes.values() + self.rejected_results
 
-    def get_node_neighbours(self, pos):
+    def _get_neighbour_iterator(self, pos):
         candidates = self.nodes.get_neighbour_values(
             frac=self.coordinate_system.get_frac(pos)
         )
-        return [
-            c for c in candidates
-            if (
-                self.coordinate_system.distance(pos, c.pos) < self.dist_cutoff
-            ) and np.any(c.pos != pos)
-        ]
+        return (c for c in candidates if np.any(c.pos != pos))
 
-    def get_node_neighbour_distances(self, pos):
-        candidates = self.nodes.get_neighbour_values(
-            frac=self.coordinate_system.get_frac(pos)
-        )
-        distances = (
+    def get_neighbour_distance_iterator(self, pos):
+        candidates = self._get_neighbour_iterator(pos)
+        return (
             self.coordinate_system.distance(pos, c.pos) for c in candidates
         )
-        return [
-            dist for dist in distances if dist > 0 and dist < self.dist_cutoff
-        ]
+
+    def get_all_neighbour_distances(self, pos):
+        candidates = self._get_neighbour_iterator(pos)
+        positions = np.array([c.pos for c in candidates])
+        return self.coordinate_system.distance(pos, positions)
 
     def to_hdf5(self, hdf5_handle):
         coord_group = hdf5_handle.create_group('coordinate_system')
@@ -100,7 +95,7 @@ class Result(HDF5Enabled):
         hdf5_handle['gap_threshold'] = self.gap_threshold
         hdf5_handle['dist_cutoff'] = self.dist_cutoff
         res_group = hdf5_handle.create_group('minimization_results')
-        to_hdf5(self.results, res_group)
+        to_hdf5(self.minimization_results, res_group)
 
     @classmethod
     def from_hdf5(cls, hdf5_handle):

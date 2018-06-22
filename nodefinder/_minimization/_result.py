@@ -85,8 +85,14 @@ class MinimizationResult(SimpleNamespace, HDF5Enabled):
 
     def to_hdf5(self, hdf5_handle):
         for key, val in self.__dict__.items():
+            assert key != 'type_tag'
             hdf5_handle[key] = val
 
     @classmethod
     def from_hdf5(cls, hdf5_handle):
-        return cls(**{key: val.value for key, val in hdf5_handle.items()})
+        return cls(
+            **{
+                key: val.value
+                for key, val in hdf5_handle.items() if key != 'type_tag'
+            }
+        )

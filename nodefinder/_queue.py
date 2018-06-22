@@ -59,4 +59,4 @@ class SimplexQueue(HDF5Enabled):
 
     @classmethod
     def from_hdf5(cls, hdf5_handle):
-        return cls(simplices=from_hdf5(hdf5_handle['simplices']), )
+        return cls(simplices=from_hdf5(hdf5_handle['simplices']))

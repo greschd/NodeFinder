@@ -10,7 +10,9 @@ import pytest
 import numpy as np
 import scipy.linalg as la
 
-from nodefinder import NodeFinder
+from nodefinder import run_node_finder
+
+INITIAL_MESH_SIZE = (2, 2, 2)
 
 
 @pytest.fixture
@@ -32,13 +34,10 @@ def check_result(node_position):
     Checks that the result matches a given node position.
     """
 
-    def inner(result):  # pylint: disable=missing-docstring
-        nodes = result.nodal_points
-        assert len(nodes) == 1
-        node = nodes[0]
-        print(node)
-        assert np.isclose(node.gap, 0)
-        assert np.allclose(node.k, node_position)
+    def inner(result):
+        for node in result.nodes:
+            assert np.isclose(node.value, 0, atol=1e-6)
+            assert np.allclose(node.pos, node_position)
 
     return inner
 
@@ -47,8 +46,10 @@ def test_single_node(gap_fct, node_position, check_result):
     """
     Test that a single nodal point is found.
     """
-    node_finder = NodeFinder(gap_fct=gap_fct)
-    check_result(node_finder.run())
+    result = run_node_finder(
+        gap_fct=gap_fct, initial_mesh_size=INITIAL_MESH_SIZE
+    )
+    check_result(result)
 
 
 def test_save(gap_fct, node_position, check_result):
@@ -56,8 +57,12 @@ def test_save(gap_fct, node_position, check_result):
     Test saving to a file
     """
     with tempfile.NamedTemporaryFile() as named_file:
-        node_finder = NodeFinder(gap_fct=gap_fct, save_file=named_file.name)
-        check_result(node_finder.run())
+        result = run_node_finder(
+            gap_fct=gap_fct,
+            save_file=named_file.name,
+            initial_mesh_size=INITIAL_MESH_SIZE
+        )
+        check_result(result)
 
 
 def test_restart(gap_fct, node_position, check_result):
@@ -69,12 +74,18 @@ def test_restart(gap_fct, node_position, check_result):
         raise ValueError
 
     with tempfile.NamedTemporaryFile() as named_file:
-        node_finder = NodeFinder(gap_fct=gap_fct, save_file=named_file.name)
-        result = node_finder.run()
+        result = run_node_finder(
+            gap_fct=gap_fct,
+            save_file=named_file.name,
+            initial_mesh_size=INITIAL_MESH_SIZE
+        )
         check_result(result)
 
-        restart_node_finder = NodeFinder(
-            gap_fct=invalid_gap_fct, save_file=named_file.name, load=True
+        restart_result = run_node_finder(
+            gap_fct=invalid_gap_fct,
+            save_file=named_file.name,
+            load=True,
+            load_quiet=False,
+            initial_mesh_size=INITIAL_MESH_SIZE
         )
-        restart_result = restart_node_finder.run()
         check_result(restart_result)

@@ -13,7 +13,7 @@ class CellList:
 
     def __init__(self, num_cells):
         self.num_cells = np.array(num_cells, dtype=int)
-        assert np.all(num_cells > 0)
+        assert np.all(self.num_cells > 0)
         self._cells = np.empty(shape=self.num_cells, dtype=object)
         for i, _ in enumerate(self._cells.flat):
             self._cells.flat[i] = []
@@ -41,16 +41,23 @@ class CellList:
 
     def get_neighbour_values(self, frac, periodic=False):
         idx = self.get_index(frac)
-        return sum((
-            self._cells[cell_idx]
-            for cell_idx in
-            self.get_neighbour_indices(idx=idx, periodic=periodic)
-        ), [])
+        for cell_idx in self.get_neighbour_indices(idx=idx, periodic=periodic):
+            yield from self._cells[cell_idx]
+        # return itertools.chain(
+        #     *[iter(self._cells[cell_idx]) for cell_idx in self.
+        # )
+        # return sum((
+        #     self._cells[cell_idx]
+        #     for cell_idx in
+        #     self.get_neighbour_indices(idx=idx, periodic=periodic)
+        # ), [])
 
+    # @profile
+    @lru_cache(maxsize=None)
     def get_neighbour_indices(self, idx, periodic=False):
         indices = [offset + idx for offset in self._get_offsets()]
         if periodic:
-            return list(set(tuple(i % self.num_cells) for i in indices))
+            return [tuple(i % self.num_cells) for i in indices]
         return [
             tuple(i) for i in indices
             if np.all(i >= 0) and np.all(i < self.num_cells)

@@ -20,7 +20,6 @@ async def run_minimization(
     fake_potential=None,
     nelder_mead_kwargs=MappingProxyType({}),
 ):
-    # print('run_minimization')
     if fake_potential is not None:
         res_fake = await root_nelder_mead(
             func=add_fake_potential(fake_potential, func),
