@@ -11,7 +11,6 @@ import numpy as np
 import scipy.linalg as la
 
 from nodefinder import run_node_finder
-from nodefinder._minimization._fake_potential import FakePotential
 
 NODE_PARAMETERS = pytest.mark.parametrize(
     'node_positions, mesh_size', [
@@ -37,8 +36,8 @@ def gap_fct(node_positions):
     return inner
 
 
-@pytest.fixture(params=[None, FakePotential])
-def fake_potential_class(request):
+@pytest.fixture(params=[False, True])
+def use_fake_potential(request):
     return request.param
 
 
@@ -47,7 +46,7 @@ def test_simple(
     gap_fct,
     node_positions,
     mesh_size,
-    fake_potential_class,
+    use_fake_potential,
     score_nodal_points,
 ):
     """
@@ -56,7 +55,7 @@ def test_simple(
     result = run_node_finder(
         gap_fct=gap_fct,
         initial_mesh_size=mesh_size,
-        fake_potential_class=fake_potential_class
+        use_fake_potential=use_fake_potential
     )
     score_nodal_points(
         result,
@@ -68,8 +67,7 @@ def test_simple(
 
 @NODE_PARAMETERS
 def test_save(
-    gap_fct, node_positions, mesh_size, fake_potential_class,
-    score_nodal_points
+    gap_fct, node_positions, mesh_size, use_fake_potential, score_nodal_points
 ):
     """
     Test saving to a file
@@ -79,7 +77,7 @@ def test_save(
             gap_fct=gap_fct,
             save_file=named_file.name,
             initial_mesh_size=mesh_size,
-            fake_potential_class=fake_potential_class,
+            use_fake_potential=use_fake_potential,
         )
         score_nodal_points(
             result,
@@ -91,8 +89,7 @@ def test_save(
 
 @NODE_PARAMETERS
 def test_restart(
-    gap_fct, node_positions, mesh_size, score_nodal_points,
-    fake_potential_class
+    gap_fct, node_positions, mesh_size, score_nodal_points, use_fake_potential
 ):
     """
     Test that the calculation is done when restarting from a finished result.
@@ -106,7 +103,7 @@ def test_restart(
             gap_fct=gap_fct,
             save_file=named_file.name,
             initial_mesh_size=mesh_size,
-            fake_potential_class=fake_potential_class
+            use_fake_potential=use_fake_potential
         )
         score_nodal_points(
             result,
@@ -122,7 +119,7 @@ def test_restart(
             load=True,
             load_quiet=False,
             initial_mesh_size=mesh_size,
-            fake_potential_class=fake_potential_class
+            use_fake_potential=use_fake_potential
         )
         score_nodal_points(
             restart_result,

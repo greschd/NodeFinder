@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 
 from nodefinder import run_node_finder
-from nodefinder._minimization._fake_potential import FakePotential
 
 
 @pytest.fixture
@@ -36,7 +35,7 @@ def test_nodal_line(gap_fct_parametrization, score_nodal_line):
         feature_size=1e-2,
         refinement_mesh_size=(3, 3, 3),
         initial_mesh_size=(3, 3, 3),
-        fake_potential_class=FakePotential,
+        use_fake_potential=True,
     )
     score_nodal_line(
         result=result,

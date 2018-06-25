@@ -14,6 +14,7 @@ from ._queue import SimplexQueue
 from ._result import ResultContainer
 from ._coordinate_system import CoordinateSystem
 from ._minimization import run_minimization
+from ._fake_potential import FakePotential
 
 
 @export
@@ -55,10 +56,23 @@ class Controller:
     """
 
     def __init__(
-        self, *, gap_fct, limits, initial_state, save_file, load, load_quiet,
-        initial_mesh_size, force_initial_mesh, gap_threshold, feature_size,
-        fake_potential_class, nelder_mead_kwargs, num_minimize_parallel,
-        refinement_box_size, refinement_mesh_size
+        self,
+        *,
+        gap_fct,
+        limits,
+        initial_state,
+        save_file,
+        load,
+        load_quiet,
+        initial_mesh_size,
+        force_initial_mesh,
+        gap_threshold,
+        feature_size,
+        nelder_mead_kwargs,
+        num_minimize_parallel,
+        refinement_box_size,
+        refinement_mesh_size,
+        use_fake_potential=True,
     ):
         self.gap_fct = wrap_to_coroutine(gap_fct)
 
@@ -77,8 +91,8 @@ class Controller:
             dist_cutoff=feature_size
         )
         self.feature_size = feature_size
-        if fake_potential_class is not None:
-            self.fake_potential = fake_potential_class(
+        if use_fake_potential:
+            self.fake_potential = FakePotential(
                 result=self.state.result,
                 width=self.feature_size,
                 height=gap_threshold
@@ -125,7 +139,7 @@ class Controller:
         if load:
             if initial_state is not None:
                 raise ValueError(
-                    "Cannot set the initial state explicitly and setting 'load=True' simulatneously."
+                    "Cannot set the initial state explicitly and setting 'load=True' simultaneously."
                 )
             try:
                 initial_state = fsc.hdf5_io.load(self.save_file)
