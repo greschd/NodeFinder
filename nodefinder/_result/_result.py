@@ -45,20 +45,6 @@ class ResultContainer(HDF5Enabled):
             self
         )
 
-    @classmethod
-    def from_result(cls, result, **kwargs):
-        return cls(
-            **ChainMap(
-                kwargs,
-                dict(
-                    coordinate_system=result.coordinate_system,
-                    minimization_results=result.minimization_results,
-                    gap_threshold=result.gap_threshold,
-                    dist_cutoff=result.dist_cutoff,
-                )
-            )
-        )
-
     def add_result(self, res):
         res.pos = self.coordinate_system.normalize_position(res.pos)
         if not res.success or res.value > self.gap_threshold:  # pylint: disable=no-else-return

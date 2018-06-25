@@ -23,12 +23,6 @@ class ControllerState(HDF5Enabled):
         self.result = result
         self.queue = queue
 
-    def __getattr__(self, key):
-        try:
-            return getattr(self.result, key)
-        except AttributeError:
-            return getattr(self.queue, key)
-
     def to_hdf5(self, hdf5_handle):
         result_group = hdf5_handle.create_group('result')
         to_hdf5(self.result, result_group)
