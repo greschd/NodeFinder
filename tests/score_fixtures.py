@@ -40,7 +40,7 @@ def score_nodal_points(score, score_num_fev):  # pylint: disable=redefined-outer
         cutoff_coverage=None,
         additional_tag=''
     ):
-
+        assert len(result.nodes) >= len(exact_points)
         score_num_fev(result, additional_tag=additional_tag)
         distances = np.array([[
             result.coordinate_system.distance(res.pos, exact_pos)

@@ -21,7 +21,7 @@ def run_node_finder(
     gap_threshold=1e-6,
     feature_size=1e-3,
     fake_potential_class=None,
-    nelder_mead_kwargs=MappingProxyType({}),
+    nelder_mead_kwargs=MappingProxyType({'ftol': 1e-7, 'xtol': 1e-5}),
     num_minimize_parallel=50,
 ):
     controller = Controller(

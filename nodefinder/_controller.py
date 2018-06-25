@@ -2,7 +2,6 @@ import os
 import asyncio
 import tempfile
 import itertools
-from collections import ChainMap
 
 import numpy as np
 from fsc.export import export
@@ -90,10 +89,8 @@ class Controller:
             refinement_mesh_size=refinement_mesh_size
         )
         self.num_minimize_parallel = num_minimize_parallel
-        self.nelder_mead_kwargs = ChainMap(
-            nelder_mead_kwargs,
-            dict(ftol=0.1 * gap_threshold, xtol=0.1 * feature_size)
-        )
+        self.nelder_mead_kwargs = dict(nelder_mead_kwargs)
+
         self.task_futures = set()
 
     @staticmethod
