@@ -16,12 +16,12 @@ def run_node_finder(
     load_quiet=True,
     initial_mesh_size=(10, 10, 10),
     force_initial_mesh=False,
-    refinement_box_size=1e-2,
-    refinement_mesh_size=(2, 2, 2),
+    refinement_box_size=None,
+    refinement_mesh_size=(3, 3, 3),
     gap_threshold=1e-6,
     feature_size=1e-3,
     fake_potential_class=None,
-    nelder_mead_kwargs=MappingProxyType({'ftol': 1e-7, 'xtol': 1e-5}),
+    nelder_mead_kwargs=MappingProxyType({}),
     num_minimize_parallel=50,
 ):
     controller = Controller(

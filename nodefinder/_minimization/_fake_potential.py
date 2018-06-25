@@ -1,6 +1,3 @@
-import numpy as np
-
-
 class FakePotential:
     def __init__(self, result, width, height):
         self.result = result
@@ -8,9 +5,7 @@ class FakePotential:
         self.height = height
 
     def get_fake_pot(self, dist):
-        return 2 * self.height * np.cos(
-            min(np.pi / 2, (dist / self.width) * np.pi / 3)
-        )
+        return min(0, self.height * (2 - dist / self.width))
 
     def __call__(self, pos):
         try:

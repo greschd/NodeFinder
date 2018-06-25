@@ -2,6 +2,7 @@ import os
 import asyncio
 import tempfile
 import itertools
+from collections import ChainMap
 
 import numpy as np
 from fsc.export import export
@@ -85,11 +86,16 @@ class Controller:
         else:
             self.fake_potential = None
         self.refinement_stencil = self.create_refinement_stencil(
-            refinement_box_size=refinement_box_size,
+            refinement_box_size=refinement_box_size or 5 * feature_size,
             refinement_mesh_size=refinement_mesh_size
         )
         self.num_minimize_parallel = num_minimize_parallel
-        self.nelder_mead_kwargs = dict(nelder_mead_kwargs)
+        self.nelder_mead_kwargs = ChainMap(
+            nelder_mead_kwargs, {
+                'ftol': 0.1 * gap_threshold,
+                'xtol': 0.1 * feature_size
+            }
+        )
 
         self.task_futures = set()
 
@@ -173,6 +179,8 @@ class Controller:
     def create_refinement_stencil(
         self, refinement_box_size, refinement_mesh_size
     ):
+        if np.product(refinement_mesh_size) == 0:
+            return None
         half_size = refinement_box_size / 2
         return np.array(
             self.generate_simplices(
@@ -217,7 +225,7 @@ class Controller:
 
     def process_result(self, result):
         is_node = self.state.result.add_result(result)
-        if is_node:
+        if is_node and self.refinement_stencil is not None:
             pos = result.pos
             if all(
                 dist >= self.feature_size

@@ -6,33 +6,42 @@ import numpy as np
 import pytest
 
 from nodefinder import run_node_finder
+from nodefinder._minimization._fake_potential import FakePotential
+
 
 @pytest.fixture
-def gap_fct():
-    radius = 0.1
-    def inner(pos):
-        x, y, z = pos
-        return np.sqrt(np.abs(x**2 + y**2 - radius**2) + z**2)
-    return inner
+def gap_fct_parametrization():
+    radius = 0.2
 
-def test_nodal_line(gap_fct):
+    def gap_fct(pos):
+        dx, dy, dz = (np.array(pos) % 1) - 0.5
+        return np.sqrt(np.abs(dx**2 + dy**2 - radius**2) + dz**2)
+
+    def parametrization(t):
+        phi = 2 * np.pi * t
+        return radius * np.array([np.cos(phi), np.sin(phi), 0]) + 0.5
+
+    return gap_fct, parametrization
+
+
+def test_nodal_line(gap_fct_parametrization, score_nodal_line):
     """
     Test that a single nodal line is found.
     """
-    radius = 0.1
-    xtol = 1e-6
+    gap_fct, parametrization = gap_fct_parametrization
 
     result = run_node_finder(
         gap_fct=gap_fct,
+        gap_threshold=2e-4,
         feature_size=1e-2,
-        refinement_box_size=5e-2,
-        num_minimize_parallel=100
+        refinement_mesh_size=(3, 3, 3),
+        initial_mesh_size=(3, 3, 3),
+        fake_potential_class=FakePotential,
     )
-
-    all_nodes = result.nodes.values()
-    # assert len(all_nodes) > 32
-    for node in all_nodes:
-        assert np.isclose(node.value, 0, atol=1e-6)
-        assert np.isclose(
-            result.coordinate_system.distance(node.pos, (0, 0, 0)), radius, atol=2e-6
-        )
+    score_nodal_line(
+        result=result,
+        dist_func=gap_fct,
+        line_parametrization=parametrization,
+        cutoff_accuracy=1e-3,
+        cutoff_coverage=2e-2,
+    )
