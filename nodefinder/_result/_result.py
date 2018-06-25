@@ -74,7 +74,7 @@ class ResultContainer(HDF5Enabled):
 
     def _get_neighbour_iterator(self, pos):
         candidates = self.nodes.get_neighbour_values(
-            frac=self.coordinate_system.get_frac(pos)
+            frac=self.coordinate_system.get_frac(pos), periodic=True
         )
         return (c for c in candidates if np.any(c.pos != pos))
 

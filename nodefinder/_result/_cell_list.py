@@ -39,22 +39,13 @@ class CellList:
     def __getitem__(self, key):
         return self._values_flat[key]
 
-    def get_neighbour_values(self, frac, periodic=False):
+    def get_neighbour_values(self, frac, periodic=True):
         idx = self.get_index(frac)
         for cell_idx in self.get_neighbour_indices(idx=idx, periodic=periodic):
             yield from self._cells[cell_idx]
-        # return itertools.chain(
-        #     *[iter(self._cells[cell_idx]) for cell_idx in self.
-        # )
-        # return sum((
-        #     self._cells[cell_idx]
-        #     for cell_idx in
-        #     self.get_neighbour_indices(idx=idx, periodic=periodic)
-        # ), [])
 
-    # @profile
     @lru_cache(maxsize=None)
-    def get_neighbour_indices(self, idx, periodic=False):
+    def get_neighbour_indices(self, idx, periodic=True):
         indices = [offset + idx for offset in self._get_offsets()]
         if periodic:
             return [tuple(i % self.num_cells) for i in indices]
