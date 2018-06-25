@@ -48,9 +48,13 @@ def fake_potential_class(request):
     return request.param
 
 
-# @pytest.mark.parametrize('fake_potential_class', )
 def test_single_node(
-    gap_fct, node_position, check_result, fake_potential_class
+    gap_fct,
+    node_position,
+    check_result,
+    fake_potential_class,
+    score_num_fev,
+    score_nodal_points,
 ):
     """
     Test that a single nodal point is found.
@@ -60,6 +64,8 @@ def test_single_node(
         initial_mesh_size=INITIAL_MESH_SIZE,
         fake_potential_class=fake_potential_class
     )
+    score_num_fev(result)
+    score_nodal_points(result, exact_points=[node_position])
     check_result(result)
 
 

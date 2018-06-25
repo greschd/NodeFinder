@@ -22,3 +22,5 @@ tests/.cache
 .coverage
 .coverage*
 htmlcov
+.pytest-score
+htmlscore

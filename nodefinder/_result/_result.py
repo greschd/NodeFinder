@@ -1,5 +1,3 @@
-from collections import ChainMap
-
 import numpy as np
 from fsc.export import export
 from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
