@@ -2,7 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from nodefinder import run_node_finder, plot
+from nodefinder.search import run_node_finder, plot
 
 
 def gap_fct(pos):

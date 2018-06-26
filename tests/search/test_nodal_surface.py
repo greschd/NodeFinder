@@ -5,7 +5,7 @@ Tests with a nodal line.
 import numpy as np
 import pytest
 
-from nodefinder import run_node_finder
+from nodefinder.search import run_node_finder
 
 
 @pytest.fixture

@@ -4,8 +4,7 @@ A tool to find nodal features in band structures.
 
 __version__ = '0.1.0a1'
 
-from ._run import *
-from . import plot
-from ._controller import ControllerState
+from . import search
+from . import identify
 
-__all__ = ['plot'] + _run.__all__  # pylint: disable=undefined-variable
+__all__ = ['search', 'identify']

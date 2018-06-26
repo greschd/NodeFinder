@@ -10,7 +10,7 @@ Test serialization to HDF5.
 # from fsc.hdf5_io import save, load
 #
 # from nodefinder._cell_list import CellList
-# from nodefinder._result import NodalPoint, StartingPoint, NodeFinderResult
+# from nodefinder.search._result import NodalPoint, StartingPoint, NodeFinderResult
 #
 #
 # @pytest.fixture

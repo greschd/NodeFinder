@@ -10,7 +10,7 @@ import pytest
 import numpy as np
 import scipy.linalg as la
 
-from nodefinder import run_node_finder
+from nodefinder.search import run_node_finder
 
 NODE_PARAMETERS = pytest.mark.parametrize(
     'node_positions, mesh_size', [

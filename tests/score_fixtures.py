@@ -82,10 +82,10 @@ def score_nodal_line(score, score_num_fev):  # pylint: disable=redefined-outer-n
         score_num_fev(result)
 
         if dist_func is not None:
-            for res in result.nodes.values():
+            for res in result.nodes:
                 if dist_func(res.pos) > 0.1:
                     print(dist_func(res.pos), res.pos)
-            accuracy = max(dist_func(res.pos) for res in result.nodes.values())
+            accuracy = max(dist_func(res.pos) for res in result.nodes)
             score(
                 accuracy,
                 tag='accuracy',
@@ -125,10 +125,10 @@ def score_nodal_surface(score, score_num_fev):  # pylint: disable=redefined-oute
         score_num_fev(result)
 
         if dist_func is not None:
-            for res in result.nodes.values():
+            for res in result.nodes:
                 if dist_func(res.pos) > 0.1:
                     print(dist_func(res.pos), res.pos)
-            accuracy = max(dist_func(res.pos) for res in result.nodes.values())
+            accuracy = max(dist_func(res.pos) for res in result.nodes)
             score(
                 accuracy,
                 tag='accuracy',

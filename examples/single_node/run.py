@@ -5,7 +5,7 @@ import random
 import numpy as np
 import scipy.linalg as la
 import matplotlib.pyplot as plt
-from nodefinder import run_node_finder, plot
+from nodefinder.search import run_node_finder, plot
 
 
 def gap_fct(pos, noise_level=0.1):

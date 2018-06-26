@@ -242,8 +242,7 @@ class Controller:
         if is_node and self.refinement_stencil is not None:
             pos = result.pos
             if all(
-                dist >= self.feature_size
-                for dist in
+                dist >= self.feature_size for dist in
                 self.state.result.get_neighbour_distance_iterator(pos)
             ):
                 self.state.queue.add_simplices(pos + self.refinement_stencil)
