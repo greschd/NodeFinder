@@ -4,12 +4,15 @@ class FakePotential:
         self.width = width
         self.height = height
 
-    def get_fake_pot(self, dist):
-        return min(0, self.height * (2 - dist / self.width))
+    def get_fake_pot(self, distances):
+        return sum(
+            min(0, self.height * (2 - dist / self.width)) for dist in distances
+        )
 
     def __call__(self, pos):
         try:
-            min_distance = min(self.result.get_all_neighbour_distances(pos))
-            return self.get_fake_pot(min_distance)
+            return self.get_fake_pot(
+                self.result.get_all_neighbour_distances(pos)
+            )
         except ValueError:
             return 0

@@ -16,20 +16,24 @@ def add_fake_potential(fake_pot, func):
 @export
 async def run_minimization(
     func,
+    *,
     initial_simplex,
     fake_potential=None,
     nelder_mead_kwargs=MappingProxyType({}),
 ):
     if fake_potential is not None:
+        modified_kwargs = dict(nelder_mead_kwargs)
+        modified_kwargs['ftol'] = float('inf')
         res_fake = await root_nelder_mead(
             func=add_fake_potential(fake_potential, func),
             initial_simplex=initial_simplex,
-            **nelder_mead_kwargs
+            **modified_kwargs
         )
         simplex_final = res_fake.simplex_history[-1]
-        simplex_blowup = simplex_final[0] + 1000 * (
+        simplex_blowup = simplex_final[0] + 5 * (
             simplex_final - simplex_final[0]
         )
+
         res = await root_nelder_mead(
             func=func, initial_simplex=simplex_blowup, **nelder_mead_kwargs
         )

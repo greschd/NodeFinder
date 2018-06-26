@@ -7,8 +7,6 @@ import scipy.linalg as la
 import matplotlib.pyplot as plt
 from nodefinder import run_node_finder, plot
 
-from nodefinder._minimization._fake_potential import FakePotential
-
 
 def gap_fct(pos, noise_level=0.1):
     noise = (1 + noise_level * random.random())
@@ -19,7 +17,6 @@ if __name__ == '__main__':
     result = run_node_finder(
         gap_fct,
         initial_mesh_size=(3, 3, 3),
-        fake_potential_class=FakePotential
     )
     print('Found', len(result.nodes), '(non-unique) nodes.')
     plot.plot_3d(result)

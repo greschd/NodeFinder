@@ -95,7 +95,7 @@ class Controller:
             self.fake_potential = FakePotential(
                 result=self.state.result,
                 width=self.feature_size,
-                height=gap_threshold
+                height=100 * gap_threshold
             )
         else:
             self.fake_potential = None
@@ -232,7 +232,7 @@ class Controller:
             self.gap_fct,
             initial_simplex=simplex,
             fake_potential=self.fake_potential,
-            nelder_mead_kwargs=self.nelder_mead_kwargs
+            nelder_mead_kwargs=self.nelder_mead_kwargs,
         )
         self.process_result(result)
         self.state.queue.set_finished(simplex)

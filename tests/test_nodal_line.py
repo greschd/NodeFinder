@@ -9,25 +9,30 @@ from nodefinder import run_node_finder
 
 
 @pytest.fixture
-def gap_fct_parametrization():
+def nodal_line_properties():
     radius = 0.2
+
+    def dist_fct(pos):
+        dx, dy, dz = (np.array(pos) % 1) - 0.5
+        return np.sqrt(np.abs(dx**2 + dy**2 - radius**2) + dz**2)
 
     def gap_fct(pos):
         dx, dy, dz = (np.array(pos) % 1) - 0.5
-        return np.sqrt(np.abs(dx**2 + dy**2 - radius**2) + dz**2)
+        return np.sqrt(np.abs(dx**2 + dy**2 - radius**2) + dz**2
+                       ) * (0.1 + 50 * dx**2)
 
     def parametrization(t):
         phi = 2 * np.pi * t
         return radius * np.array([np.cos(phi), np.sin(phi), 0]) + 0.5
 
-    return gap_fct, parametrization
+    return dist_fct, gap_fct, parametrization
 
 
-def test_nodal_line(gap_fct_parametrization, score_nodal_line):
+def test_nodal_line(nodal_line_properties, score_nodal_line):
     """
     Test that a single nodal line is found.
     """
-    gap_fct, parametrization = gap_fct_parametrization
+    dist_fct, gap_fct, parametrization = nodal_line_properties
 
     result = run_node_finder(
         gap_fct=gap_fct,
@@ -39,8 +44,8 @@ def test_nodal_line(gap_fct_parametrization, score_nodal_line):
     )
     score_nodal_line(
         result=result,
-        dist_func=gap_fct,
+        dist_func=dist_fct,
         line_parametrization=parametrization,
-        cutoff_accuracy=1e-3,
+        cutoff_accuracy=2e-3,
         cutoff_coverage=2e-2,
     )
