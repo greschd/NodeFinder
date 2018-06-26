@@ -69,7 +69,7 @@ def _get_distances(result, exact_points):
 
 @export
 @pytest.fixture
-def score_nodal_line(score, score_num_fev):
+def score_nodal_line(score, score_num_fev):  # pylint: disable=redefined-outer-name
     def inner(
         result,
         *,
@@ -82,12 +82,9 @@ def score_nodal_line(score, score_num_fev):
         score_num_fev(result)
 
         if dist_func is not None:
-            # accuracy_distances = [(dist_func(res.pos) for res in result.nodes.values()]
-            # print(accuracy_distances)
             for res in result.nodes.values():
                 if dist_func(res.pos) > 0.1:
                     print(dist_func(res.pos), res.pos)
-                # print(res.pos)
             accuracy = max(dist_func(res.pos) for res in result.nodes.values())
             score(
                 accuracy,
@@ -102,6 +99,52 @@ def score_nodal_line(score, score_num_fev):
                 for x in np.linspace(0, 1, num_line_points)
             ])
             distances = _get_distances(result=result, exact_points=line_points)
+            coverage = np.max(np.min(distances, axis=0))
+        score(
+            coverage,
+            tag='coverage',
+            cutoff=cutoff_coverage,
+            less_is_better=True
+        )
+
+    return inner
+
+
+@export
+@pytest.fixture
+def score_nodal_surface(score, score_num_fev):  # pylint: disable=redefined-outer-name
+    def inner(
+        result,
+        *,
+        dist_func=None,
+        surface_parametrization=None,
+        cutoff_accuracy=None,
+        cutoff_coverage=None,
+        num_line_points=1e2
+    ):
+        score_num_fev(result)
+
+        if dist_func is not None:
+            for res in result.nodes.values():
+                if dist_func(res.pos) > 0.1:
+                    print(dist_func(res.pos), res.pos)
+            accuracy = max(dist_func(res.pos) for res in result.nodes.values())
+            score(
+                accuracy,
+                tag='accuracy',
+                cutoff=cutoff_accuracy,
+                less_is_better=True
+            )
+
+        if surface_parametrization is not None:
+            surface_points = np.array([
+                surface_parametrization(s, t)
+                for s in np.linspace(0, 1, num_line_points)
+                for t in np.linspace(0, 1, num_line_points)
+            ])
+            distances = _get_distances(
+                result=result, exact_points=surface_points
+            )
             coverage = np.max(np.min(distances, axis=0))
         score(
             coverage,
