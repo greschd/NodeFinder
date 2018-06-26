@@ -6,7 +6,7 @@ from ._controller import Controller
 
 
 @export
-def run_node_finder(
+def run(
     gap_fct,
     *,
     limits=((0, 1), ) * 3,

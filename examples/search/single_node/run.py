@@ -15,7 +15,7 @@ def gap_fct(pos, noise_level=0.1):
 
 
 if __name__ == '__main__':
-    result = nf.search.run_node_finder(
+    result = nf.search.run(
         gap_fct,
         initial_mesh_size=(3, 3, 3),
     )

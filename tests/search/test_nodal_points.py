@@ -10,7 +10,7 @@ import pytest
 import numpy as np
 import scipy.linalg as la
 
-from nodefinder.search import run_node_finder
+from nodefinder.search import run
 
 NODE_PARAMETERS = pytest.mark.parametrize(
     'node_positions, mesh_size', [
@@ -52,7 +52,7 @@ def test_simple(
     """
     Test that a single nodal point is found.
     """
-    result = run_node_finder(
+    result = run(
         gap_fct=gap_fct,
         initial_mesh_size=mesh_size,
         use_fake_potential=use_fake_potential
@@ -73,7 +73,7 @@ def test_save(
     Test saving to a file
     """
     with tempfile.NamedTemporaryFile() as named_file:
-        result = run_node_finder(
+        result = run(
             gap_fct=gap_fct,
             save_file=named_file.name,
             initial_mesh_size=mesh_size,
@@ -99,7 +99,7 @@ def test_restart(
         raise ValueError
 
     with tempfile.NamedTemporaryFile() as named_file:
-        result = run_node_finder(
+        result = run(
             gap_fct=gap_fct,
             save_file=named_file.name,
             initial_mesh_size=mesh_size,
@@ -113,7 +113,7 @@ def test_restart(
             additional_tag='initial_'
         )
 
-        restart_result = run_node_finder(
+        restart_result = run(
             gap_fct=invalid_gap_fct,
             save_file=named_file.name,
             load=True,

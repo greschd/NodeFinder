@@ -5,7 +5,7 @@ Tests with a nodal line.
 import numpy as np
 import pytest
 
-from nodefinder.search import run_node_finder
+from nodefinder.search import run
 
 
 @pytest.fixture
@@ -30,7 +30,7 @@ def test_nodal_surface(nodal_surface_properties, score_nodal_surface):  # pylint
     """
     dist_fct, gap_fct, parametrization = nodal_surface_properties
 
-    result = run_node_finder(
+    result = run(
         gap_fct=gap_fct,
         gap_threshold=1e-4,
         feature_size=1e-1,

@@ -15,11 +15,11 @@ def gap_fct(pos):
 
 if __name__ == '__main__':
 
-    result = nf.run_node_finder(
+    result = nf.search.run(
         gap_fct,
         initial_mesh_size=(3, 3, 3),
         gap_threshold=2e-4,
-        feature_size=1e-2,
+        feature_size=2e-2,
         use_fake_potential=True,
     )
     nf.io.save(result, 'result.hdf5')
