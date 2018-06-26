@@ -6,38 +6,46 @@ import numpy as np
 Neighbour = namedtuple('Neighbour', ['pos', 'distance'])
 
 
-class Cluster(set):
-    def add_point(self, point, neighbour_mapping):
-        self.add(point)
-        for neighbour in neighbour_mapping[point]:
-            if neighbour.pos not in self:
-                self.add_point(
-                    neighbour.pos, neighbour_mapping=neighbour_mapping
-                )
-
-
 def create_clusters(positions, *, feature_size, coordinate_system):
     positions = [tuple(pos) for pos in positions]
     neighbour_mapping = {pos: [] for pos in positions}
-    for pos1, pos2 in itertools.combinations(positions, r=2):
-        distance = coordinate_system.distance(np.array(pos1), np.array(pos2))
-        if distance <= 2 * feature_size:
-            neighbour_mapping[pos1].append(
-                Neighbour(pos=pos2, distance=distance)
-            )
-            neighbour_mapping[pos2].append(
-                Neighbour(pos=pos1, distance=distance)
-            )
+    pos_pairs = list(itertools.combinations(positions, r=2))
+    pos_pairs_array = np.array(pos_pairs)
+    distances = coordinate_system.distance(
+        pos_pairs_array[:, 0], pos_pairs_array[:, 1]
+    )
+    assert len(distances) == len(pos_pairs)
+    for idx in np.flatnonzero(distances <= 2 * feature_size):
+        pos1, pos2 = pos_pairs[idx]
+        dist = distances[idx]
+        neighbour_mapping[pos1].append(Neighbour(pos=pos2, distance=dist))
+        neighbour_mapping[pos2].append(Neighbour(pos=pos1, distance=dist))
 
     clusters = []
-    for pos in positions:
-        if all(pos not in c for c in clusters):
-            new_cluster = Cluster()
-            new_cluster.add_point(pos, neighbour_mapping=neighbour_mapping)
-            clusters.append(new_cluster)
+    pos_to_evaluate = set(positions)
+
+    while pos_to_evaluate:
+        new_pos = pos_to_evaluate.pop()
+        new_cluster = _create_cluster(
+            starting_pos=new_pos, neighbour_mapping=neighbour_mapping
+        )
+        pos_to_evaluate -= new_cluster
+        clusters.append(new_cluster)
 
     # check consistency
-    for c1, c2 in itertools.combinations(clusters, r=2):
-        assert not c1.intersection(c2), "Inconsistent neighbour mapping."
+    for cl1, cl2 in itertools.combinations(clusters, r=2):
+        assert not cl1.intersection(cl2), "Inconsistent neighbour mapping."
 
     return clusters, neighbour_mapping
+
+
+def _create_cluster(starting_pos, neighbour_mapping):
+    cluster = set([starting_pos])
+    get_neighbours_from = set([starting_pos])
+    while get_neighbours_from:
+        pos = get_neighbours_from.pop()
+        neighbours = set([n.pos for n in neighbour_mapping[pos]])
+        new_positions = neighbours - cluster
+        get_neighbours_from.update(new_positions)
+        cluster.update(new_positions)
+    return cluster
