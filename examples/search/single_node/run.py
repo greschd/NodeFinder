@@ -5,7 +5,8 @@ import random
 import numpy as np
 import scipy.linalg as la
 import matplotlib.pyplot as plt
-from nodefinder.search import run_node_finder, plot
+
+import nodefinder as nf
 
 
 def gap_fct(pos, noise_level=0.1):
@@ -14,10 +15,11 @@ def gap_fct(pos, noise_level=0.1):
 
 
 if __name__ == '__main__':
-    result = run_node_finder(
+    result = nf.search.run_node_finder(
         gap_fct,
         initial_mesh_size=(3, 3, 3),
     )
+    nf.io.save(result, 'result.hdf5')
     print('Found', len(result.nodes), '(non-unique) nodes.')
-    plot.plot_3d(result)
+    nf.plot.points_3d(result)
     plt.savefig('single_node.pdf', bbox_inches='tight')

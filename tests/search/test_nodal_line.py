@@ -37,7 +37,7 @@ def test_nodal_line(nodal_line_properties, score_nodal_line):  # pylint: disable
     result = run_node_finder(
         gap_fct=gap_fct,
         gap_threshold=2e-4,
-        feature_size=1e-2,
+        feature_size=2e-2,
         refinement_mesh_size=(3, 3, 3),
         initial_mesh_size=(3, 3, 3),
         use_fake_potential=True,

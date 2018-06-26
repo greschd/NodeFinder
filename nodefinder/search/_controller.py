@@ -81,6 +81,7 @@ class Controller:
             limits, initial_mesh_size, refinement_mesh_size
         )
         self.save_file = save_file
+        self.dist_cutoff = feature_size / 2.
         self.state = self.create_state(
             initial_state=initial_state,
             load=load,
@@ -88,26 +89,25 @@ class Controller:
             initial_mesh_size=initial_mesh_size,
             force_initial_mesh=force_initial_mesh,
             gap_threshold=gap_threshold,
-            dist_cutoff=feature_size
+            dist_cutoff=self.dist_cutoff
         )
-        self.feature_size = feature_size
         if use_fake_potential:
             self.fake_potential = FakePotential(
                 result=self.state.result,
-                width=self.feature_size,
+                width=self.dist_cutoff,
                 height=100 * gap_threshold
             )
         else:
             self.fake_potential = None
         self.refinement_stencil = self.create_refinement_stencil(
-            refinement_box_size=refinement_box_size or 5 * feature_size,
+            refinement_box_size=refinement_box_size or 5 * self.dist_cutoff,
             refinement_mesh_size=refinement_mesh_size
         )
         self.num_minimize_parallel = num_minimize_parallel
         self.nelder_mead_kwargs = ChainMap(
             nelder_mead_kwargs, {
                 'ftol': 0.1 * gap_threshold,
-                'xtol': 0.1 * feature_size
+                'xtol': 0.1 * self.dist_cutoff
             }
         )
 
@@ -242,7 +242,8 @@ class Controller:
         if is_node and self.refinement_stencil is not None:
             pos = result.pos
             if all(
-                dist >= self.feature_size for dist in
+                dist >= self.dist_cutoff
+                for dist in
                 self.state.result.get_neighbour_distance_iterator(pos)
             ):
                 self.state.queue.add_simplices(pos + self.refinement_stencil)

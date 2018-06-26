@@ -33,7 +33,7 @@ def test_nodal_surface(nodal_surface_properties, score_nodal_surface):  # pylint
     result = run_node_finder(
         gap_fct=gap_fct,
         gap_threshold=1e-4,
-        feature_size=5e-2,
+        feature_size=1e-1,
         refinement_mesh_size=(2, 2, 2),
         initial_mesh_size=(3, 3, 3),
         use_fake_potential=False,

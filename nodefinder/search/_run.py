@@ -19,7 +19,7 @@ def run_node_finder(
     refinement_box_size=None,
     refinement_mesh_size=(3, 3, 3),
     gap_threshold=1e-6,
-    feature_size=1e-3,
+    feature_size=2e-3,
     use_fake_potential=False,
     nelder_mead_kwargs=MappingProxyType({}),
     num_minimize_parallel=50,

@@ -39,7 +39,7 @@ def _plot(proj_3d=False):
 
 
 @_plot(proj_3d=True)
-def plot_3d(result, *, axis=None):  # pylint: disable=inconsistent-return-statements
+def points_3d(result, *, axis=None):
     x_coords = []
     y_coords = []
     z_coords = []
@@ -56,7 +56,7 @@ def plot_3d(result, *, axis=None):  # pylint: disable=inconsistent-return-statem
 
 
 @_plot(proj_3d=True)
-def plot_simplices_3d(
+def simplices_3d(
     result,  # pylint: disable=unused-argument
     *,
     nodes=(),

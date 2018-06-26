@@ -2,6 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import nodefinder
 from nodefinder.search import run_node_finder, plot
 
 
@@ -20,6 +21,7 @@ if __name__ == '__main__':
         feature_size=5e-2,
         use_fake_potential=False,
     )
+    nodefinder.io.save(result, 'result.hdf5')
     plot.plot_3d(result)
     plt.show()
     # plt.savefig('nodal_line.pdf', bbox_inches='tight')

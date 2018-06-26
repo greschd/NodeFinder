@@ -2,7 +2,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from nodefinder.search import run_node_finder, plot
+
+import nodefinder as nf
 
 
 def gap_fct(pos):
@@ -14,13 +15,14 @@ def gap_fct(pos):
 
 if __name__ == '__main__':
 
-    result = run_node_finder(
+    result = nf.run_node_finder(
         gap_fct,
         initial_mesh_size=(3, 3, 3),
         gap_threshold=2e-4,
         feature_size=1e-2,
         use_fake_potential=True,
     )
-    plot.plot_3d(result)
+    nf.io.save(result, 'result.hdf5')
+    nf.plot.points_3d(result)
     plt.show()
     # plt.savefig('nodal_line.pdf', bbox_inches='tight')
