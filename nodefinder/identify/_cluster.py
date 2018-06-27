@@ -1,3 +1,4 @@
+import copy
 import itertools
 from collections import namedtuple
 
@@ -7,9 +8,9 @@ Neighbour = namedtuple('Neighbour', ['pos', 'distance'])
 
 
 def create_clusters(positions, *, feature_size, coordinate_system):
-    positions = [tuple(pos) for pos in positions]
-    neighbour_mapping = {pos: [] for pos in positions}
-    pos_pairs = list(itertools.combinations(positions, r=2))
+    positions_unique = set(tuple(pos) for pos in positions)
+    neighbour_mapping = {pos: [] for pos in positions_unique}
+    pos_pairs = list(itertools.combinations(positions_unique, r=2))
     pos_pairs_array = np.array(pos_pairs)
     distances = coordinate_system.distance(
         pos_pairs_array[:, 0], pos_pairs_array[:, 1]
@@ -22,7 +23,7 @@ def create_clusters(positions, *, feature_size, coordinate_system):
         neighbour_mapping[pos2].append(Neighbour(pos=pos1, distance=dist))
 
     clusters = []
-    pos_to_evaluate = set(positions)
+    pos_to_evaluate = copy.copy(positions_unique)
 
     while pos_to_evaluate:
         new_pos = pos_to_evaluate.pop()

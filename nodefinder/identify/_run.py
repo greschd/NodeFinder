@@ -30,21 +30,22 @@ def run_from_positions(positions, *, coordinate_system, feature_size=2e-3):
         feature_size=feature_size
     )
     results = []
-    for cl in clusters:
+    for cluster in clusters:
         # TODO: use 'coordinate_system' to determine the dimension.
         dim = calculate_dimension(
-            positions=cl,
+            positions=cluster,
             neighbour_mapping=neighbour_mapping,
             feature_size=feature_size
         )
         res = IdentificationResult(
-            positions=cl,
+            positions=cluster,
             dimension=dim,
             result=evaluate_cluster(
-                positions=cl,
+                positions=cluster,
                 dim=dim,
                 coordinate_system=coordinate_system,
-                neighbour_mapping=neighbour_mapping
+                neighbour_mapping=neighbour_mapping,
+                feature_size=feature_size,
             )
         )
         results.append(res)
