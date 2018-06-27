@@ -52,6 +52,24 @@ class CoordinateSystem(HDF5Enabled):
             delta = pos2 - pos1
         return la.norm(delta, axis=-1)
 
+    def connecting_vector(self, pos1, pos2):
+        if not self.periodic:
+            return pos2 - pos1
+        else:
+            delta = (pos2 - pos1) % self.size
+            delta_negative = delta - self.size
+            res = np.where(-delta_negative < delta, delta_negative, delta)
+            assert np.allclose((res + pos1) % self.size, pos2 % self.size)
+            return res
+
+    def average(self, positions):
+        if not self.periodic:
+            return np.average(positions, axis=0.)
+        else:
+            origin = positions[0]
+            deltas = [self.connecting_vector(origin, pos) for pos in positions]
+            return (origin + np.average(deltas, axis=0)) % self.size
+
     def normalize_position(self, pos):
         if self.periodic:
             return ((pos - self._lower_limits) %
