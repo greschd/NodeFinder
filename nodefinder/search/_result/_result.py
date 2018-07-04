@@ -1,13 +1,17 @@
 import numpy as np
 from fsc.export import export
-from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
+from fsc.hdf5_io import SimpleHDF5Mapping, subscribe_hdf5
 
 from ._cell_list import CellList
 
 
 @export
-@subscribe_hdf5('nodefinder.result_container')
-class ResultContainer(HDF5Enabled):
+@subscribe_hdf5('nodefinder.search_result_container')
+class SearchResultContainer(SimpleHDF5Mapping):
+
+    OBJECT_ATTRIBUTES = ['coordinate_system', 'minimization_results']
+    VALUE_ATTRIBUTES = ['dist_cutoff', 'gap_threshold']
+
     def __init__(
         self,
         *,
@@ -39,7 +43,7 @@ class ResultContainer(HDF5Enabled):
             self.add_result(res)
 
     def __repr__(self):
-        return 'ResultContainer(coordinate_system={0.coordinate_system}, minimization_results={0.minimization_results!r}, gap_threshold={0.gap_threshold!r}, dist_cutoff={0.dist_cutoff!r})'.format(
+        return 'SearchResultContainer(coordinate_system={0.coordinate_system}, minimization_results={0.minimization_results!r}, gap_threshold={0.gap_threshold!r}, dist_cutoff={0.dist_cutoff!r})'.format(
             self
         )
 
@@ -72,22 +76,3 @@ class ResultContainer(HDF5Enabled):
         candidates = self._get_neighbour_iterator(pos)
         positions = np.array([c.pos for c in candidates])
         return self.coordinate_system.distance(pos, positions)
-
-    def to_hdf5(self, hdf5_handle):
-        coord_group = hdf5_handle.create_group('coordinate_system')
-        to_hdf5(self.coordinate_system, coord_group)
-        hdf5_handle['gap_threshold'] = self.gap_threshold
-        hdf5_handle['dist_cutoff'] = self.dist_cutoff
-        res_group = hdf5_handle.create_group('minimization_results')
-        to_hdf5(self.minimization_results, res_group)
-
-    @classmethod
-    def from_hdf5(cls, hdf5_handle):
-        return cls(
-            coordinate_system=from_hdf5(hdf5_handle['coordinate_system']),
-            gap_threshold=hdf5_handle['gap_threshold'].value,
-            dist_cutoff=hdf5_handle['dist_cutoff'].value,
-            minimization_results=from_hdf5(
-                hdf5_handle['minimization_results']
-            ),
-        )

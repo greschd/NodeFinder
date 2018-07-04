@@ -1,12 +1,14 @@
 import numpy as np
 import scipy.linalg as la
 from fsc.export import export
-from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5
+from fsc.hdf5_io import SimpleHDF5Mapping, subscribe_hdf5
 
 
 @export
 @subscribe_hdf5('nodefinder.coordinate_system')
-class CoordinateSystem(HDF5Enabled):
+class CoordinateSystem(SimpleHDF5Mapping):
+    VALUE_ATTRIBUTES = ['limits', 'periodic']
+
     def __init__(self, *, limits, periodic=True):
         self.limits = np.array([sorted(x) for x in limits])
         self.periodic = periodic
@@ -83,14 +85,3 @@ class CoordinateSystem(HDF5Enabled):
                     pos, self.limits
                 )
             )
-
-    def to_hdf5(self, hdf5_handle):
-        hdf5_handle['limits'] = self.limits
-        hdf5_handle['periodic'] = self.periodic
-
-    @classmethod
-    def from_hdf5(cls, hdf5_handle):
-        return cls(
-            limits=hdf5_handle['limits'].value,
-            periodic=hdf5_handle['periodic'].value
-        )

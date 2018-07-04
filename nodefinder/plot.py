@@ -68,6 +68,13 @@ def simplices_3d(
             _plot_simplex(axis=axis, simplex=simplex, **line_settings)
 
 
+# @_plot(proj_3d=True)
+# def line_3d(
+#     result, # pylint: disable=unused-argument,
+#     *
+# ):
+
+
 def _plot_simplex(axis, simplex, **kwargs):
     for start, end in itertools.combinations(simplex, 2):
         x_values, y_values, z_values = np.array([start, end]).T

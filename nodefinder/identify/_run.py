@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 from fsc.export import export
+from fsc.hdf5_io import subscribe_hdf5, SimpleHDF5Mapping
 
 from ..search._controller import ControllerState
 
@@ -52,7 +53,27 @@ def run_from_positions(positions, *, coordinate_system, feature_size=2e-3):
     return results
 
 
-class IdentificationResult(SimpleNamespace):
+@export
+@subscribe_hdf5('nodefinder.identification_result_container')
+class IdentificationResultContainer(SimpleHDF5Mapping):
+    OBJECT_ATTRIBUTES = ['coordinate_system', 'results']
+    VALUE_ATTRIBUTES = ['feature_size']
+
+    def __init__(self, *coordinate_system, feature_size, results=()):
+        self.coordinate_system = coordinate_system
+        self.results = results
+        self.feature_size = feature_size
+
+    def __iter__(self):
+        return iter(self.results)
+
+
+@export
+@subscribe_hdf5('nodefinder.identification_result')
+class IdentificationResult(SimpleNamespace, SimpleHDF5Mapping):
+    OBJECT_ATTRIBUTES = ['positions', 'result']
+    VALUE_ATTRIBUTES = ['dimension']
+
     def __init__(self, positions, dimension, result=None):
         self.positions = positions
         self.dimension = dimension

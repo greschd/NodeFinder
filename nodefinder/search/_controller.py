@@ -7,11 +7,11 @@ from collections import ChainMap
 import numpy as np
 from fsc.export import export
 import fsc.hdf5_io
-from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
+from fsc.hdf5_io import SimpleHDF5Mapping, subscribe_hdf5
 from fsc.async_tools import PeriodicTask, wrap_to_coroutine
 
 from ._queue import SimplexQueue
-from ._result import ResultContainer
+from ._result import SearchResultContainer
 from ._coordinate_system import CoordinateSystem
 from ._minimization import run_minimization
 from ._fake_potential import FakePotential
@@ -19,23 +19,12 @@ from ._fake_potential import FakePotential
 
 @export
 @subscribe_hdf5('nodefinder.controller_state')
-class ControllerState(HDF5Enabled):
+class ControllerState(SimpleHDF5Mapping):
+    OBJECT_ATTRIBUTES = ['result', 'queue']
+
     def __init__(self, *, result, queue):
         self.result = result
         self.queue = queue
-
-    def to_hdf5(self, hdf5_handle):
-        result_group = hdf5_handle.create_group('result')
-        to_hdf5(self.result, result_group)
-        queue_group = hdf5_handle.create_group('queue')
-        to_hdf5(self.queue, queue_group)
-
-    @classmethod
-    def from_hdf5(cls, hdf5_handle):
-        return cls(
-            result=from_hdf5(hdf5_handle['result']),
-            queue=from_hdf5(hdf5_handle['queue']),
-        )
 
 
 class Controller:
@@ -147,7 +136,7 @@ class Controller:
                 if not load_quiet:
                     raise exc
         if initial_state is not None:
-            result = ResultContainer(
+            result = SearchResultContainer(
                 coordinate_system=self.coordinate_system,
                 minimization_results=initial_state.result.minimization_results,
                 gap_threshold=gap_threshold,
@@ -161,7 +150,7 @@ class Controller:
                     )
                 )
         else:
-            result = ResultContainer(
+            result = SearchResultContainer(
                 coordinate_system=self.coordinate_system,
                 gap_threshold=gap_threshold,
                 dist_cutoff=dist_cutoff,
