@@ -50,16 +50,20 @@ def run_from_positions(positions, *, coordinate_system, feature_size=2e-3):
             )
         )
         results.append(res)
-    return results
+    return IdentificationResultContainer(
+        coordinate_system=coordinate_system,
+        feature_size=feature_size,
+        results=results
+    )
 
 
 @export
 @subscribe_hdf5('nodefinder.identification_result_container')
-class IdentificationResultContainer(SimpleHDF5Mapping):
+class IdentificationResultContainer(SimpleNamespace, SimpleHDF5Mapping):
     OBJECT_ATTRIBUTES = ['coordinate_system', 'results']
     VALUE_ATTRIBUTES = ['feature_size']
 
-    def __init__(self, *coordinate_system, feature_size, results=()):
+    def __init__(self, *, coordinate_system, feature_size, results=()):
         self.coordinate_system = coordinate_system
         self.results = results
         self.feature_size = feature_size

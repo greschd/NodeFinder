@@ -6,7 +6,7 @@ from ._cell_list import CellList
 
 
 @export
-@subscribe_hdf5('nodefinder.search_result_container')
+@subscribe_hdf5('nodefinder.search_result_container', extra_tags=['nodefinder.result_container'])
 class SearchResultContainer(SimpleHDF5Mapping):
 
     OBJECT_ATTRIBUTES = ['coordinate_system', 'minimization_results']

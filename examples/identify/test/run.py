@@ -15,7 +15,7 @@ if __name__ == '__main__':
         result=line_search_result, feature_size=2e-2
     )
     print(line_identify_result)
-    path = line_identify_result[0].result.path
+    path = line_identify_result.results[0].result.path
     # fig = plt.figure()
     # axis = fig.add_subplot(111, projection='3d')
     fig, ax = nf.plot.points_3d(line_search_result)
