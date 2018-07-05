@@ -4,6 +4,6 @@ given as a "point-cloud" of nodes.
 """
 
 from ._run import *
-from ._controller import ControllerState
+from . import plot
 
-__all__ = _run.__all__  # pylint: disable=undefined-variable
+__all__ = _run.__all__ + ['plot']  # pylint: disable=undefined-variable
