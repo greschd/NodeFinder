@@ -21,7 +21,7 @@ class JoinedResult(SimpleHDF5Mapping):
     JOIN_KEYS = [
         'num_fev', 'num_iter', 'simplex_history', 'fun_simplex_history'
     ]
-    OBJECT_ATTRIBUTES = ['ancestor', 'child']
+    HDF5_ATTRIBUTES = ['ancestor', 'child']
 
     def __init__(self, *, child, ancestor):
         self.child = child

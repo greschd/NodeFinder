@@ -8,5 +8,6 @@ from . import search
 from . import identify
 from . import io
 from . import plot
+from . import coordinate_system
 
-__all__ = ['search', 'identify', 'io', 'plot']
+__all__ = ['search', 'identify', 'io', 'plot', 'coordinate_system']

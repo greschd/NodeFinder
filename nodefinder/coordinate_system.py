@@ -7,7 +7,7 @@ from fsc.hdf5_io import SimpleHDF5Mapping, subscribe_hdf5
 @export
 @subscribe_hdf5('nodefinder.coordinate_system')
 class CoordinateSystem(SimpleHDF5Mapping):
-    VALUE_ATTRIBUTES = ['limits', 'periodic']
+    HDF5_ATTRIBUTES = ['limits', 'periodic']
 
     def __init__(self, *, limits, periodic=True):
         self.limits = np.array([sorted(x) for x in limits])

@@ -10,9 +10,9 @@ import fsc.hdf5_io
 from fsc.hdf5_io import SimpleHDF5Mapping, subscribe_hdf5
 from fsc.async_tools import PeriodicTask, wrap_to_coroutine
 
+from ..coordinate_system import CoordinateSystem
 from ._queue import SimplexQueue
 from ._result import SearchResultContainer
-from ._coordinate_system import CoordinateSystem
 from ._minimization import run_minimization
 from ._fake_potential import FakePotential
 
@@ -20,7 +20,7 @@ from ._fake_potential import FakePotential
 @export
 @subscribe_hdf5('nodefinder.controller_state')
 class ControllerState(SimpleHDF5Mapping):
-    OBJECT_ATTRIBUTES = ['result', 'queue']
+    HDF5_ATTRIBUTES = ['result', 'queue']
 
     def __init__(self, *, result, queue):
         self.result = result

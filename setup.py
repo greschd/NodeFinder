@@ -33,7 +33,6 @@ setup(
     extras_require=EXTRAS_REQUIRE,
     dependency_links=[
         'git+https://github.com/greschd/pytest-score.git@master#egg=pytest-score-0.0.0',
-        'git+https://github.com/FrescolinoGroup/pyhdf5io.git@add_simple_base_class#egg=fsc.hdf5-io-0.3.0',
     ],
     long_description=README,
     classifiers=[
