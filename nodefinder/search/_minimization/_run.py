@@ -30,9 +30,9 @@ async def run_minimization(
             **modified_kwargs
         )
         simplex_final = res_fake.simplex_history[-1]
-        simplex_blowup = simplex_final[0] + 5 * (
-            simplex_final - simplex_final[0]
-        )
+        simplex_blowup = simplex_final[
+            0
+        ] + 5 * (simplex_final - simplex_final[0])
 
         res = await root_nelder_mead(
             func=func, initial_simplex=simplex_blowup, **nelder_mead_kwargs

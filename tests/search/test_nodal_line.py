@@ -18,8 +18,8 @@ def nodal_line_properties():
 
     def gap_fct(pos):
         dx, dy, dz = (np.array(pos) % 1) - 0.5
-        return np.sqrt(np.abs(dx**2 + dy**2 - radius**2) + dz**2
-                       ) * (0.1 + 50 * dx**2)
+        return np.sqrt(np.abs(dx**2 + dy**2 - radius**2) +
+                       dz**2) * (0.1 + 50 * dx**2)
 
     def parametrization(t):
         phi = 2 * np.pi * t
