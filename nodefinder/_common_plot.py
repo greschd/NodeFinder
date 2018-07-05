@@ -6,20 +6,20 @@ def _setup_plot(limits, axis=None):
 
     dim = len(limits)
     if dim == 3:
-        proj_3d = True
+        is_3d = True
         from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-variable
     else:
         assert dim == 2
     # create axis if it does not exist
     if axis is None:
         fig = plt.figure()
-        axis = fig.add_subplot(111, projection='3d' if proj_3d else None)
+        axis = fig.add_subplot(111, projection='3d' if is_3d else None)
     else:
         fig = None
 
     axis.set_xlim(*limits[0])
     axis.set_ylim(*limits[1])
-    if proj_3d:
+    if is_3d:
         axis.set_zlim(*limits[2])
 
-    return fig, axis
+    return fig, axis, is_3d

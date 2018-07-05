@@ -21,6 +21,6 @@ if __name__ == '__main__':
         use_fake_potential=False,
     )
     nf.io.save(result, 'result.hdf5')
-    nf.search.plot.points_3d(result)
+    nf.search.plot.points(result)
     plt.show()
     # plt.savefig('nodal_line.pdf', bbox_inches='tight')

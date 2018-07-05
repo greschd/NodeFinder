@@ -21,5 +21,5 @@ if __name__ == '__main__':
     )
     nf.io.save(result, 'result.hdf5')
     print('Found', len(result.nodes), '(non-unique) nodes.')
-    nf.search.plot.points_3d(result)
+    nf.search.plot.points(result)
     plt.savefig('single_node.pdf', bbox_inches='tight')
