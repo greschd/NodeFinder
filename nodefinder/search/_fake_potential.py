@@ -1,13 +1,12 @@
 class FakePotential:
-    def __init__(self, result, width, height):
+    def __init__(self, result, width):
         self.result = result
         self.width = width
-        self.height = height
 
     def get_fake_pot(self, distances):
-        return sum(
-            min(0, self.height * (2 - dist / self.width)) for dist in distances
-        )
+        if any(dist < self.width for dist in distances):
+            return float('inf')
+        return 0
 
     def __call__(self, pos):
         try:

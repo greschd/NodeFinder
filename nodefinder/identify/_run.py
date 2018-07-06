@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from fsc.export import export
 from fsc.hdf5_io import subscribe_hdf5, SimpleHDF5Mapping
 
-from ..search._controller import ControllerState
+from ..search._controller import ControllerState, _DIST_CUTOFF_FACTOR
 
 from ._cluster import create_clusters
 from ._dimension import calculate_dimension
@@ -13,7 +13,7 @@ from ._evaluate import evaluate_cluster
 @export
 def run(result, feature_size=None):
     if feature_size is None:
-        feature_size = result.dist_cutoff * 2
+        feature_size = result.dist_cutoff * _DIST_CUTOFF_FACTOR
     if isinstance(result, ControllerState):
         result = result.result
     positions = [node.pos for node in result.nodes]
@@ -26,7 +26,7 @@ def run(result, feature_size=None):
 
 
 @export
-def run_from_positions(positions, *, coordinate_system, feature_size=2e-3):
+def run_from_positions(positions, *, coordinate_system, feature_size):
     clusters, neighbour_mapping = create_clusters(
         positions,
         coordinate_system=coordinate_system,
@@ -38,6 +38,7 @@ def run_from_positions(positions, *, coordinate_system, feature_size=2e-3):
         dim = calculate_dimension(
             positions=cluster,
             neighbour_mapping=neighbour_mapping,
+            coordinate_system=coordinate_system,
             feature_size=feature_size
         )
         res = IdentificationResult(

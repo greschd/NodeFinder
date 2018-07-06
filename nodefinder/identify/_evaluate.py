@@ -1,8 +1,11 @@
+import warnings
 from types import SimpleNamespace
 from contextlib import suppress
 
 import numpy as np
 from scipy.sparse.csgraph import shortest_path
+
+from fsc.hdf5_io import SimpleHDF5Mapping, subscribe_hdf5
 
 
 def evaluate_cluster(
@@ -13,14 +16,15 @@ def evaluate_cluster(
             positions=positions, coordinate_system=coordinate_system
         )
     elif dim == 1:
-        return _evaluate_line(
-            positions=positions,
-            coordinate_system=coordinate_system,
-            neighbour_mapping=neighbour_mapping,
-            feature_size=feature_size
-        )
-    else:
-        return None
+        try:
+            return _evaluate_line(
+                positions=positions,
+                coordinate_system=coordinate_system,
+                neighbour_mapping=neighbour_mapping,
+                feature_size=feature_size
+            )
+        except (IndexError, ValueError) as exc:
+            warnings.warn('Could not identify line: {}'.format(exc))
 
 
 def _evaluate_point(positions, coordinate_system):
@@ -30,7 +34,9 @@ def _evaluate_point(positions, coordinate_system):
     )
 
 
-class NodalPoint(SimpleNamespace):
+@subscribe_hdf5('nodefinder.nodal_point')
+class NodalPoint(SimpleNamespace, SimpleHDF5Mapping):
+    HDF5_ATTRIBUTES = ['position']
     def __init__(self, position):
         self.position = position
 
@@ -41,17 +47,19 @@ def _evaluate_line(
     # positions = list(positions)
 
     pos1 = positions.pop()
+    curr_distance = 0.
+    pos2 = pos1
     for pos_candidate in positions:
-        if (
-            coordinate_system.distance(
-                np.array(pos1), np.array(pos_candidate)
-            ) > 2 * feature_size
-        ):
+        distance = coordinate_system.distance(
+            np.array(pos1), np.array(pos_candidate)
+        )
+        if distance > curr_distance:
+            curr_distance = distance
             pos2 = pos_candidate
-            positions.remove(pos2)
-            break
-    else:
+    if curr_distance <= 2 * feature_size:
         raise ValueError('No suitable second position found.')
+    positions.remove(pos2)
+
     positions_inner = list(positions)
     positions_list = [pos1] + positions_inner + [pos2]
     index_mapping = {pos: i for i, pos in enumerate(positions_list)}
@@ -116,8 +124,10 @@ def _get_shortest_path(
         current = predecessors[start_idx, current]
     return [positions[idx] for idx in path]
 
+@subscribe_hdf5('nodefinder.nodal_line')
+class NodalLine(SimpleNamespace, SimpleHDF5Mapping):
+    HDF5_ATTRIBUTES = ['path']
 
-class NodalLine(SimpleNamespace):
     def __init__(self, path):
         self.path = path
 

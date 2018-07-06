@@ -9,6 +9,7 @@ def _setup_plot(limits, axis=None):
         is_3d = True
         from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-variable
     else:
+        is_3d = False
         assert dim == 2
     # create axis if it does not exist
     if axis is None:

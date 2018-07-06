@@ -15,11 +15,11 @@ def points(result, *, axis=None):
     vals = []
     for node in result.nodes:
         pos = node.pos
-        x, y, z = pos
+        x, y, *z = pos
         x_coords.append(x)
         y_coords.append(y)
         if is_3d:
-            z_coords.append(z)
+            z_coords.append(z[0])
         vals.append(node.value)
 
     if is_3d:

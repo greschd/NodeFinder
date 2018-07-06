@@ -1,4 +1,5 @@
 import os
+import numbers
 import asyncio
 import tempfile
 import itertools
@@ -16,6 +17,7 @@ from ._result import SearchResultContainer
 from ._minimization import run_minimization
 from ._fake_potential import FakePotential
 
+_DIST_CUTOFF_FACTOR = 3
 
 @export
 @subscribe_hdf5('nodefinder.controller_state')
@@ -66,11 +68,11 @@ class Controller:
         self.gap_fct = wrap_to_coroutine(gap_fct)
 
         self.coordinate_system = CoordinateSystem(limits=limits, periodic=True)
-        self.dim = self.check_dimensions(
+        self.dim, initial_mesh_size, refinement_mesh_size = self.check_dimensions(
             limits, initial_mesh_size, refinement_mesh_size
         )
         self.save_file = save_file
-        self.dist_cutoff = feature_size / 2.
+        self.dist_cutoff = feature_size / _DIST_CUTOFF_FACTOR
         self.state = self.create_state(
             initial_state=initial_state,
             load=load,
@@ -84,7 +86,6 @@ class Controller:
             self.fake_potential = FakePotential(
                 result=self.state.result,
                 width=self.dist_cutoff,
-                height=100 * gap_threshold
             )
         else:
             self.fake_potential = None
@@ -104,6 +105,12 @@ class Controller:
 
     @staticmethod
     def check_dimensions(limits, mesh_size, refinement_mesh_size):
+        if isinstance(mesh_size, numbers.Integral):
+            mesh_size = tuple(mesh_size for _ in range(len(limits)))
+        if isinstance(refinement_mesh_size, numbers.Integral):
+            refinement_mesh_size = tuple(
+                refinement_mesh_size for _ in range(len(limits))
+            )
         dim_limits = len(limits)
         dim_mesh_size = len(mesh_size)
         dim_refinement_mesh_size = len(refinement_mesh_size)
@@ -112,7 +119,7 @@ class Controller:
                 'Inconsistent dimensions given: limits: {}, mesh_size: {}, refinement_mesh_size: {}'.
                 format(dim_limits, dim_mesh_size, dim_refinement_mesh_size)
             )
-        return dim_limits
+        return dim_limits, mesh_size, refinement_mesh_size
 
     def create_state(
         self,
