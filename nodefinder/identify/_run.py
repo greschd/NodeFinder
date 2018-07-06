@@ -76,6 +76,9 @@ class IdentificationResultContainer(SimpleNamespace, SimpleHDF5Mapping):
     def __getitem__(self, idx):
         return self.results[idx]
 
+    def __len__(self):
+        return len(self.results)
+
 
 @export
 @subscribe_hdf5('nodefinder.identification_result')

@@ -10,5 +10,6 @@ if __name__ == '__main__':
         result=nf.io.load('surface.hdf5'), feature_size=5e-2
     )
     print(result)
+    nf.io.save(result, 'result.hdf5')
     nf.identify.plot.result(result)
     plt.savefig('surface.pdf')

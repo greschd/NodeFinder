@@ -10,6 +10,14 @@ import pytest
 from score_fixtures import *  # pylint: disable=unused-wildcard-import
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        '--no-plot-compare',
+        action='store_true',
+        help='disable comparing the generated plots'
+    )
+
+
 @pytest.fixture
 def test_name(request):
     """Returns module_name.function_name for a given test"""

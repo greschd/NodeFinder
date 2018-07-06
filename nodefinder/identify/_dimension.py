@@ -39,15 +39,14 @@ def calculate_dimension(
         ])
     dim, count = dim_counter.most_common(1)[0]
     if count < (2 / 3) * len(positions_to_evaluate):
-        warnings.warn(
-            'Inconclusive dimension count: {}'.format(dim_counter)
-        )
+        warnings.warn('Inconclusive dimension count: {}'.format(dim_counter))
         return None
     return dim
 
 
 def _get_dimension(
-    pos, *, neighbours, coordinate_system, feature_size, max_dim, num_neighbour_evaluations
+    pos, *, neighbours, coordinate_system, feature_size, max_dim,
+    num_neighbour_evaluations
 ):
     for dim in range(1, max_dim + 1):
         volume = _get_volume(
@@ -57,13 +56,15 @@ def _get_dimension(
             dim=dim,
             num_neighbour_evaluations=num_neighbour_evaluations
         )
-        volume_normalized = volume / (0.5 * feature_size)**dim
-        if volume_normalized < 1:
+        volume_normalized = volume / feature_size**dim
+        if volume_normalized < 0.5:
             return dim - 1
     return max_dim
 
 
-def _get_volume(pos, neighbours, *, coordinate_system, dim, num_neighbour_evaluations):
+def _get_volume(
+    pos, neighbours, *, coordinate_system, dim, num_neighbour_evaluations
+):
     neighbour_pos = [n.pos for n in neighbours]
     if num_neighbour_evaluations is None:
         num_neighbour_evaluations = len(neighbours)
@@ -75,8 +76,9 @@ def _get_volume(pos, neighbours, *, coordinate_system, dim, num_neighbour_evalua
         range(num_neighbour_evaluations)
     ):
         connecting_vectors = [
-            coordinate_system.connecting_vector(np.array(neighbour), np.array(pos))
-            for neighbour in neighbour_tuple
+            coordinate_system.connecting_vector(
+                np.array(neighbour), np.array(pos)
+            ) for neighbour in neighbour_tuple
         ]
         mat = np.array(connecting_vectors)
         results.append(abs(np.product(la.svd(mat, compute_uv=False))))
