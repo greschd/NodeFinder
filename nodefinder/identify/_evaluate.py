@@ -82,7 +82,7 @@ def _evaluate_line(
         index_mapping=index_mapping_partial,
         neighbour_mapping=neighbour_mapping
     )
-    path_full = path1 + list(reversed(path2))
+    path_full = path1 + list(reversed(path2))[1:]
     return NodalLine(path=path_full)
 
 

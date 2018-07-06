@@ -48,8 +48,8 @@ class SearchResultContainer(SimpleHDF5Mapping):
             self.add_result(res)
 
     def __repr__(self):
-        return 'SearchResultContainer(coordinate_system={0.coordinate_system}, minimization_results={0.minimization_results!r}, gap_threshold={0.gap_threshold!r}, dist_cutoff={0.dist_cutoff!r})'.format(
-            self
+        return 'SearchResultContainer(coordinate_system={0.coordinate_system}, minimization_results=<{1} values>, gap_threshold={0.gap_threshold!r}, dist_cutoff={0.dist_cutoff!r})'.format(
+            self, len(self.minimization_results)
         )
 
     def add_result(self, res):

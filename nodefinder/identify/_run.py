@@ -11,7 +11,9 @@ from ._evaluate import evaluate_cluster
 
 
 @export
-def run(result, feature_size=2e-3):
+def run(result, feature_size=None):
+    if feature_size is None:
+        feature_size = result.dist_cutoff * 2
     if isinstance(result, ControllerState):
         result = result.result
     positions = [node.pos for node in result.nodes]
@@ -69,6 +71,9 @@ class IdentificationResultContainer(SimpleNamespace, SimpleHDF5Mapping):
 
     def __iter__(self):
         return iter(self.results)
+
+    def __getitem__(self, idx):
+        return self.results[idx]
 
 
 @export
