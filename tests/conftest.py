@@ -1,6 +1,7 @@
 """pytest configuration file for NodeFinder tests."""
 # pylint: disable=unused-argument,protected-access,redefined-outer-name
 
+import os
 import json
 import operator
 
@@ -36,3 +37,15 @@ def compare_data(request, test_name, scope="session"):
 @pytest.fixture
 def compare_equal(compare_data):
     return lambda data, tag=None: compare_data(operator.eq, data, tag)
+
+
+@pytest.fixture
+def sample():
+    def inner(name):
+        return os.path.join(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), 'samples'
+            ), name
+        )
+
+    return inner
