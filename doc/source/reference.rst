@@ -16,26 +16,17 @@ Run function
     :members:
     :imported-members:
 
+Result classes
+''''''''''''''
+
+.. automodule:: nodefinder.search.result
+    :members:
+    :imported-members:
+
 Plotting
 ''''''''
 
 .. automodule:: nodefinder.search.plot
-    :members:
-    :imported-members:
-
-
-Internal submodules
-'''''''''''''''''''
-
-.. automodule:: nodefinder.search._result
-    :members:
-    :imported-members:
-
-.. automodule:: nodefinder.search._minimization
-    :members:
-    :imported-members:
-
-.. automodule:: nodefinder.search._minimization._nelder_mead
     :members:
     :imported-members:
 
@@ -49,25 +40,17 @@ Run function
     :members:
     :imported-members:
 
+Result classes
+''''''''''''''
+
+.. automodule:: nodefinder.identify.result
+    :members:
+    :imported-members:
+
 Plotting
 ''''''''
 
 .. automodule:: nodefinder.identify.plot
-    :members:
-    :imported-members:
-
-Internal submodules
-'''''''''''''''''''
-
-.. automodule:: nodefinder.identify._cluster
-    :members:
-    :imported-members:
-
-.. automodule:: nodefinder.identify._dimension
-    :members:
-    :imported-members:
-
-.. automodule:: nodefinder.identify._evaluate
     :members:
     :imported-members:
 

@@ -2,7 +2,7 @@
 Tests for the CellList container.
 """
 
-from nodefinder.search._result._cell_list import CellList
+from nodefinder.search.result._cell_list import CellList
 
 
 def test_get_index():

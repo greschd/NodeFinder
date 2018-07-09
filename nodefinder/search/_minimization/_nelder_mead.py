@@ -17,7 +17,7 @@ import numpy as np
 import scipy.linalg as la
 from fsc.export import export
 
-from ._result import MinimizationResult
+from ..result._minimization import MinimizationResult
 
 # standard status messages of optimizers
 _status_message = {

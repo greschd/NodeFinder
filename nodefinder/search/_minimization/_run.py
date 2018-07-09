@@ -6,7 +6,7 @@ from types import MappingProxyType
 
 from fsc.export import export
 
-from ._result import JoinedMinimizationResult
+from ..result._minimization import JoinedMinimizationResult
 from ._nelder_mead import root_nelder_mead
 
 

@@ -10,32 +10,17 @@ import itertools
 from collections import ChainMap
 
 import numpy as np
-from fsc.export import export
-import fsc.hdf5_io
-from fsc.hdf5_io import SimpleHDF5Mapping, subscribe_hdf5
+
 from fsc.async_tools import PeriodicTask, wrap_to_coroutine
 
+from .. import io
 from ..coordinate_system import CoordinateSystem
+from .result import SearchResultContainer, ControllerState
 from ._queue import SimplexQueue
-from ._result import SearchResultContainer
 from ._minimization import run_minimization
 from ._fake_potential import FakePotential
 
 _DIST_CUTOFF_FACTOR = 3
-
-
-@export
-@subscribe_hdf5('nodefinder.controller_state')
-class ControllerState(SimpleHDF5Mapping):
-    """
-    Container class for the current result and queue of the :func:`.search.run`
-    function.
-    """
-    HDF5_ATTRIBUTES = ['result', 'queue']
-
-    def __init__(self, *, result, queue):
-        self.result = result
-        self.queue = queue
 
 
 class Controller:
@@ -143,7 +128,7 @@ class Controller:
                     "Cannot set the initial state explicitly and setting 'load=True' simultaneously."
                 )
             try:
-                initial_state = fsc.hdf5_io.load(self.save_file)
+                initial_state = io.load(self.save_file)
             except IOError as exc:
                 if not load_quiet:
                     raise exc
@@ -266,7 +251,7 @@ class Controller:
                 dir=os.path.dirname(self.save_file), delete=False
             ) as tmpf:
                 try:
-                    fsc.hdf5_io.save(self.state, tmpf.name)
+                    io.save(self.state, tmpf.name)
                     os.rename(tmpf.name, self.save_file)
                 except Exception as exc:
                     os.remove(tmpf.name)

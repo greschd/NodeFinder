@@ -4,14 +4,14 @@ Defines the functions used to evaluate the shape of a given cluster of points.
 
 import warnings
 import operator
-from types import SimpleNamespace
 from contextlib import suppress
 
 import numpy as np
 from scipy.sparse.csgraph import shortest_path
 
 from fsc.export import export
-from fsc.hdf5_io import SimpleHDF5Mapping, subscribe_hdf5
+
+from .result import NodalLine, NodalPoint
 
 
 @export
@@ -61,23 +61,6 @@ def _evaluate_point(positions, coordinate_system):
         position=coordinate_system.
         average([np.array(pos) for pos in positions])
     )
-
-
-@export
-@subscribe_hdf5('nodefinder.nodal_point')
-class NodalPoint(SimpleNamespace, SimpleHDF5Mapping):
-    """
-    Shape class defining a nodal point.
-
-    Attributes
-    ----------
-    position : tuple(float)
-        The position of the point.
-    """
-    HDF5_ATTRIBUTES = ['position']
-
-    def __init__(self, position):
-        self.position = position
 
 
 def _evaluate_line(
@@ -162,23 +145,3 @@ def _get_shortest_path(
             break
         current = predecessors[start_idx, current]
     return [positions[idx] for idx in path]
-
-
-@export
-@subscribe_hdf5('nodefinder.nodal_line')
-class NodalLine(SimpleNamespace, SimpleHDF5Mapping):
-    """
-    Shape class defining a closed nodal line.
-
-    Attributes
-    ----------
-    path : list(tuple(float))
-        A list of positions describing the line.
-    """
-    HDF5_ATTRIBUTES = ['path']
-
-    def __init__(self, path):
-        self.path = path
-
-    def __repr__(self):
-        return 'NodalLine(path=<{} values>)'.format(len(self.path))
