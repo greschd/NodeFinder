@@ -15,7 +15,7 @@ with open('./nodefinder/__init__.py', 'r') as f:
 
 EXTRAS_REQUIRE = dict(
     test=['pytest', 'pytest-cov', 'pytest-score'],
-    doc=['sphinx', 'sphinx-rtd-theme'],
+    doc=['sphinx', 'sphinx-rtd-theme', 'ipython>=6.2'],
     dev=['pre-commit', 'prospector', 'yapf==0.22'],
 )
 EXTRAS_REQUIRE['dev'] += EXTRAS_REQUIRE['doc'] + EXTRAS_REQUIRE['test']

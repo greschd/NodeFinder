@@ -3,11 +3,13 @@
 NodeFinder
 ==========
 
-TODO: description
+NodeFinder is a tool for finding and evaluating nodal features in potential landscapes.
 
-.. contents::
-    :local:
+.. toctree::
 
+    Installation <self>
+    tutorial.rst
+    reference.rst
 
 Installation
 ~~~~~~~~~~~~
@@ -17,11 +19,3 @@ You can install this tool with pip:
 .. code:: python
 
     pip install nodefinder
-
-
-.. toctree::
-    :hidden:
-
-    Usage <self>
-    tutorial.rst
-    reference.rst
