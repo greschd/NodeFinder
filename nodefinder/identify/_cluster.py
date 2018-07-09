@@ -44,7 +44,7 @@ def create_clusters(positions, *, feature_size, coordinate_system):
         pos_pairs_array[:, 0], pos_pairs_array[:, 1]
     )
     assert len(distances) == len(pos_pairs)
-    for idx in np.flatnonzero(distances <= 2 * feature_size):
+    for idx in np.flatnonzero(distances <= feature_size):
         pos1, pos2 = pos_pairs[idx]
         dist = distances[idx]
         neighbour_mapping[pos1].append(Neighbour(pos=pos2, distance=dist))

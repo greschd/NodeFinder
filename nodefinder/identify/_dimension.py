@@ -83,7 +83,7 @@ def _get_dimension(
             dim=dim,
             num_neighbour_evaluations=num_neighbour_evaluations
         )
-        volume_normalized = volume / feature_size**dim
+        volume_normalized = volume / (feature_size / 2)**dim
         if volume_normalized < 0.5:
             return dim - 1
     return max_dim

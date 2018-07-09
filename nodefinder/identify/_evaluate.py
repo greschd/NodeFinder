@@ -76,7 +76,7 @@ def _evaluate_line(
     ) for pos_candidate in positions),
                          key=operator.itemgetter(1))
 
-    if distance <= 2 * feature_size:
+    if distance <= feature_size:
         raise ValueError('No suitable second position found.')
     positions.remove(pos2)
 
