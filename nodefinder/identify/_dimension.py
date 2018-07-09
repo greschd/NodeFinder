@@ -19,6 +19,26 @@ def calculate_dimension(
     num_pos_evaluations=10,
     num_neighbour_evaluations=25,
 ):
+    """
+    Calculate the dimension of a cluster of positions.
+
+    Arguments
+    ---------
+    positions : list(tuple(float))
+        The positions whose dimension should be evaluated.
+    neighbour_mapping : collections.abc.Mapping
+        Contains a list of neighbours for each position.
+    feature_size : float
+        TODO
+    coordinate_system : CoordinateSystem
+        Coordinate system used to calculate distances.
+    max_dim : int
+        Upper limit for the dimension.
+    num_pos_evaluations : int
+        Number of positions which are evaluated to estimate the dimension.
+    num_neighbour_evaluations : int
+        Number of neighbour tuples which are evaluated per position.
+    """
     if num_pos_evaluations is None:
         positions_to_evaluate = positions
     else:

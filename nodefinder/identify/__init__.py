@@ -1,3 +1,8 @@
+"""
+Submodule for identifying nodal features such as points and lines from a
+point-cloud of nodes as created by the :mod:`.search` submodule.
+"""
+
 from ._run import *
 from . import plot
 

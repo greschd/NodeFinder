@@ -1,16 +1,45 @@
+"""
+Defines the functions used to evaluate the shape of a given cluster of points.
+"""
+
 import warnings
+import operator
 from types import SimpleNamespace
 from contextlib import suppress
 
 import numpy as np
 from scipy.sparse.csgraph import shortest_path
 
+from fsc.export import export
 from fsc.hdf5_io import SimpleHDF5Mapping, subscribe_hdf5
 
 
+@export
 def evaluate_cluster(
     positions, dim, coordinate_system, neighbour_mapping, feature_size
 ):
+    """
+    Evaluate the shape of a cluster with the given positions.
+
+    Arguments
+    ---------
+    positions : set(tuple(float))
+        Positions of the points in the cluster.
+    dim : int
+        Dimension of the cluster.
+    coordinate_system : CoordinateSystem
+        Coordinate system used to calculate distances.
+    neighbour_mapping : dict
+        Mapping containing a list of neighbours for each position.
+    feature_size : float
+        TODO
+
+    Returns
+    -------
+    :obj:`None` or NodalPoint or NodalLine :
+        The shape of the given positions. Returns ``None`` if the shape could
+        not be determined.
+    """
     if dim == 0:
         return _evaluate_point(
             positions=positions, coordinate_system=coordinate_system
@@ -34,9 +63,19 @@ def _evaluate_point(positions, coordinate_system):
     )
 
 
+@export
 @subscribe_hdf5('nodefinder.nodal_point')
 class NodalPoint(SimpleNamespace, SimpleHDF5Mapping):
+    """
+    Shape class defining a nodal point.
+
+    Attributes
+    ----------
+    position : tuple(float)
+        The position of the point.
+    """
     HDF5_ATTRIBUTES = ['position']
+
     def __init__(self, position):
         self.position = position
 
@@ -44,19 +83,14 @@ class NodalPoint(SimpleNamespace, SimpleHDF5Mapping):
 def _evaluate_line(
     positions, coordinate_system, neighbour_mapping, feature_size
 ):
-    # positions = list(positions)
-
     pos1 = positions.pop()
-    curr_distance = 0.
-    pos2 = pos1
-    for pos_candidate in positions:
-        distance = coordinate_system.distance(
-            np.array(pos1), np.array(pos_candidate)
-        )
-        if distance > curr_distance:
-            curr_distance = distance
-            pos2 = pos_candidate
-    if curr_distance <= 2 * feature_size:
+    pos2, distance = max(((
+        pos_candidate,
+        coordinate_system.distance(np.array(pos1), np.array(pos_candidate))
+    ) for pos_candidate in positions),
+                         key=operator.itemgetter(1))
+
+    if distance <= 2 * feature_size:
         raise ValueError('No suitable second position found.')
     positions.remove(pos2)
 
@@ -124,8 +158,18 @@ def _get_shortest_path(
         current = predecessors[start_idx, current]
     return [positions[idx] for idx in path]
 
+
+@export
 @subscribe_hdf5('nodefinder.nodal_line')
 class NodalLine(SimpleNamespace, SimpleHDF5Mapping):
+    """
+    Shape class defining a closed nodal line.
+
+    Attributes
+    ----------
+    path : list(tuple(float))
+        A list of positions describing the line.
+    """
     HDF5_ATTRIBUTES = ['path']
 
     def __init__(self, path):

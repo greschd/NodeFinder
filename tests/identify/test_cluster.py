@@ -13,7 +13,7 @@ from nodefinder.identify._cluster import create_clusters
 def test_clustering(sample, sample_name, num_clusters):
     search_result = nf.io.load(sample(sample_name))
 
-    positions = [res.pos for res in search_result.minimization_results]
+    positions = [res.pos for res in search_result.nodes]
     coordinate_system = search_result.coordinate_system
     feature_size = search_result.dist_cutoff * _DIST_CUTOFF_FACTOR
 

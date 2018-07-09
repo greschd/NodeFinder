@@ -1,13 +1,41 @@
+"""
+Defines the clustering function used to group nodal points.
+"""
+
 import copy
 import itertools
 from collections import namedtuple
 
 import numpy as np
+from fsc.export import export
+
+__all__ = ['Neighbour']
 
 Neighbour = namedtuple('Neighbour', ['pos', 'distance'])
 
 
+@export
 def create_clusters(positions, *, feature_size, coordinate_system):
+    """
+    Create clusters from the given positions, by joining all positions which are
+    less than twice the ``feature_size`` apart.
+
+    Arguments
+    ---------
+    positions : list(list(float))
+        The list of positions to cluster.
+    feature_size : float
+        TODO
+    coordinate_system : CoordinateSystem
+        Coordinate system used to calculate distances between positions.
+
+    Returns
+    -------
+    list(set) :
+        Clusters of positions.
+    dict:
+        Mapping containing the list of neighbours for each position.
+    """
     positions_unique = set(tuple(pos) for pos in positions)
     neighbour_mapping = {pos: [] for pos in positions_unique}
     pos_pairs = list(itertools.combinations(positions_unique, r=2))
@@ -41,6 +69,8 @@ def create_clusters(positions, *, feature_size, coordinate_system):
 
 
 def _create_cluster(starting_pos, neighbour_mapping):
+    """Create
+    """
     cluster = set([starting_pos])
     get_neighbours_from = set([starting_pos])
     while get_neighbours_from:

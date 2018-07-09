@@ -11,6 +11,21 @@ from ._cell_list import CellList
     extra_tags=['nodefinder.result_container']
 )
 class SearchResultContainer(SimpleHDF5Mapping):
+    """
+    Container for the results of a search run.
+
+    Attributes
+    ----------
+    coordinate_system : CoordinateSystem
+        Coordinate system used.
+    nodes : list(MinimizationResult)
+        Minimization results which fulfill the gap threshold criterion.
+    gap_threshold : float
+        Threshold for results to be considered a node.
+    dist_cutoff : float
+        Cutoff distance for searching neighbouring nodes.
+
+    """
 
     HDF5_ATTRIBUTES = [
         'coordinate_system', 'minimization_results', 'dist_cutoff',
@@ -53,6 +68,14 @@ class SearchResultContainer(SimpleHDF5Mapping):
         )
 
     def add_result(self, res):
+        """
+        Add a minimization result to the container.
+
+        Arguments
+        ---------
+        res : MinimizationResult
+            Minimization result to add.
+        """
         res.pos = self.coordinate_system.normalize_position(res.pos)
         if not res.success or res.value > self.gap_threshold:  # pylint: disable=no-else-return
             self.rejected_results.append(res)
@@ -63,6 +86,10 @@ class SearchResultContainer(SimpleHDF5Mapping):
 
     @property
     def minimization_results(self):
+        """
+        list(MinimizationResult):
+            All minimization results, including rejected points.
+        """
         return self.nodes.values() + self.rejected_results
 
     def _get_neighbour_iterator(self, pos):
@@ -72,12 +99,30 @@ class SearchResultContainer(SimpleHDF5Mapping):
         return (c for c in candidates if np.any(c.pos != pos))
 
     def get_neighbour_distance_iterator(self, pos):
+        """
+        Returns an iterator over the distance to neighbouring nodes from a given
+        position. Only neighbours within ``dist_cutoff`` are taken into account.
+
+        Arguments
+        ---------
+        pos : numpy.ndarray
+            Position for which to calculate the distances.
+        """
         candidates = self._get_neighbour_iterator(pos)
         return (
             self.coordinate_system.distance(pos, c.pos) for c in candidates
         )
 
     def get_all_neighbour_distances(self, pos):
+        """
+        Calculate the distances to neighbouring nodes from a given position.
+        Only neighbours within ``dist_cutoff`` are taken into account.
+
+        Arguments
+        ---------
+        pos : numpy.ndarray
+            Position for which to calculate the distances.
+        """
         candidates = self._get_neighbour_iterator(pos)
         positions = np.array([c.pos for c in candidates])
         return self.coordinate_system.distance(pos, positions)

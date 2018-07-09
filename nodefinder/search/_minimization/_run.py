@@ -1,3 +1,7 @@
+"""
+Defines the function running the minimization, including the fake potential.
+"""
+
 from types import MappingProxyType
 
 from fsc.export import export
@@ -21,6 +25,25 @@ async def run_minimization(
     fake_potential=None,
     nelder_mead_kwargs=MappingProxyType({}),
 ):
+    """Runs the minimization, including handling the fake potential.
+
+    Runs the minimization for a given function and initial simplex. If a
+    fake potential is given, the Nelder-Mead algorithm is first run with the
+    fake potential, and then continued without the fake potential.
+    The final simplex of the minimization with fake potential is enlarged and
+    used as initial simplex for the second Nelder-Mead run.
+
+    Arguments
+    ---------
+    func : collections.abc.Callable
+        Function or coroutine describing the potential to be minimized.
+    initial_simplex : numpy.ndarray
+        Coordinates of the initial simplex.
+    fake_potential : collections.abc.Callable
+        Function describing the fake potential.
+    nelder_mead_kwargs : collections.abc.Mapping
+        Keyword arguments passed to the Nelder-Mead algorithm.
+    """
     if fake_potential is not None:
         modified_kwargs = dict(nelder_mead_kwargs)
         modified_kwargs['ftol'] = float('inf')

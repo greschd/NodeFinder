@@ -28,13 +28,13 @@ def run_single_identify(run_identify):  # pylint: disable=redefined-outer-name
 def test_point(run_single_identify):  # pylint: disable=redefined-outer-name
     res = run_single_identify('point.hdf5')
     assert res.dimension == 0
-    assert np.allclose(res.result.position, [0.2, 0.4, 0.8])
+    assert np.allclose(res.shape.position, [0.2, 0.4, 0.8])
 
 
 def test_line(run_single_identify):  # pylint: disable=redefined-outer-name
     res = run_single_identify('line.hdf5')
     assert res.dimension == 1
-    assert len(res.result.path) > 10
+    assert len(res.shape.path) > 10
 
 
 def test_surface(run_single_identify):  # pylint: disable=redefined-outer-name
@@ -47,4 +47,4 @@ def test_two_lines(run_identify):  # pylint: disable=redefined-outer-name
     assert len(res) == 2
     for identified_object in res:
         assert identified_object.dimension == 1
-        assert len(identified_object.result.path) > 10
+        assert len(identified_object.shape.path) > 10

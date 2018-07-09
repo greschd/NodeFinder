@@ -1,6 +1,10 @@
-import fsc.hdf5_io
+"""
+Defines free functions to serialize / deserialize nodefinder objects to HDF5.
+
+These are aliases for the functions defined in :mod:`fsc.hdf5_io`, meaning that
+they can also handle other objects which are registered with the same system.
+"""
+
+from fsc.hdf5_io import save, load
 
 __all__ = ['save', 'load']
-
-save = fsc.hdf5_io.save  # pylint: disable=invalid-name
-load = fsc.hdf5_io.load  # pylint: disable=invalid-name

@@ -2,10 +2,12 @@ import itertools
 from types import MappingProxyType
 
 import numpy as np
+from fsc.export import export
 
 from .._common_plot import _setup_plot
 
 
+@export
 def points(result, *, axis=None):
     fig, axis, is_3d = _setup_plot(result.coordinate_system.limits, axis=axis)
     x_coords = []
@@ -31,6 +33,7 @@ def points(result, *, axis=None):
     return fig, axis
 
 
+@export
 def simplices(
     result,
     *,

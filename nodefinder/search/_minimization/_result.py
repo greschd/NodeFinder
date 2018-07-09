@@ -18,6 +18,16 @@ from fsc.hdf5_io import subscribe_hdf5, SimpleHDF5Mapping, HDF5Enabled
 @export
 @subscribe_hdf5('nodefinder.joined_result')
 class JoinedResult(SimpleHDF5Mapping):
+    """
+    Wrapper for minimization results that result from two steps.
+
+    Attributes
+    ----------
+    ancestor : MinimizationResult
+        Result of the first minimization run.
+    child : MinimizationResult
+        Result of the second minimization run.
+    """
     JOIN_KEYS = [
         'num_fev', 'num_iter', 'simplex_history', 'fun_simplex_history'
     ]

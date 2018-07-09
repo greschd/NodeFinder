@@ -12,6 +12,15 @@ from ._evaluate import evaluate_cluster
 
 @export
 def run(result, feature_size=None):
+    """Identify the nodal clusters from a :func:`.search.run` result.
+
+    Arguments
+    ---------
+    result : SearchResultContainer
+        Result of the search step.
+    feature_size : float, optional
+        TODO. Uses the ``feature_size`` used in the search step by default.
+    """
     if feature_size is None:
         feature_size = result.dist_cutoff * _DIST_CUTOFF_FACTOR
     if isinstance(result, ControllerState):
@@ -27,6 +36,8 @@ def run(result, feature_size=None):
 
 @export
 def run_from_positions(positions, *, coordinate_system, feature_size):
+    """
+    """
     clusters, neighbour_mapping = create_clusters(
         positions,
         coordinate_system=coordinate_system,
@@ -44,7 +55,7 @@ def run_from_positions(positions, *, coordinate_system, feature_size):
         res = IdentificationResult(
             positions=cluster,
             dimension=dim,
-            result=evaluate_cluster(
+            shape=evaluate_cluster(
                 positions=cluster,
                 dim=dim,
                 coordinate_system=coordinate_system,
@@ -83,14 +94,14 @@ class IdentificationResultContainer(SimpleNamespace, SimpleHDF5Mapping):
 @export
 @subscribe_hdf5('nodefinder.identification_result')
 class IdentificationResult(SimpleNamespace, SimpleHDF5Mapping):
-    HDF5_ATTRIBUTES = ['positions', 'result', 'dimension']
+    HDF5_ATTRIBUTES = ['positions', 'shape', 'dimension']
 
-    def __init__(self, positions, dimension, result=None):
+    def __init__(self, positions, dimension, shape=None):
         self.positions = positions
         self.dimension = dimension
-        self.result = result
+        self.shape = shape
 
     def __repr__(self):
-        return 'IdentificationResult(dimension={}, result={}, positions=<{} values>)'.format(
-            self.dimension, self.result, len(self.positions)
+        return 'IdentificationResult(dimension={}, shape={}, positions=<{} values>)'.format(
+            self.dimension, self.shape, len(self.positions)
         )

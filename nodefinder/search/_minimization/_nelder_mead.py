@@ -63,8 +63,18 @@ async def root_nelder_mead(
     Minimization of scalar function of one or more variables using the
     Nelder-Mead algorithm.
 
+    The algorithm is modified for root-finding by an additional cutoff criterion,
+    aborting the minimization when the function value divided by the longest
+    edge of the simplex is larger than a given cutoff, ``fprime_cutoff``. This
+    is an estimate for the maximum value of the first derivative, such that a
+    root can be in the vicinity of the current simplex. The purpose of this
+    criterion is to avoid spending a lot of effort finding local minima which
+    are not roots.
+
     Arguments
     ---------
+    initial_simplex : numpy.ndarray
+        Coordinates of the initial simplex.
     xtol : float
         Relative error in solution `xopt` acceptable for convergence.
     ftol : float
@@ -73,10 +83,12 @@ async def root_nelder_mead(
         Maximum number of iterations to perform.
     maxfev : int
         Maximum number of function evaluations to make.
+    fprime_cutoff:
+        Cutoff for the additional root-finding aborting criterion.
 
     Returns
     -------
-    OptimizeResult:
+    MinimizationResult:
         The result of the optimization.
     """
     maxfun = maxfev
