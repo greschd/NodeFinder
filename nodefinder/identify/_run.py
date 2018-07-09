@@ -40,7 +40,16 @@ def run(result, feature_size=None):
 
 @export
 def run_from_positions(positions, *, coordinate_system, feature_size):
-    """
+    """Identify the nodal clusters from a list of positions.
+
+    Arguments
+    ---------
+    positions : list(tuple(float))
+        The list of nodal positions.
+    coordinate_system : CoordinateSystem
+        Coordinate system used to calculate distances.
+    feature_size : float
+        TODO.
     """
     clusters, neighbour_mapping = create_clusters(
         positions,
@@ -49,7 +58,6 @@ def run_from_positions(positions, *, coordinate_system, feature_size):
     )
     results = []
     for cluster in clusters:
-        # TODO: use 'coordinate_system' to determine the dimension.
         dim = calculate_dimension(
             positions=cluster,
             neighbour_mapping=neighbour_mapping,
@@ -78,6 +86,17 @@ def run_from_positions(positions, *, coordinate_system, feature_size):
 @export
 @subscribe_hdf5('nodefinder.identification_result_container')
 class IdentificationResultContainer(SimpleNamespace, SimpleHDF5Mapping):
+    """Container class for the result of the identification step.
+
+    Attributes
+    ----------
+    coordinate_system : CoordinateSystem
+        The coordinate system of the problem.
+    results : list(IdentificationResult)
+        List of identified objects.
+    feature_size : float
+        The ``feature_size`` used when identifying the objects.
+    """
     HDF5_ATTRIBUTES = ['coordinate_system', 'results', 'feature_size']
 
     def __init__(self, *, coordinate_system, feature_size, results=()):
@@ -98,6 +117,19 @@ class IdentificationResultContainer(SimpleNamespace, SimpleHDF5Mapping):
 @export
 @subscribe_hdf5('nodefinder.identification_result')
 class IdentificationResult(SimpleNamespace, SimpleHDF5Mapping):
+    """Contains the attributes of an identified object.
+
+    Attributes
+    ----------
+    positions : list(tuple(float))
+        Positions of the nodal points making up the object.
+    shape : :obj:`None` or NodalPoint or NodalLine
+        Shape of the identified object. If the shape could not be identified, it
+        is set to ``None``.
+    dimension : int
+        Dimension of the identified object. Is set to ``None`` if the dimension
+        is ambiguous.
+    """
     HDF5_ATTRIBUTES = ['positions', 'shape', 'dimension']
 
     def __init__(self, positions, dimension, shape=None):

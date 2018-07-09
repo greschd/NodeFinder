@@ -1,3 +1,7 @@
+"""
+Defines the coordinate system class.
+"""
+
 import numpy as np
 import scipy.linalg as la
 from fsc.export import export
@@ -7,6 +11,22 @@ from fsc.hdf5_io import SimpleHDF5Mapping, subscribe_hdf5
 @export
 @subscribe_hdf5('nodefinder.coordinate_system')
 class CoordinateSystem(SimpleHDF5Mapping):
+    """
+    Defines a "box" coordinate system, which is used to calculate the distances
+    between points, and map between fractional and real coordinates.
+
+    Attributes
+    ----------
+    limits : numpy.ndarray
+        Limits of the coordinates, given as a the minimum and
+        maximum value for each dimension.
+    periodic : bool
+        Determies if periodic boundary conditions are used.
+    dim : int
+        Dimension of the coordinate system.
+    size : numpy.ndarray
+        Size of the coordinate system in each dimension.
+    """
     HDF5_ATTRIBUTES = ['limits', 'periodic']
 
     def __init__(self, *, limits, periodic=True):
@@ -29,6 +49,9 @@ class CoordinateSystem(SimpleHDF5Mapping):
         return self.limits[:, 1]
 
     def get_frac(self, pos, clip_limits=False):
+        """
+        Get the fractional coordinates from the real position.
+        """
         frac = (pos - self._lower_limits) / self.size
         if self.periodic:
             return frac % 1
@@ -44,9 +67,15 @@ class CoordinateSystem(SimpleHDF5Mapping):
             return frac
 
     def get_pos(self, frac):
+        """
+        Get the real position from the fractional coordinates.
+        """
         return (frac * self.size) + self._lower_limits
 
     def distance(self, pos1, pos2):
+        """
+        Get the distance between two positions.
+        """
         if self.periodic:
             delta = (pos2 - pos1) % self.size
             delta = np.minimum(self.size - delta, delta)
@@ -55,6 +84,9 @@ class CoordinateSystem(SimpleHDF5Mapping):
         return la.norm(delta, axis=-1)
 
     def connecting_vector(self, pos1, pos2):
+        """
+        Get the shortest vector connecting two positions.
+        """
         if not self.periodic:
             return pos2 - pos1
         else:
@@ -65,6 +97,9 @@ class CoordinateSystem(SimpleHDF5Mapping):
             return res
 
     def average(self, positions):
+        """
+        Get the average position from a list of positions.
+        """
         if not self.periodic:
             return np.average(positions, axis=0.)
         else:
@@ -73,6 +108,11 @@ class CoordinateSystem(SimpleHDF5Mapping):
             return (origin + np.average(deltas, axis=0)) % self.size
 
     def normalize_position(self, pos):
+        """
+        Normalize the position by mapping it into the limits for periodic
+        boundary conditions, or checking that it is within the boundaries
+        for non-periodic boundary conditions.
+        """
         if self.periodic:
             return ((pos - self._lower_limits) %
                     self.size) + self._lower_limits

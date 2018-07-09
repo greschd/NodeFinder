@@ -1,3 +1,7 @@
+"""
+Defines the top-level result class for the search step.
+"""
+
 import numpy as np
 from fsc.export import export
 from fsc.hdf5_io import SimpleHDF5Mapping, subscribe_hdf5

@@ -1,4 +1,21 @@
+"""
+Defines the fake potential class.
+"""
+
+
 class FakePotential:
+    """
+    Defines the fake potential used to repel the minimization from the existing
+    nodes.
+
+    Arguments
+    ---------
+    result : SearchResultContainer
+        The existing results from which the minimization should be repelled.
+    width : float
+        Distance from existing nodes at which the fake potential should start.
+    """
+
     def __init__(self, result, width):
         self.result = result
         self.width = width

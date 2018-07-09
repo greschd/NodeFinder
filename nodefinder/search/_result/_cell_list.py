@@ -1,3 +1,8 @@
+"""
+Defines the cell list class, used for quicker lookup of the neighbours of a
+given position.
+"""
+
 import itertools
 from functools import lru_cache
 

@@ -7,6 +7,9 @@
 #
 # The additional license terms given in ADDITIONAL_TERMS.txt apply to this
 # file.
+"""
+Defines the result classes for the minimization.
+"""
 
 from types import SimpleNamespace
 
@@ -16,8 +19,11 @@ from fsc.hdf5_io import subscribe_hdf5, SimpleHDF5Mapping, HDF5Enabled
 
 
 @export
-@subscribe_hdf5('nodefinder.joined_result')
-class JoinedResult(SimpleHDF5Mapping):
+@subscribe_hdf5(
+    'nodefinder.joined_minimization_result',
+    extra_tags=['nodefinder.joined_result']
+)
+class JoinedMinimizationResult(SimpleHDF5Mapping):
     """
     Wrapper for minimization results that result from two steps.
 

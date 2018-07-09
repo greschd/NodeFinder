@@ -1,3 +1,7 @@
+"""
+Defines the function for evaluating the dimension of a cluster of positions.
+"""
+
 import random
 import warnings
 import itertools
@@ -68,6 +72,9 @@ def _get_dimension(
     pos, *, neighbours, coordinate_system, feature_size, max_dim,
     num_neighbour_evaluations
 ):
+    """
+    Get the dimension from a given positions.
+    """
     for dim in range(1, max_dim + 1):
         volume = _get_volume(
             pos,
@@ -85,6 +92,9 @@ def _get_dimension(
 def _get_volume(
     pos, neighbours, *, coordinate_system, dim, num_neighbour_evaluations
 ):
+    """
+    Get an estimate for the average volume spanned by a position and its neighbours.
+    """
     neighbour_pos = [n.pos for n in neighbours]
     if num_neighbour_evaluations is None:
         num_neighbour_evaluations = len(neighbours)

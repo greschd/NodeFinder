@@ -1,3 +1,8 @@
+"""
+Defines helper functions for plotting.
+"""
+
+
 def _setup_plot(limits, axis=None):
     """Sets up the figure axes and handles options common to all plots."""
     # import is here s.t. the import of the package does not fail

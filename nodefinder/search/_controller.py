@@ -1,3 +1,7 @@
+"""
+Defines the Controller, which implements the evaluation of the search step.
+"""
+
 import os
 import numbers
 import asyncio
@@ -23,6 +27,10 @@ _DIST_CUTOFF_FACTOR = 3
 @export
 @subscribe_hdf5('nodefinder.controller_state')
 class ControllerState(SimpleHDF5Mapping):
+    """
+    Container class for the current result and queue of the :func:`.search.run`
+    function.
+    """
     HDF5_ATTRIBUTES = ['result', 'queue']
 
     def __init__(self, *, result, queue):
@@ -32,19 +40,9 @@ class ControllerState(SimpleHDF5Mapping):
 
 class Controller:
     """
+    Implementation class for the :func:`.search.run` function.
 
-    Arguments
-    ---------
-    gap_fct : Callable
-        Function that returns the gap, given a k-point.
-    gap_threshold : float
-        Threshold when the gap is considered to be closed.
-    feature_size : float
-        Minimum distance between nodal features for them to be considered distinct.
-    initial_box_position : tuple[tuple[float]]
-        Initial box within which the minimization starting points are selected.
-    initial_mesh_size : tuple[int]
-        Initial mesh of starting points.
+    Arguments are the same as defined in :func:`.search.run`.
     """
 
     def __init__(
@@ -106,6 +104,9 @@ class Controller:
 
     @staticmethod
     def check_dimensions(limits, mesh_size, refinement_mesh_size):
+        """
+        Check that the dimensions of the given inputs match.
+        """
         if isinstance(mesh_size, numbers.Integral):
             mesh_size = tuple(mesh_size for _ in range(len(limits)))
         if isinstance(refinement_mesh_size, numbers.Integral):
@@ -133,6 +134,9 @@ class Controller:
         gap_threshold,
         dist_cutoff,
     ):
+        """
+        Load or create the initial state of the calculation.
+        """
         if load:
             if initial_state is not None:
                 raise ValueError(
@@ -172,6 +176,9 @@ class Controller:
         )
 
     def generate_simplices(self, limits, mesh_size):
+        """
+        Generate the starting simplices for given limits and mesh size.
+        """
         vertices = list(
             itertools.product(
                 *[
@@ -190,6 +197,9 @@ class Controller:
     def create_refinement_stencil(
         self, refinement_box_size, refinement_mesh_size
     ):
+        """
+        Create a stencil for the simplices used in the refinement step.
+        """
         if np.product(refinement_mesh_size) == 0:
             return None
         half_size = refinement_box_size / 2
@@ -205,6 +215,9 @@ class Controller:
         loop.run_until_complete(self.create_tasks())
 
     async def create_tasks(self):
+        """
+        Create minimization tasks until the calculation is finished.
+        """
         async with PeriodicTask(self.save, delay=5.):
             while not self.state.queue.finished:
                 while (
@@ -225,6 +238,9 @@ class Controller:
         self.task_futures.add(asyncio.ensure_future(self.run_simplex(simplex)))
 
     async def run_simplex(self, simplex):
+        """
+        Run the minimization for a given starting simplex.
+        """
         result = await run_minimization(
             self.gap_fct,
             initial_simplex=simplex,

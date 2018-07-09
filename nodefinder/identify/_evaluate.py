@@ -83,6 +83,9 @@ class NodalPoint(SimpleNamespace, SimpleHDF5Mapping):
 def _evaluate_line(
     positions, coordinate_system, neighbour_mapping, feature_size
 ):
+    """
+    Evaluate the positions of a closed line.
+    """
     pos1 = positions.pop()
     pos2, distance = max(((
         pos_candidate,
@@ -135,7 +138,9 @@ def _get_shortest_path(
     neighbour_mapping,
     weight_func=lambda dist: 1 / dist
 ):
-
+    """
+    Get the shortest path between the start and end of a list of positions.
+    """
     num_pos = len(positions)
     weight_array = np.zeros(shape=(num_pos, num_pos))
     for pos1, neighbours in neighbour_mapping.items():

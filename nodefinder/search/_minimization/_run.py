@@ -6,7 +6,7 @@ from types import MappingProxyType
 
 from fsc.export import export
 
-from ._result import JoinedResult
+from ._result import JoinedMinimizationResult
 from ._nelder_mead import root_nelder_mead
 
 
@@ -60,7 +60,7 @@ async def run_minimization(
         res = await root_nelder_mead(
             func=func, initial_simplex=simplex_blowup, **nelder_mead_kwargs
         )
-        return JoinedResult(child=res, ancestor=res_fake)
+        return JoinedMinimizationResult(child=res, ancestor=res_fake)
     else:
         return await root_nelder_mead(
             func=func, initial_simplex=initial_simplex, **nelder_mead_kwargs
