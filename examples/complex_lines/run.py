@@ -15,7 +15,8 @@ if __name__ == '__main__':
         search_result = nf.io.load('search_result.hdf5')
     except IOError:
         search_result = nf.search.run(
-            gap_func, limits=[(0, 2 * np.pi), (0, 2 * np.pi)],
+            gap_func,
+            limits=[(0, 2 * np.pi), (0, 2 * np.pi)],
             initial_mesh_size=3,
             feature_size=0.1,
             gap_threshold=1e-4,

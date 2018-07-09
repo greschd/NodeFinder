@@ -1,3 +1,7 @@
+"""
+Tests for the identify plot functions.
+"""
+
 import os
 
 import pytest

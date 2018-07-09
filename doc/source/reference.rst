@@ -9,9 +9,15 @@ This is the reference for the classes and functions defined in the ``nodefinder`
 Search
 ------
 
+Run function
+''''''''''''
+
 .. automodule:: nodefinder.search
     :members:
     :imported-members:
+
+Plotting
+''''''''
 
 .. automodule:: nodefinder.search.plot
     :members:
@@ -36,9 +42,15 @@ Internal submodules
 Identify
 --------
 
+Run function
+''''''''''''
+
 .. automodule:: nodefinder.identify
     :members:
     :imported-members:
+
+Plotting
+''''''''
 
 .. automodule:: nodefinder.identify.plot
     :members:

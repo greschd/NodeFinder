@@ -19,6 +19,7 @@ from ._fake_potential import FakePotential
 
 _DIST_CUTOFF_FACTOR = 3
 
+
 @export
 @subscribe_hdf5('nodefinder.controller_state')
 class ControllerState(SimpleHDF5Mapping):

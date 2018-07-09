@@ -70,6 +70,10 @@ def _get_distances(result, exact_points):
 @export
 @pytest.fixture
 def score_nodal_line(score, score_num_fev):  # pylint: disable=redefined-outer-name
+    """
+    Fixture for scoring the accuracy and coverage of a nodal line.
+    """
+
     def inner(
         result,
         *,
@@ -78,7 +82,7 @@ def score_nodal_line(score, score_num_fev):  # pylint: disable=redefined-outer-n
         cutoff_accuracy=None,
         cutoff_coverage=None,
         num_line_points=1e4
-    ):
+    ):  # pylint: disable=missing-docstring
         score_num_fev(result)
 
         if dist_func is not None:
@@ -113,6 +117,10 @@ def score_nodal_line(score, score_num_fev):  # pylint: disable=redefined-outer-n
 @export
 @pytest.fixture
 def score_nodal_surface(score, score_num_fev):  # pylint: disable=redefined-outer-name
+    """
+    Fixture for scoring the accuracy and coverage of a nodal surface.
+    """
+
     def inner(
         result,
         *,
@@ -121,7 +129,8 @@ def score_nodal_surface(score, score_num_fev):  # pylint: disable=redefined-oute
         cutoff_accuracy=None,
         cutoff_coverage=None,
         num_line_points=1e2
-    ):
+    ):  # pylint: disable=missing-docstring
+
         score_num_fev(result)
 
         if dist_func is not None:

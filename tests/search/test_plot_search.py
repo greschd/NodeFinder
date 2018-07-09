@@ -1,3 +1,7 @@
+"""
+Defines tests for the search plotting functions.
+"""
+
 import os
 
 import pytest

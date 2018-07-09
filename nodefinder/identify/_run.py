@@ -1,3 +1,7 @@
+"""
+Defines the function which runs the identify step.
+"""
+
 from types import SimpleNamespace
 
 from fsc.export import export

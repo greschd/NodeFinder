@@ -1,3 +1,7 @@
+"""
+Tests for the clustering algorithm.
+"""
+
 import pytest
 
 import nodefinder as nf
@@ -11,6 +15,10 @@ from nodefinder.identify._cluster import create_clusters
      ('search/line.hdf5', 1), ('search/surface.hdf5', 1)]
 )
 def test_clustering(sample, sample_name, num_clusters):
+    """
+    Test that the positions given in the sample search outputs are correctly
+    clustered.
+    """
     search_result = nf.io.load(sample(sample_name))
 
     positions = [res.pos for res in search_result.nodes]

@@ -10,6 +10,10 @@ from nodefinder.search import run
 
 @pytest.fixture
 def nodal_surface_properties():
+    """
+    Fixture which defines the helper functions describing the nodal surface.
+    """
+
     def dist_fct(pos):
         _, _, dz = (np.array(pos) % 1) - 0.5
         return abs(dz)

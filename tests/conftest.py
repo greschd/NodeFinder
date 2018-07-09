@@ -49,6 +49,10 @@ def compare_equal(compare_data):
 
 @pytest.fixture
 def sample():
+    """
+    Fixture to get the path to the sample of a given name.
+    """
+
     def inner(name):
         return os.path.join(
             os.path.join(

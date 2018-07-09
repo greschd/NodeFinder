@@ -10,6 +10,10 @@ from nodefinder.search import run
 
 @pytest.fixture
 def nodal_line_properties():
+    """
+    Fixture which defines the helper functions describing the properties of the
+    nodal line.
+    """
     radius = 0.2
 
     def dist_fct(pos):
@@ -53,11 +57,16 @@ def test_nodal_line(nodal_line_properties, score_nodal_line):  # pylint: disable
 
 @pytest.fixture
 def nodal_line_2d_properties():
+    """
+    Fixture which defines the helper functions describing the properties of the
+    two 2D nodal lines.
+    """
+
     def gap_fct(pos):
         x, y = pos
         return abs(np.sin(x) + 0.8 * np.cos(y))
 
-    def parametrization(t):
+    def parametrization(t):  # pylint: disable=missing-docstring
         y = 2 * t % 1
         x = np.arcsin(-0.8 * np.cos(y))
         if t > 0.5:
@@ -69,7 +78,7 @@ def nodal_line_2d_properties():
 
 def test_nodal_line_2d(nodal_line_2d_properties, score_nodal_line):  # pylint: disable=redefined-outer-name
     """
-    Test that a 2D nodal line.
+    Test that two 2D nodal lines are correctly identified.
     """
     dist_fct, gap_fct, parametrization = nodal_line_2d_properties
 

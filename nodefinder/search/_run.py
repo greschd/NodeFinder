@@ -1,3 +1,7 @@
+"""
+Defines the function which runs the search step.
+"""
+
 from types import MappingProxyType
 
 from fsc.export import export

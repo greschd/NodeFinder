@@ -35,10 +35,11 @@ intersphinx_mapping = {
     'numpy': ('http://docs.scipy.org/doc/numpy/', None),
     'fsc.hdf5_io':
     ('http://frescolinogroup.github.io/frescolino/pyhdf5io/0.2', None),
+    'matplotlib': ('https://matplotlib.org/', None),
 }
 
-nitpick_ignore = [('py:obj', 'module'), ('py:func', 'from_hdf5_file'),
-                  ('py:func', 'to_hdf5_file')]
+nitpick_ignore = [('py:obj', 'module'), ('py:class', 'optional'),
+                  ('py:func', 'from_hdf5_file'), ('py:func', 'to_hdf5_file')]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
