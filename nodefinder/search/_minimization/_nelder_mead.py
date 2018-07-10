@@ -216,6 +216,13 @@ async def root_nelder_mead(
 
 
 def _get_fprime_estimate(sim, fval):
-    return fval / max(
-        la.norm(p2 - p1) for p1, p2 in itertools.combinations(sim, r=2)
+    return fval / np.sqrt(
+        np.max(
+            np.sum(
+                np.square([
+                    p2 - p1 for p1, p2 in itertools.combinations(sim, r=2)
+                ]),
+                axis=-1
+            )
+        )
     )

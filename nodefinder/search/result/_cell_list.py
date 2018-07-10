@@ -19,9 +19,9 @@ class CellList:
     def __init__(self, num_cells):
         self.num_cells = np.array(num_cells, dtype=int)
         assert np.all(self.num_cells > 0)
-        self._cells = np.empty(shape=self.num_cells, dtype=object)
-        for i, _ in enumerate(self._cells.flat):
-            self._cells.flat[i] = []
+        self._cells = np.empty(shape=self.num_cells, dtype=np.object)
+        filler = np.frompyfunc(lambda x: list(), 1, 1)
+        filler(self._cells, self._cells)
         self._values_flat = []
 
     def add_point(self, frac, value):
