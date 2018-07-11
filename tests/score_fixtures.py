@@ -81,7 +81,7 @@ def score_nodal_line(score, score_num_fev):  # pylint: disable=redefined-outer-n
         line_parametrization=None,
         cutoff_accuracy=None,
         cutoff_coverage=None,
-        num_line_points=1e4
+        num_line_points=10**4
     ):  # pylint: disable=missing-docstring
         score_num_fev(result)
 
@@ -128,7 +128,7 @@ def score_nodal_surface(score, score_num_fev):  # pylint: disable=redefined-oute
         surface_parametrization=None,
         cutoff_accuracy=None,
         cutoff_coverage=None,
-        num_line_points=1e2
+        num_line_points=100
     ):  # pylint: disable=missing-docstring
 
         score_num_fev(result)

@@ -17,7 +17,7 @@ from splitting_fct import gap_fct
 FEATURE_SIZE = 1e-4
 
 
-@limit_parallel(1)
+@limit_parallel(4)
 async def get_num_nodes(splitting):
     print('Calculating splitting:', splitting)
     search_res = await nf.search.run_async(
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         lambda pos: get_num_nodes([pos[0], 0, pos[1]]),
         limits=[(-0.3, 0.3)] * 2,
         mesh=3,
-        num_steps=4,
+        num_steps=5,
         save_file='res.json',
         load=True,
     )

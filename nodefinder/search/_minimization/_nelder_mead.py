@@ -11,6 +11,7 @@
 # pylint: skip-file
 
 import asyncio
+import warnings
 import itertools
 
 import numpy as np
@@ -127,11 +128,15 @@ async def root_nelder_mead(
             and _get_fprime_estimate(sim=sim, fval=fsim[0]) > fprime_cutoff
         ):
             break
-        if (
-            np.max(np.ravel(np.abs(sim[1:] - sim[0]))) <= xtol
-            and np.max(np.abs(fsim[0] - fsim[1:])) <= ftol
-        ):
-            break
+        with warnings.catch_warnings():
+            # Ignore subtraction 'inf - inf' in fsim, since it will correctly
+            # evaluate to False.
+            warnings.simplefilter('ignore')
+            if (
+                np.max(np.ravel(np.abs(sim[1:] - sim[0]))) <= xtol
+                and np.max(np.abs(fsim[0] - fsim[1:])) <= ftol
+            ):
+                break
 
         xbar = np.add.reduce(sim[:-1], 0) / N
         xr = (1 + rho) * xbar - rho * sim[-1]
