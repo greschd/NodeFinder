@@ -3,7 +3,6 @@ cache: pip
 python:
   - "3.5"
   - "3.6"
-  - "3.6-dev"
 
 env:
   - TEST_TYPE="test"
@@ -13,7 +12,6 @@ matrix:
       env: TEST_TYPE="compliance"
 
 install:
-  - pip install git+https://github.com/FrescolinoGroup/pyhdf5io.git#egg=fsc.hdf5-io
   - pip install .
 
 script:
