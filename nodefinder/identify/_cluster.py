@@ -36,6 +36,8 @@ def create_clusters(positions, *, feature_size, coordinate_system):
     dict:
         Mapping containing the list of neighbours for each position.
     """
+    if not positions:
+        return [], {}
     positions_unique = set(tuple(pos) for pos in positions)
     neighbour_mapping = {pos: [] for pos in positions_unique}
     pos_pairs = list(itertools.combinations(positions_unique, r=2))

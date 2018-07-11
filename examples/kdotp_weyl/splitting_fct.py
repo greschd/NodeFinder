@@ -87,7 +87,3 @@ def gap_fct(k, splitting):
         cxy=cxy(k, **FIT),
         splitting=splitting
     )
-
-
-def gap_fct_listable(k, splitting):
-    return np.array([gap_fct(kval, splitting) for kval in k])

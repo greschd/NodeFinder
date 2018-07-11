@@ -4,7 +4,6 @@ given position.
 """
 
 import itertools
-from functools import lru_cache
 
 import numpy as np
 from fsc.export import export
@@ -16,21 +15,52 @@ class CellList:
     Cell list container for the NodalPoint objects.
     """
 
-    def __init__(self, num_cells):
+    def __init__(self, num_cells, periodic):
+        self.periodic = periodic
         self.num_cells = np.array(num_cells, dtype=int)
+        self._total_num_cells = np.copy(self.num_cells)
+        if not self.periodic:
+            self._total_num_cells += 2  # add 'boundary' boxes for outside points.
         assert np.all(self.num_cells > 0)
-        self._cells = np.empty(shape=self.num_cells, dtype=np.object)
+        self._cells = np.empty(shape=self._total_num_cells, dtype=np.object)
         filler = np.frompyfunc(lambda x: list(), 1, 1)
         filler(self._cells, self._cells)
         self._values_flat = []
+
+        self._neighbour_offset = np.array(
+            list(itertools.product([-1, 0, 1], repeat=len(self.num_cells)))
+        )
+        self._neighbour_indices = dict()
+
+    def _get_neighbour_indices(self, idx):
+        try:
+            return self._neighbour_indices[idx]
+        except KeyError:
+            res = self._calculate_neighbour_indices(idx)
+            self._neighbour_indices[idx] = res
+            return res
+
+    def _calculate_neighbour_indices(self, idx):  # pylint: disable=missing-docstring
+        indices = idx + self._neighbour_offset
+
+        if self.periodic:
+            return [tuple(i % self._total_num_cells) for i in indices]
+        return [
+            tuple(i) for i in indices
+            if np.all(i >= 0) and np.all(i < self._total_num_cells)
+        ]
 
     def add_point(self, frac, value):
         idx = self.get_index(frac)
         self._cells[idx].append(value)
         self._values_flat.append(value)
 
-    def get_index(self, frac):
-        return tuple(np.array(frac * self.num_cells, dtype=int))
+    def get_index(self, frac):  # pylint: disable=missing-docstring
+        vals = np.array(frac * self.num_cells, dtype=int)
+        if not self.periodic:
+            vals += 1
+            vals = np.maximum(0, np.minimum(vals, self._total_num_cells - 1))
+        return tuple(vals)
 
     def values(self):
         return self._values_flat
@@ -44,24 +74,7 @@ class CellList:
     def __getitem__(self, key):
         return self._values_flat[key]
 
-    def get_neighbour_values(self, frac, periodic=True):
+    def get_neighbour_values(self, frac):
         idx = self.get_index(frac)
-        for cell_idx in self.get_neighbour_indices(idx=idx, periodic=periodic):
+        for cell_idx in self._get_neighbour_indices(idx):
             yield from self._cells[cell_idx]
-
-    @lru_cache(maxsize=None)
-    def get_neighbour_indices(self, idx, periodic=True):
-        indices = [offset + idx for offset in self._get_offsets()]
-        if periodic:
-            return [tuple(i % self.num_cells) for i in indices]
-        return [
-            tuple(i) for i in indices
-            if np.all(i >= 0) and np.all(i < self.num_cells)
-        ]
-
-    @lru_cache(maxsize=None)
-    def _get_offsets(self):
-        return [
-            np.array(o)
-            for o in itertools.product([-1, 0, 1], repeat=len(self.num_cells))
-        ]

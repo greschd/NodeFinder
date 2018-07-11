@@ -48,23 +48,14 @@ class CoordinateSystem(SimpleHDF5Mapping):
     def _upper_limits(self):
         return self.limits[:, 1]
 
-    def get_frac(self, pos, clip_limits=False):
+    def get_frac(self, pos):
         """
         Get the fractional coordinates from the real position.
         """
         frac = (pos - self._lower_limits) / self.size
         if self.periodic:
-            return frac % 1
-        else:
-            if clip_limits:
-                return np.maximum(0, np.minimum(frac, 1))
-            if not (np.all(frac >= 0) and np.all(frac <= 1)):
-                raise ValueError(
-                    "Position '{}' is out of bounds for limits '{}'".format(
-                        pos, self.limits
-                    )
-                )
-            return frac
+            frac %= 1
+        return frac
 
     def get_pos(self, frac):
         """
@@ -101,7 +92,7 @@ class CoordinateSystem(SimpleHDF5Mapping):
         Get the average position from a list of positions.
         """
         if not self.periodic:
-            return np.average(positions, axis=0.)
+            return np.average(positions, axis=0)
         else:
             origin = positions[0]
             deltas = [self.connecting_vector(origin, pos) for pos in positions]
@@ -110,18 +101,10 @@ class CoordinateSystem(SimpleHDF5Mapping):
     def normalize_position(self, pos):
         """
         Normalize the position by mapping it into the limits for periodic
-        boundary conditions, or checking that it is within the boundaries
-        for non-periodic boundary conditions.
+        boundary conditions for the periodic case.
         """
         if self.periodic:
             return ((pos - self._lower_limits) %
                     self.size) + self._lower_limits
         else:
-            if np.all(pos >= self._lower_limits
-                      ) and np.all(pos <= self._upper_limits):
-                return pos
-            raise ValueError(
-                "Position '{}' is not within the limits '{}'".format(
-                    pos, self.limits
-                )
-            )
+            return pos

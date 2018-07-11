@@ -14,7 +14,6 @@ import asyncio
 import itertools
 
 import numpy as np
-import scipy.linalg as la
 from fsc.export import export
 
 from ..result._minimization import MinimizationResult
@@ -57,7 +56,7 @@ async def root_nelder_mead(
     ftol,
     maxiter=None,
     maxfev=None,
-    fprime_cutoff=10,
+    fprime_cutoff=None,
 ):
     """
     Minimization of scalar function of one or more variables using the
@@ -122,10 +121,12 @@ async def root_nelder_mead(
 
     iterations = 1
 
-    while (
-        fcalls[0] < maxfun and iterations < maxiter
-        and _get_fprime_estimate(sim=sim, fval=fsim[0]) < fprime_cutoff
-    ):
+    while (fcalls[0] < maxfun and iterations < maxiter):
+        if (
+            fprime_cutoff is not None
+            and _get_fprime_estimate(sim=sim, fval=fsim[0]) > fprime_cutoff
+        ):
+            break
         if (
             np.max(np.ravel(np.abs(sim[1:] - sim[0]))) <= xtol
             and np.max(np.abs(fsim[0] - fsim[1:])) <= ftol
@@ -195,7 +196,10 @@ async def root_nelder_mead(
     elif iterations >= maxiter:
         warnflag = 2
         msg = _status_message['maxiter']
-    elif _get_fprime_estimate(sim=sim, fval=fval) >= fprime_cutoff:
+    elif (
+        fprime_cutoff is not None
+        and _get_fprime_estimate(sim=sim, fval=fval) > fprime_cutoff
+    ):
         warnflag = 3
         msg = _status_message['fprime_cutoff']
     else:

@@ -61,7 +61,9 @@ class SearchResultContainer(SimpleHDF5Mapping):
                     )
                 )
             )
-        self.nodes = CellList(num_cells=num_cells)
+        self.nodes = CellList(
+            num_cells=num_cells, periodic=self.coordinate_system.periodic
+        )
         self.rejected_results = []
         for res in minimization_results:
             self.add_result(res)
@@ -98,7 +100,7 @@ class SearchResultContainer(SimpleHDF5Mapping):
 
     def _get_neighbour_iterator(self, pos):
         candidates = self.nodes.get_neighbour_values(
-            frac=self.coordinate_system.get_frac(pos), periodic=True
+            frac=self.coordinate_system.get_frac(pos)
         )
         return (c for c in candidates if np.any(c.pos != pos))
 

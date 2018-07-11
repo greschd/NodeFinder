@@ -16,14 +16,17 @@ class SimplexQueue(HDF5Enabled):
     """
 
     def __init__(self, simplices=frozenset()):
-        self._queued_simplices = deque(self.convert_to_tuples(simplices))
+        self._queued_simplices = deque(
+            self.convert_to_sorted_tuples(simplices)
+        )
         self._running_simplices = set()
         self._all_simplices = set(self._queued_simplices)
 
     @staticmethod
-    def convert_to_tuples(simplices):
+    def convert_to_sorted_tuples(simplices):
         return [
-            tuple(tuple(coord) for coord in simplex) for simplex in simplices
+            tuple(sorted(tuple(coord) for coord in simplex))
+            for simplex in simplices
         ]
 
     @property
@@ -44,7 +47,7 @@ class SimplexQueue(HDF5Enabled):
         """
         Add new simplices to the queue.
         """
-        new_simplices = self.convert_to_tuples(simplices)
+        new_simplices = self.convert_to_sorted_tuples(simplices)
         new_simplices_filtered = [
             simplex for simplex in new_simplices
             if simplex not in self._all_simplices

@@ -2,6 +2,10 @@
 Defines the function which runs the search step.
 """
 
+import queue
+import asyncio
+import threading
+from functools import partial
 from types import MappingProxyType
 
 from fsc.export import export
@@ -10,10 +14,11 @@ from ._controller import Controller
 
 
 @export
-def run(
+async def run_async(
     gap_fct,
     *,
     limits=((0, 1), ) * 3,
+    periodic=True,
     initial_state=None,
     save_file=None,
     load=False,
@@ -38,6 +43,9 @@ def run(
     limits : tuple(tuple(float))
         The limits of the box where nodes are searched, given as tuple for each
         dimension.
+    periodic : bool
+        Indicates whether periodic boundary conditions are used for the
+        coordinate system.
     save_file : str
         Path to the file where the intermediate results are stored.
     load : bool
@@ -80,6 +88,7 @@ def run(
     controller = Controller(
         gap_fct=gap_fct,
         limits=limits,
+        periodic=periodic,
         initial_state=initial_state,
         save_file=save_file,
         load=load,
@@ -94,5 +103,60 @@ def run(
         refinement_box_size=refinement_box_size,
         refinement_mesh_size=refinement_mesh_size
     )
-    controller.run()
+    await controller.run()
     return controller.state.result
+
+
+@export
+def run(*args, **kwargs):
+    """Wrapper around :func:`.run_async` that runs the node search synchronously.
+
+    Arguments
+    ---------
+    args : tuple
+        Positional arguments passed to :func:`.run_async`.
+    kwargs : collections.abc.Mapping
+        Keyword arguments passed to :func:`.run_async`.
+    """
+    try:
+        loop = asyncio.get_event_loop()
+        close_loop = False
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        close_loop = True
+
+    try:
+        if loop.is_running():
+            res_queue = queue.Queue()
+            exc_queue = queue.Queue()
+            thread = threading.Thread(
+                target=partial(
+                    _run_in_thread,
+                    *args,
+                    res_queue=res_queue,
+                    exc_queue=exc_queue,
+                    **kwargs
+                )
+            )
+            thread.start()
+            thread.join()
+            if not exc_queue.empty():
+                raise exc_queue.get()
+            res = res_queue.get()
+        else:
+            res = loop.run_until_complete(run_async(*args, **kwargs))
+    finally:
+        if close_loop:
+            loop.close()
+    return res
+
+
+def _run_in_thread(*args, res_queue, exc_queue, **kwargs):
+    try:
+        loop = asyncio.new_event_loop()
+        res = loop.run_until_complete(run_async(*args, **kwargs))
+        loop.close()
+        res_queue.put(res)
+    except Exception as exc:
+        exc_queue.put(exc)
+        raise

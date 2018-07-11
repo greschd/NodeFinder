@@ -1,1 +1,3 @@
 phasemap
+z2pack
+fsc.async-tools

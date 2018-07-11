@@ -35,6 +35,7 @@ class Controller:
         *,
         gap_fct,
         limits,
+        periodic,
         initial_state,
         save_file,
         load,
@@ -51,7 +52,9 @@ class Controller:
     ):
         self.gap_fct = wrap_to_coroutine(gap_fct)
 
-        self.coordinate_system = CoordinateSystem(limits=limits, periodic=True)
+        self.coordinate_system = CoordinateSystem(
+            limits=limits, periodic=periodic
+        )
         self.dim, initial_mesh_size, refinement_mesh_size = self.check_dimensions(
             limits, initial_mesh_size, refinement_mesh_size
         )
@@ -80,8 +83,8 @@ class Controller:
         self.num_minimize_parallel = num_minimize_parallel
         self.nelder_mead_kwargs = ChainMap(
             nelder_mead_kwargs, {
-                'ftol': 0.1 * gap_threshold,
-                'xtol': 0.1 * self.dist_cutoff
+                'ftol': 0.05 * gap_threshold,
+                'xtol': 0.03 * self.dist_cutoff
             }
         )
 
@@ -195,9 +198,8 @@ class Controller:
             )
         )
 
-    def run(self):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.create_tasks())
+    async def run(self):
+        await self.create_tasks()
 
     async def create_tasks(self):
         """
