@@ -4,11 +4,6 @@
 import os
 import json
 import operator
-import warnings
-
-# needs to be imported here because it triggers a warning
-import h5py  # pylint: disable=unused-import
-warnings.simplefilter('error')
 
 import pytest
 
