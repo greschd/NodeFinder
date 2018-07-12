@@ -48,7 +48,7 @@ class Controller:
         num_minimize_parallel,
         refinement_box_size,
         refinement_mesh_size,
-        use_fake_potential=True,
+        use_fake_potential=True
     ):
         self.gap_fct = wrap_to_coroutine(gap_fct)
 
@@ -112,15 +112,8 @@ class Controller:
         return dim_limits, mesh_size, refinement_mesh_size
 
     def create_state(
-        self,
-        *,
-        initial_state,
-        load,
-        load_quiet,
-        initial_mesh_size,
-        force_initial_mesh,
-        gap_threshold,
-        dist_cutoff,
+        self, *, initial_state, load, load_quiet, initial_mesh_size,
+        force_initial_mesh, gap_threshold, dist_cutoff
     ):
         """
         Load or create the initial state of the calculation.

@@ -31,7 +31,7 @@ async def run_async(
     feature_size=2e-3,
     use_fake_potential=False,
     nelder_mead_kwargs=MappingProxyType({}),
-    num_minimize_parallel=50,
+    num_minimize_parallel=50
 ):
     """Run the nodal point search.
 

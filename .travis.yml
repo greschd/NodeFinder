@@ -12,7 +12,7 @@ matrix:
       env: TEST_TYPE="compliance"
 
 install:
-  - pip install .
+  - pip install --process-dependency-links .[test]
 
 script:
   - if [ "$TEST_TYPE" == "compliance" ] ; then pip install .[dev]; pre-commit run --all-files ; fi
