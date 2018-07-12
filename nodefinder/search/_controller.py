@@ -232,17 +232,11 @@ class Controller:
         """
         Run the minimization for a given starting simplex.
         """
-        SEARCH_LOGGER.debug(
-            'Running minimization of simplex {}'.format(simplex)
-        )
         result = await run_minimization(
             self.gap_fct,
             initial_simplex=simplex,
             fake_potential=self.fake_potential,
             nelder_mead_kwargs=self.nelder_mead_kwargs,
-        )
-        SEARCH_LOGGER.debug(
-            'Minimization of simplex {} finished.'.format(simplex)
         )
         self.process_result(result)
         self.state.queue.set_finished(simplex)
@@ -254,10 +248,12 @@ class Controller:
         is_node = self.state.result.add_result(result)
         if is_node and self.refinement_stencil is not None:
             pos = result.pos
+            SEARCH_LOGGER.info('Found node at position {}'.format(pos))
             if all(
                 dist >= self.dist_cutoff for dist in
                 self.state.result.get_neighbour_distance_iterator(pos)
             ):
+                SEARCH_LOGGER.info('Scheduling refinement around node.')
                 self.state.queue.add_simplices(pos + self.refinement_stencil)
 
     def save(self):
