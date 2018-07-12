@@ -6,3 +6,5 @@ The goal of this code is to identify nodal features in potential landscapes, usi
 * **Identification:** Identify the features (points, lines, surfaces) which are contained in the point cloud. For this step, the nodal points are first separated into clusters. For each cluster, the dimension is estimated, and depending on the points are evaluated further.
 
 The initial use-case for this code is to find gapless features in three-dimensional materials.
+
+https://travis-ci.org/greschd/NodeFinder.svg?branch=master
