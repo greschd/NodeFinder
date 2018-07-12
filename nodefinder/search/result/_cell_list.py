@@ -33,6 +33,9 @@ class CellList:
         self._neighbour_indices = dict()
 
     def _get_neighbour_indices(self, idx):
+        """
+        Get the indices of neighbouring cells for a given index.
+        """
         try:
             return self._neighbour_indices[idx]
         except KeyError:

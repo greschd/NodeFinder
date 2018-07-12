@@ -7,7 +7,6 @@ import operator
 from contextlib import suppress
 
 import numpy as np
-from scipy.sparse import csgraph
 
 from fsc.export import export
 
@@ -54,6 +53,8 @@ def evaluate_cluster(
             )
         except (IndexError, ValueError) as exc:
             warnings.warn('Could not identify line: {}'.format(exc))
+    else:
+        return None
 
 
 def _evaluate_point(positions, coordinate_system):
@@ -124,6 +125,9 @@ def _get_shortest_path(
     """
     Get the shortest path between the start and end of a list of positions.
     """
+    # For certain scipy versions on Python 3.5
+    from scipy.sparse import csgraph
+
     num_pos = len(positions)
     weight_array = np.zeros(shape=(num_pos, num_pos))
     for pos1, neighbours in neighbour_mapping.items():

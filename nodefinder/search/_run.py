@@ -152,6 +152,10 @@ def run(*args, **kwargs):
 
 
 def _run_in_thread(*args, res_queue, exc_queue, **kwargs):
+    """
+    Helper function that runs the search function, to be used as a thread target.
+    This assumes that no (running or other) loop exists.
+    """
     try:
         loop = asyncio.new_event_loop()
         res = loop.run_until_complete(run_async(*args, **kwargs))

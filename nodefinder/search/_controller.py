@@ -233,6 +233,9 @@ class Controller:
         self.state.queue.set_finished(simplex)
 
     def process_result(self, result):
+        """
+        Update the state with a given result, and add new simplices if needed.
+        """
         is_node = self.state.result.add_result(result)
         if is_node and self.refinement_stencil is not None:
             pos = result.pos
@@ -243,6 +246,9 @@ class Controller:
                 self.state.queue.add_simplices(pos + self.refinement_stencil)
 
     def save(self):
+        """
+        Store the current ControllerState to the save file.
+        """
         if self.save_file:
             with tempfile.NamedTemporaryFile(
                 dir=os.path.dirname(self.save_file), delete=False

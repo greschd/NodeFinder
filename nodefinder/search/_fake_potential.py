@@ -20,15 +20,13 @@ class FakePotential:
         self.result = result
         self.width = width
 
-    def get_fake_pot(self, distances):
-        if any(dist < self.width for dist in distances):
-            return float('inf')
-        return 0
-
-    def __call__(self, pos):
+    def __call__(self, pos):  # pylint: disable=missing-docstring
         try:
-            return self.get_fake_pot(
-                self.result.get_all_neighbour_distances(pos)
-            )
+            if any(
+                dist < self.width
+                for dist in self.result.get_all_neighbour_distances(pos)
+            ):
+                return float('inf')
+            return 0
         except ValueError:
             return 0

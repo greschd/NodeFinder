@@ -44,6 +44,10 @@ class JoinedMinimizationResult(SimpleHDF5Mapping):
         self.ancestor = ancestor
 
     def __getattr__(self, key):
+        """
+        Joins child and ancestor values where that makes sense, and returns the
+        child value otherwise.
+        """
         if key in self.JOIN_KEYS:
             return self._join(
                 getattr(self.ancestor, key), getattr(self.child, key)
@@ -53,6 +57,9 @@ class JoinedMinimizationResult(SimpleHDF5Mapping):
 
     @staticmethod
     def _join(obj1, obj2):
+        """
+        Helper function to join two result values.
+        """
         if isinstance(obj1, np.ndarray):
             return np.concatenate([obj1, obj2])
         else:

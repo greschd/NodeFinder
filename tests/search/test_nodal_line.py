@@ -110,7 +110,7 @@ def nodal_line_nonperiodic_properties():  # pylint: disable=invalid-name
     def gap_fct(pos):
         return np.abs(1 - np.max(np.abs(pos)))
 
-    def parametrization(t):
+    def parametrization(t):  # pylint: disable=missing-docstring
         if t < 0.25:
             return [-1 + 8 * t, -1]
         elif t < 0.5:
