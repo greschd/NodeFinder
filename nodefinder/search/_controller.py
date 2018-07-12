@@ -200,7 +200,6 @@ class Controller:
         """
         Create minimization tasks until the calculation is finished.
         """
-        print('foo')
         async with PeriodicTask(self.save, delay=5.):
             while not self.state.queue.finished:
                 while (
