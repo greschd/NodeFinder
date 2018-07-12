@@ -11,6 +11,7 @@ from collections import ChainMap
 
 import numpy as np
 
+from fsc.export import export
 from fsc.async_tools import PeriodicTask, wrap_to_coroutine
 
 from .. import io
@@ -23,6 +24,7 @@ from ._fake_potential import FakePotential
 _DIST_CUTOFF_FACTOR = 3
 
 
+@export
 class Controller:
     """
     Implementation class for the :func:`.search.run` function.

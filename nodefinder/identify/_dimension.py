@@ -21,7 +21,7 @@ def calculate_dimension(
     coordinate_system,
     max_dim=3,
     num_pos_evaluations=10,
-    num_neighbour_evaluations=25,
+    num_neighbour_evaluations=25
 ):
     """
     Calculate the dimension of a cluster of positions.

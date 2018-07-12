@@ -57,7 +57,7 @@ async def root_nelder_mead(
     ftol,
     maxiter=None,
     maxfev=None,
-    fprime_cutoff=None,
+    fprime_cutoff=None
 ):
     """
     Minimization of scalar function of one or more variables using the

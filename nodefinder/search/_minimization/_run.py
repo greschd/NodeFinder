@@ -23,7 +23,7 @@ async def run_minimization(
     *,
     initial_simplex,
     fake_potential=None,
-    nelder_mead_kwargs=MappingProxyType({}),
+    nelder_mead_kwargs=MappingProxyType({})
 ):
     """Runs the minimization, including handling the fake potential.
 
