@@ -7,7 +7,7 @@ import operator
 from contextlib import suppress
 
 import numpy as np
-from scipy.sparse.csgraph import shortest_path
+from scipy.sparse import csgraph
 
 from fsc.export import export
 
@@ -132,7 +132,7 @@ def _get_shortest_path(
                 weight = weight_func(distance)
                 weight_array[index_mapping[pos1], index_mapping[pos2]] = weight
 
-    _, predecessors = shortest_path(
+    _, predecessors = csgraph.shortest_path(
         weight_array, directed=False, return_predecessors=True
     )
     start_idx = 0
