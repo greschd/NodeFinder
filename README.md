@@ -7,4 +7,4 @@ The goal of this code is to identify nodal features in potential landscapes, usi
 
 The initial use-case for this code is to find gapless features in three-dimensional materials.
 
-https://travis-ci.org/greschd/NodeFinder.svg?branch=master
+[![Build Status](https://travis-ci.org/greschd/NodeFinder.svg?branch=master)](https://travis-ci.org/greschd/NodeFinder)
