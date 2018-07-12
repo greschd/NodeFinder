@@ -11,6 +11,7 @@ from types import MappingProxyType
 from fsc.export import export
 
 from ._controller import Controller
+from ._logging import SEARCH_LOGGER
 
 
 @export
@@ -85,6 +86,7 @@ async def run_async(
     SearchResultContainer:
         The result of the search algorithm.
     """
+    SEARCH_LOGGER.debug('Initializing search controller.')
     controller = Controller(
         gap_fct=gap_fct,
         limits=limits,
@@ -103,7 +105,9 @@ async def run_async(
         refinement_box_size=refinement_box_size,
         refinement_mesh_size=refinement_mesh_size
     )
+    SEARCH_LOGGER.debug('Running search controller.')
     await controller.run()
+    SEARCH_LOGGER.debug('Search controller finished.')
     return controller.state.result
 
 
@@ -122,11 +126,13 @@ def run(*args, **kwargs):
         loop = asyncio.get_event_loop()
         close_loop = False
     except RuntimeError:
+        SEARCH_LOGGER.debug('Creating a new event loop.')
         loop = asyncio.new_event_loop()
         close_loop = True
 
     try:
         if loop.is_running():
+            SEARCH_LOGGER.debug('Running in a separate thread.')
             res_queue = queue.Queue()
             exc_queue = queue.Queue()
             thread = threading.Thread(
@@ -138,12 +144,15 @@ def run(*args, **kwargs):
                     **kwargs
                 )
             )
+            SEARCH_LOGGER.debug('Starting thread.')
             thread.start()
+            SEARCH_LOGGER.debug('Joining thread.')
             thread.join()
             if not exc_queue.empty():
                 raise exc_queue.get()
             res = res_queue.get()
         else:
+            SEARCH_LOGGER.debug('Running in the current thread.')
             res = loop.run_until_complete(run_async(*args, **kwargs))
     finally:
         if close_loop:

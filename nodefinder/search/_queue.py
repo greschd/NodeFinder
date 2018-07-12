@@ -2,7 +2,7 @@
 Defines the SimplexQueue, which tracks the state of simplices to be minimized.
 """
 
-from collections import deque
+from queue import Queue
 
 from fsc.export import export
 from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
@@ -16,11 +16,11 @@ class SimplexQueue(HDF5Enabled):
     """
 
     def __init__(self, simplices=frozenset()):
-        self._queued_simplices = deque(
-            self.convert_to_sorted_tuples(simplices)
-        )
+        all_simplices = self.convert_to_sorted_tuples(simplices)
+        self._queued_simplices = Queue()
+        self._extend_queue(all_simplices)
         self._running_simplices = set()
-        self._all_simplices = set(self._queued_simplices)
+        self._all_simplices = set(all_simplices)
 
     @staticmethod
     def convert_to_sorted_tuples(simplices):
@@ -33,13 +33,14 @@ class SimplexQueue(HDF5Enabled):
     def simplices(self):
         # Give running simplices first, so that they will be re-queued first when
         # restarting a calculation.
-        return list(self._running_simplices) + list(self._queued_simplices)
+        return list(self._running_simplices
+                    ) + list(self._queued_simplices.queue)
 
     def pop_queued(self):
         """
         Get a queued simplex, and add it to the running simplices.
         """
-        starting_point = self._queued_simplices.popleft()
+        starting_point = self._queued_simplices.get_nowait()
         self._running_simplices.add(starting_point)
         return starting_point
 
@@ -52,8 +53,16 @@ class SimplexQueue(HDF5Enabled):
             simplex for simplex in new_simplices
             if simplex not in self._all_simplices
         ]
-        self._queued_simplices.extend(new_simplices_filtered)
+        self._extend_queue(new_simplices_filtered)
         self._all_simplices.update(new_simplices_filtered)
+
+    def _extend_queue(self, simplices):
+        """
+        Add given simplices to '_queued_simplices'. Note that this does _not_
+        handle the other attributes, use 'add_simplices' for this purpose.
+        """
+        for simplex in simplices:
+            self._queued_simplices.put_nowait(simplex)
 
     def set_finished(self, simplex):
         """
@@ -66,7 +75,7 @@ class SimplexQueue(HDF5Enabled):
         """
         Shows if there are currently queued simplices.
         """
-        return bool(self._queued_simplices)
+        return not self._queued_simplices.empty()
 
     @property
     def finished(self):

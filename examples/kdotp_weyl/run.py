@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
+import asyncio
 import logging
 from functools import partial
+from concurrent.futures import ProcessPoolExecutor
 
 import z2pack
 logging.getLogger('z2pack').setLevel(logging.WARNING)
 
 import phasemap as pm
 import nodefinder as nf
+
 import matplotlib.pyplot as plt
-from fsc.async_tools import limit_parallel
 
 from split import Hamilton_split
 from splitting_fct import gap_fct
@@ -17,10 +19,13 @@ from splitting_fct import gap_fct
 FEATURE_SIZE = 1e-4
 
 
-@limit_parallel(4)
-async def get_num_nodes(splitting):
+async def phase_func(splitting, loop, executor):
+    return await loop.run_in_executor(executor, get_num_nodes, splitting)
+
+
+def get_num_nodes(splitting):
     print('Calculating splitting:', splitting)
-    search_res = await nf.search.run_async(
+    search_res = nf.search.run(
         partial(gap_fct, splitting=splitting),
         limits=[(-0.5, 0.5)] * 3,
         initial_mesh_size=5,
@@ -55,8 +60,10 @@ def get_chern(splitting, k):
 
 
 if __name__ == '__main__':
+    loop = asyncio.get_event_loop()
+    executor = ProcessPoolExecutor(max_workers=4)
     res = pm.run(
-        lambda pos: get_num_nodes([pos[0], 0, pos[1]]),
+        lambda pos: phase_func([pos[0], 0, pos[1]], loop=loop, executor=executor),
         limits=[(-0.3, 0.3)] * 2,
         mesh=3,
         num_steps=5,

@@ -7,5 +7,6 @@ from . import coordinate_system
 from . import search
 from . import identify
 from . import io
+from . import _logging
 
 __all__ = ['search', 'identify', 'io', 'coordinate_system']

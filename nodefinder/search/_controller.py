@@ -20,6 +20,7 @@ from .result import SearchResultContainer, ControllerState
 from ._queue import SimplexQueue
 from ._minimization import run_minimization
 from ._fake_potential import FakePotential
+from ._logging import SEARCH_LOGGER
 
 _DIST_CUTOFF_FACTOR = 3
 
@@ -222,17 +223,26 @@ class Controller:
         await asyncio.gather(*self.task_futures)
 
     def schedule_minimization(self, simplex):
+        SEARCH_LOGGER.debug(
+            'Scheduling minimization of simplex {}'.format(simplex)
+        )
         self.task_futures.add(asyncio.ensure_future(self.run_simplex(simplex)))
 
     async def run_simplex(self, simplex):
         """
         Run the minimization for a given starting simplex.
         """
+        SEARCH_LOGGER.debug(
+            'Running minimization of simplex {}'.format(simplex)
+        )
         result = await run_minimization(
             self.gap_fct,
             initial_simplex=simplex,
             fake_potential=self.fake_potential,
             nelder_mead_kwargs=self.nelder_mead_kwargs,
+        )
+        SEARCH_LOGGER.debug(
+            'Minimization of simplex {} finished.'.format(simplex)
         )
         self.process_result(result)
         self.state.queue.set_finished(simplex)
