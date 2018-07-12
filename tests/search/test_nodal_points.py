@@ -128,3 +128,15 @@ def test_restart(
             cutoff_coverage=1e-6,
             additional_tag='restart_'
         )
+
+
+def test_raises():
+    """
+    Test that using an invalid gap_fct raises the error.
+    """
+
+    async def gap_fct(pos):  # pylint: disable=unused-argument
+        raise ValueError('test error.')
+
+    with pytest.raises(ValueError):
+        run(gap_fct)
