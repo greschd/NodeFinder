@@ -200,6 +200,7 @@ class Controller:
         """
         Create minimization tasks until the calculation is finished.
         """
+        print('foo')
         async with PeriodicTask(self.save, delay=5.):
             while not self.state.queue.finished:
                 while (
@@ -209,11 +210,16 @@ class Controller:
                     simplex = self.state.queue.pop_queued()
                     self.schedule_minimization(simplex)
                 await asyncio.sleep(0.)
-                # retrieve exceptions
-                for fut in list(self.task_futures):
-                    if fut.done():
-                        await fut
-                        self.task_futures.remove(fut)
+
+                # Retrieve all exceptions, to avoid 'exception never retrieved'
+                # warning, but raise only the first one.
+                done_futures = [fut for fut in self.task_futures if fut.done()]
+                exceptions = [fut.exception() for fut in done_futures]
+                exceptions = [exc for exc in exceptions if exc is not None]
+                if exceptions:
+                    raise exceptions[0]
+
+                self.task_futures.difference_update(done_futures)
         await asyncio.gather(*self.task_futures)
 
     def schedule_minimization(self, simplex):
