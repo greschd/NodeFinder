@@ -84,7 +84,7 @@ class CoordinateSystem(SimpleHDF5Mapping):
             delta = (pos2 - pos1) % self.size
             delta_negative = delta - self.size
             res = np.where(-delta_negative < delta, delta_negative, delta)
-            assert np.allclose((res + pos1) % self.size, pos2 % self.size)
+            assert self.distance((res + pos1), pos2) < 1e-8
             return res
 
     def average(self, positions):
