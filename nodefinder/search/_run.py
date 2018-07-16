@@ -70,7 +70,7 @@ async def run_async(
         to be a node.
     feature_size : float
         Threshold for the distance between two nodes where they are considered
-        distinct. TODO: make difference to dist_cutoff clear.
+        distinct.
     use_fake_potential : bool
         If ``True``, the minimization for a given simplex is performed in two
         steps, first adding a fake potential to repel the minimization from

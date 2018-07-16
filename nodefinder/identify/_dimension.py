@@ -33,7 +33,9 @@ def calculate_dimension(
     neighbour_mapping : collections.abc.Mapping
         Contains a list of neighbours for each position.
     feature_size : float
-        TODO
+        Distance between two nodal points at which they are considered to be
+        distinct. This is used as a characteristic length scale to determine
+        the dimension.
     coordinate_system : CoordinateSystem
         Coordinate system used to calculate distances.
     max_dim : int

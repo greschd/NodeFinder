@@ -25,7 +25,7 @@ def create_clusters(positions, *, feature_size, coordinate_system):
     positions : list(list(float))
         The list of positions to cluster.
     feature_size : float
-        TODO
+        Distance between two nodes where they are considered to belong to different clusters.
     coordinate_system : CoordinateSystem
         Coordinate system used to calculate distances between positions.
 

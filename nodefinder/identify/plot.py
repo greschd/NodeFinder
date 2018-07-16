@@ -65,7 +65,8 @@ def nodal_point(shape, *, axis, color, feature_size=None):
     color : str
         Color of the point.
     feature_size : float
-        TODO, not used in this function.
+        Distance between two nodal points at which they are considered distinct.
+        This argument is not used in this function.
     """
     coordinates = [[val] for val in shape.position]
     axis.scatter(*coordinates, color=color)
@@ -86,7 +87,8 @@ def nodal_line(shape, *, axis, color, feature_size):
     color : str
         Color of the nodal line.
     feature_size : float
-        TODO, used for cutting the line when it goes across periodic boundaries.
+        Distance between two nodal points at which they are considered distinct.
+        Used for cutting the line when it goes across periodic boundaries.
     """
     start_idx = 0
     # Segment line when crossing the periodic boundary.

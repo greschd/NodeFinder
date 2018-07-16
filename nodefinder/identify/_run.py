@@ -22,7 +22,8 @@ def run(result, feature_size=None):
     result : SearchResultContainer
         Result of the search step.
     feature_size : float, optional
-        TODO. Uses the ``feature_size`` used in the search step by default.
+        Distance between two nodal points at which they are considered distinct.
+        Uses the ``feature_size`` used in the search step by default.
     """
     if feature_size is None:
         feature_size = result.dist_cutoff * _DIST_CUTOFF_FACTOR
@@ -48,7 +49,7 @@ def run_from_positions(positions, *, coordinate_system, feature_size):
     coordinate_system : CoordinateSystem
         Coordinate system used to calculate distances.
     feature_size : float
-        TODO.
+        Distance between two nodal points at which they are considered distinct.
     """
     clusters, neighbour_mapping = create_clusters(
         positions,

@@ -31,7 +31,7 @@ def evaluate_cluster(
     neighbour_mapping : dict
         Mapping containing a list of neighbours for each position.
     feature_size : float
-        TODO
+        Distance between two nodal points at which they are considered distinct.
 
     Returns
     -------
