@@ -120,7 +120,7 @@ def _get_shortest_path(
     positions,
     index_mapping,
     neighbour_mapping,
-    weight_func=lambda dist: 1 / dist
+    weight_func=lambda dist: dist
 ):
     """
     Get the shortest path between the start and end of a list of positions.

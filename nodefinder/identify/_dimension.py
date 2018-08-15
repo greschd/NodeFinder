@@ -113,5 +113,8 @@ def _get_volume(
             ) for neighbour in neighbour_tuple
         ]
         mat = np.array(connecting_vectors)
-        results.append(abs(np.product(la.svd(mat, compute_uv=False))))
+        svd = la.svd(mat, compute_uv=False)
+        if len(svd) < dim:
+            return 0.
+        results.append(abs(np.product(svd)))
     return np.average(results)
