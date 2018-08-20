@@ -11,6 +11,7 @@ from .result import IdentificationResult, IdentificationResultContainer
 from ._cluster import create_clusters
 from ._dimension import calculate_dimension
 from ._evaluate import evaluate_cluster
+from ._logging import IDENTIFY_LOGGER
 
 
 @export
@@ -51,6 +52,7 @@ def run_from_positions(positions, *, coordinate_system, feature_size):
     feature_size : float
         Distance between two nodal points at which they are considered distinct.
     """
+    IDENTIFY_LOGGER.debug('Calculating clusters.')
     clusters, neighbour_mapping = create_clusters(
         positions,
         coordinate_system=coordinate_system,
@@ -58,11 +60,15 @@ def run_from_positions(positions, *, coordinate_system, feature_size):
     )
     results = []
     for cluster in clusters:
+        IDENTIFY_LOGGER.debug('Calculating cluster dimension.')
         dim = calculate_dimension(
             positions=cluster,
             neighbour_mapping=neighbour_mapping,
             coordinate_system=coordinate_system,
             feature_size=feature_size
+        )
+        IDENTIFY_LOGGER.debug(
+            'Evaluating result with dimension {}.'.format(dim)
         )
         res = IdentificationResult(
             positions=cluster,

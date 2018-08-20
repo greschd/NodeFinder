@@ -7,7 +7,6 @@ import logging
 
 MAIN_LOGGER = logging.getLogger('nodefinder')
 DEFAULT_HANDLER = logging.StreamHandler(sys.stdout)
-DEFAULT_HANDLER.setLevel(logging.DEBUG)
 FORMATTER = logging.Formatter(
     fmt='%(asctime)s - %(levelname)s - %(message)s',
 )

@@ -9,7 +9,10 @@ from collections import Counter
 
 import numpy as np
 import scipy.linalg as la
+from scipy.special import binom
 from fsc.export import export
+
+EXACT_VALUES = {1: 0.5, 2: 8 / (9 * np.pi), 3: 27 * np.pi / 512}
 
 
 @export
@@ -20,8 +23,8 @@ def calculate_dimension(
     feature_size,
     coordinate_system,
     max_dim=3,
-    num_pos_evaluations=10,
-    num_neighbour_evaluations=25
+    min_pos_evaluations=5,
+    min_neighbour_evaluations=10
 ):
     """
     Calculate the dimension of a cluster of positions.
@@ -40,19 +43,24 @@ def calculate_dimension(
         Coordinate system used to calculate distances.
     max_dim : int
         Upper limit for the dimension.
-    num_pos_evaluations : int
-        Number of positions which are evaluated to estimate the dimension.
-    num_neighbour_evaluations : int
-        Number of neighbour tuples which are evaluated per position.
+    min_pos_evaluations : int
+        Minimum number of positions which are evaluated to estimate the dimension.
+    min_neighbour_evaluations : int
+        Minimum number of neighbour tuples which are evaluated per position.
     """
-    if num_pos_evaluations is None:
+    positions_to_evaluate = list(positions)
+
+    if min_pos_evaluations is None:
         positions_to_evaluate = positions
     else:
-        positions_to_evaluate = random.sample(
-            positions, min(len(positions), num_pos_evaluations)
-        )
+        random.shuffle(positions_to_evaluate)
+
     dim_counter = Counter()
-    for pos in positions_to_evaluate:
+    for i, pos in enumerate(positions_to_evaluate):
+        if i >= min_pos_evaluations:
+            finished, dim = _check_count(dim_counter)
+            if finished:
+                return dim
         dim_counter.update([
             _get_dimension(
                 pos,
@@ -60,61 +68,127 @@ def calculate_dimension(
                 neighbours=neighbour_mapping[pos],
                 feature_size=feature_size,
                 max_dim=max_dim,
-                num_neighbour_evaluations=num_neighbour_evaluations
+                min_neighbour_evaluations=min_neighbour_evaluations
             )
         ])
-    dim, count = dim_counter.most_common(1)[0]
-    if count < (2 / 3) * len(positions_to_evaluate):
+    finished, dim = _check_count(dim_counter)
+    if not finished:
         warnings.warn('Inconclusive dimension count: {}'.format(dim_counter))
         return None
     return dim
 
 
+def _check_count(counter):
+    """
+    Get the most common dimension, and check if at least two thirds of the
+    values agree.
+    """
+    dim, count = counter.most_common(1)[0]
+    if count >= (2 / 3) * sum(counter.values()):
+        return True, dim
+    else:
+        return False, dim
+
+
 def _get_dimension(
     pos, *, neighbours, coordinate_system, feature_size, max_dim,
-    num_neighbour_evaluations
+    min_neighbour_evaluations
 ):
     """
-    Get the dimension from a given positions.
+    Get the dimension from a given position.
     """
     for dim in range(1, max_dim + 1):
-        volume = _get_volume(
-            pos,
-            neighbours,
+        if not _has_dimension(
+            pos=pos,
+            neighbours=neighbours,
             coordinate_system=coordinate_system,
             dim=dim,
-            num_neighbour_evaluations=num_neighbour_evaluations
-        )
-        volume_normalized = volume / (feature_size / 2)**dim
-        if volume_normalized < 0.5:
+            min_neighbour_evaluations=min_neighbour_evaluations,
+            feature_size=feature_size
+        ):
             return dim - 1
     return max_dim
 
 
-def _get_volume(
-    pos, neighbours, *, coordinate_system, dim, num_neighbour_evaluations
+def _has_dimension(
+    pos, neighbours, *, coordinate_system, dim, min_neighbour_evaluations,
+    feature_size
 ):
     """
-    Get an estimate for the average volume spanned by a position and its neighbours.
+    Check if a position has at least the given dimension.
     """
+    if len(pos) < dim:
+        return 0
     neighbour_pos = [n.pos for n in neighbours]
-    if num_neighbour_evaluations is None:
-        num_neighbour_evaluations = len(neighbours)
-    else:
-        random.shuffle(neighbour_pos)
+    if min_neighbour_evaluations is None:
+        min_neighbour_evaluations = len(neighbours)
+
+    try:
+        limit_value = feature_size**dim * EXACT_VALUES[dim] / 2
+    except KeyError:
+        raise NotImplementedError(
+            'Getting the {}-dimensional volume is not implemented'.format(dim)
+        )
+
+    def draw_neighbour_tuple():
+        """
+        Generator to draw a tuple of neighbors, without repeating.
+        """
+        used_tuples = set()
+        num_neighbours = len(neighbour_pos)
+        num_combinations = binom(num_neighbours, dim)
+        # random sampling with check for uniqueness -- efficient for very
+        # large number of possible combinations
+        if num_combinations > 10 * min_neighbour_evaluations:
+            while len(used_tuples) < (num_combinations / 2):
+                val = tuple(sorted(random.sample(neighbour_pos, k=dim)))
+
+                if val not in used_tuples:
+                    yield val
+                    used_tuples.add(val)
+
+        # switch to directly sampling from the remaining combinations
+        # efficient when there are not so many (remaining) combinations
+        neighbour_tuples = set(
+            tuple(sorted(n))
+            for n in itertools.combinations(neighbour_pos, r=dim)
+        ) - used_tuples
+        num_draws = 10
+        while neighbour_tuples:
+            vals = random.sample(
+                neighbour_tuples, min(num_draws, len(neighbour_tuples))
+            )
+            yield from vals
+            neighbour_tuples -= set(vals)
+
     results = []
-    for neighbour_tuple, _ in zip(
-        itertools.combinations(neighbour_pos, r=dim),
-        range(num_neighbour_evaluations)
-    ):
-        connecting_vectors = [
-            coordinate_system.connecting_vector(
-                np.array(neighbour), np.array(pos)
-            ) for neighbour in neighbour_tuple
-        ]
-        mat = np.array(connecting_vectors)
-        svd = la.svd(mat, compute_uv=False)
-        if len(svd) < dim:
-            return 0.
-        results.append(abs(np.product(svd)))
-    return np.average(results)
+    for i, neighbour_tuple in enumerate(draw_neighbour_tuple()):
+        if i >= min_neighbour_evaluations and i > 1:
+            avg = np.average(results)
+            error_mean = np.sqrt(np.var(results) / (i - 1))
+            if abs(limit_value - avg) / 2 > error_mean:
+                return avg > limit_value
+        results.append(
+            _get_volume(
+                pos=pos,
+                neighbour_tuple=neighbour_tuple,
+                coordinate_system=coordinate_system
+            )
+        )
+    return np.average(results) > limit_value
+
+
+def _get_volume(pos, neighbour_tuple, coordinate_system):
+    """
+    Get the volume spanned by a position and the given neighbours.
+    """
+    connecting_vectors = [
+        coordinate_system.connecting_vector(
+            np.array(neighbour), np.array(pos)
+        ) for neighbour in neighbour_tuple
+    ]
+    mat = np.array(connecting_vectors)
+    svd = la.svd(mat, compute_uv=False)
+    if len(svd) < len(neighbour_tuple):
+        return 0
+    return abs(np.product(svd))
