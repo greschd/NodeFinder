@@ -2,6 +2,7 @@
 Defines the functions used to evaluate the shape of a given cluster of points.
 """
 
+import copy
 import warnings
 import operator
 from contextlib import suppress
@@ -70,6 +71,7 @@ def _evaluate_line(
     """
     Evaluate the positions of a closed line.
     """
+    positions = copy.copy(positions)
     pos1 = positions.pop()
     pos2, distance = max(((
         pos_candidate,

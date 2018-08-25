@@ -4,8 +4,9 @@ Defines the SimplexQueue, which tracks the state of simplices to be minimized.
 
 from queue import Queue
 
+import numpy as np
 from fsc.export import export
-from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, to_hdf5, from_hdf5
+from fsc.hdf5_io import HDF5Enabled, subscribe_hdf5, from_hdf5
 
 
 @export
@@ -92,9 +93,17 @@ class SimplexQueue(HDF5Enabled):
         return len(self._running_simplices)
 
     def to_hdf5(self, hdf5_handle):
-        simplices = hdf5_handle.create_group('simplices')
-        to_hdf5(self.simplices, simplices)
+        simplices_array = np.array(self.simplices)
+        hdf5_handle['simplices_array'] = simplices_array
 
     @classmethod
     def from_hdf5(cls, hdf5_handle):
-        return cls(simplices=from_hdf5(hdf5_handle['simplices']))
+        try:
+            simplices_array = np.array(hdf5_handle['simplices_array'])
+            simplices = [
+                tuple(tuple(pos) for pos in simp) for simp in simplices_array
+            ]
+        # handle old data version
+        except KeyError:
+            simplices = from_hdf5(hdf5_handle['simplices'])
+        return cls(simplices=simplices)
