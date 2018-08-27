@@ -260,13 +260,14 @@ class Controller:
         """
         Store the current ControllerState to the save file.
         """
-        if self.save_file:
+        if self.save_file and self.state.needs_saving:
             with tempfile.NamedTemporaryFile(
                 dir=os.path.dirname(self.save_file), delete=False
             ) as tmpf:
                 try:
                     io.save(self.state, tmpf.name)
                     os.rename(tmpf.name, self.save_file)
+                    self.state.needs_saving = False
                 except Exception as exc:
                     os.remove(tmpf.name)
                     raise exc

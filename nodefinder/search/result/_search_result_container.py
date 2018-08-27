@@ -67,6 +67,7 @@ class SearchResultContainer(SimpleHDF5Mapping):
         self.rejected_results = []
         for res in minimization_results:
             self.add_result(res)
+        self.needs_saving = True
 
     def __repr__(self):
         return 'SearchResultContainer(coordinate_system={0.coordinate_system}, minimization_results=<{1} values>, gap_threshold={0.gap_threshold!r}, dist_cutoff={0.dist_cutoff!r})'.format(
@@ -89,6 +90,7 @@ class SearchResultContainer(SimpleHDF5Mapping):
         else:
             self.nodes.add_point(self.coordinate_system.get_frac(res.pos), res)
             return True
+        self.needs_saving = True
 
     @property
     def minimization_results(self):

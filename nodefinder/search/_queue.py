@@ -22,6 +22,7 @@ class SimplexQueue(HDF5Enabled):
         self._extend_queue(all_simplices)
         self._running_simplices = set()
         self._all_simplices = set(all_simplices)
+        self.needs_saving = True
 
     @staticmethod
     def convert_to_sorted_tuples(simplices):
@@ -56,6 +57,7 @@ class SimplexQueue(HDF5Enabled):
         ]
         self._extend_queue(new_simplices_filtered)
         self._all_simplices.update(new_simplices_filtered)
+        self.needs_saving = True
 
     def _extend_queue(self, simplices):
         """
@@ -70,6 +72,7 @@ class SimplexQueue(HDF5Enabled):
         Mark a given simplex as finished.
         """
         self._running_simplices.remove(simplex)
+        self.needs_saving = True
 
     @property
     def has_queued_points(self):
