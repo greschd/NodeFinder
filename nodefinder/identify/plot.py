@@ -74,7 +74,7 @@ def nodal_point(shape, *, axis, color, feature_size=None):
 
 @export
 @_plot_result.register(NodalLine)
-def nodal_line(shape, *, axis, color, feature_size):
+def nodal_line(shape, *, axis, color, feature_size=None):
     """
     Plot a nodal line.
 
@@ -90,10 +90,12 @@ def nodal_line(shape, *, axis, color, feature_size):
         Distance between two nodal points at which they are considered distinct.
         Used for cutting the line when it goes across periodic boundaries.
     """
-    start_idx = 0
-    # Segment line when crossing the periodic boundary.
-    for i, (pos1, pos2) in enumerate(zip(shape.path, shape.path[1:])):
+    if feature_size is None:
+        feature_size = np.inf
+
+    graph = shape.graph
+    for edge in graph.edges:
+        pos1, pos2 = edge
         if la.norm(np.array(pos2) - np.array(pos1)) > 2 * feature_size:
-            axis.plot(*np.array(shape.path[start_idx:i + 1]).T, color=color)
-            start_idx = i + 1
-    axis.plot(*np.array(shape.path[start_idx:]).T, color=color)
+            continue
+        axis.plot(*np.array(edge).T, color=color)

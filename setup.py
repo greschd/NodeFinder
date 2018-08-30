@@ -28,7 +28,7 @@ setup(
     description='TODO',
     install_requires=[
         'numpy', 'scipy', 'matplotlib', 'decorator', 'fsc.export',
-        'fsc.hdf5-io>=0.3.0', 'fsc.async_tools'
+        'fsc.hdf5-io>=0.3.0', 'fsc.async_tools', 'networkx'
     ],
     extras_require=EXTRAS_REQUIRE,
     dependency_links=[

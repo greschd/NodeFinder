@@ -3,15 +3,22 @@ Defines the functions used to evaluate the shape of a given cluster of points.
 """
 
 import copy
-import warnings
 import operator
-from contextlib import suppress
+import warnings
+import itertools
+from collections import Counter, namedtuple
 
 import numpy as np
+import networkx as nx
 
 from fsc.export import export
 
+from ..search._controller import _DIST_CUTOFF_FACTOR
 from .result import NodalLine, NodalPoint
+from ._logging import IDENTIFY_LOGGER
+
+_DISTANCE_KEY = '_distance'
+_WEIGHT_KEY = '_weight'
 
 
 @export
@@ -49,7 +56,8 @@ def evaluate_cluster(
             return _evaluate_line(
                 positions=positions,
                 coordinate_system=coordinate_system,
-                neighbour_mapping=neighbour_mapping,
+                neighbour_mapping={p: neighbour_mapping[p]
+                                   for p in positions},
                 feature_size=feature_size
             )
         except (IndexError, ValueError) as exc:
@@ -71,83 +79,107 @@ def _evaluate_line(
     """
     Evaluate the positions of a closed line.
     """
-    positions = copy.copy(positions)
-    pos1 = positions.pop()
-    pos2, distance = max(((
-        pos_candidate,
-        coordinate_system.distance(np.array(pos1), np.array(pos_candidate))
-    ) for pos_candidate in positions),
-                         key=operator.itemgetter(1))
+    graph = nx.Graph()
+    graph.add_nodes_from(positions)
+    graph_reduced_neighbours = copy.deepcopy(graph)
+    for node, neighbours in neighbour_mapping.items():
+        for nbr in neighbours:
+            if nbr not in graph.nodes:
+                edge = (node, nbr.pos)
+                graph.add_edge(
+                    *edge, **{
+                        _DISTANCE_KEY: nbr.distance,
+                        _WEIGHT_KEY: nbr.distance**4
+                    }
+                )
+                if nbr.distance < feature_size / _DIST_CUTOFF_FACTOR:
+                    graph_reduced_neighbours.add_edge(*edge)
 
-    if distance <= feature_size:
-        raise ValueError('No suitable second position found.')
-    positions.remove(pos2)
+    dominating_set = nx.algorithms.dominating_set(graph_reduced_neighbours)
+    subgraph = graph.subgraph(dominating_set).copy()
 
-    positions_inner = list(positions)
-    positions_list = [pos1] + positions_inner + [pos2]
-    index_mapping = {pos: i for i, pos in enumerate(positions_list)}
-
-    path1 = _get_shortest_path(
-        positions=positions_list,
-        index_mapping=index_mapping,
-        neighbour_mapping=neighbour_mapping
+    _patch_all_subgraph_holes(
+        subgraph=subgraph,
+        graph=graph,
+        coordinate_system=coordinate_system,
+        feature_size=feature_size
     )
+    _remove_duplicate_paths(subgraph)
 
-    edge_neighbours = set()
-    edge_neighbours.update([n.pos for n in neighbour_mapping[pos1]])
-    edge_neighbours.update([n.pos for n in neighbour_mapping[pos2]])
-    path_neighbours = set(path1)
-    for pos in path1:
-        path_neighbours.update([n.pos for n in neighbour_mapping[pos]])
-    positions_to_exclude = path_neighbours - edge_neighbours
-
-    positions_list_partial = [
-        pos1
-    ] + list(set(positions) - positions_to_exclude) + [pos2]
-    index_mapping_partial = {
-        pos: i
-        for i, pos in enumerate(positions_list_partial)
-    }
-    path2 = _get_shortest_path(
-        positions=positions_list_partial,
-        index_mapping=index_mapping_partial,
-        neighbour_mapping=neighbour_mapping
-    )
-    path_full = path1 + list(reversed(path2))[1:]
-    return NodalLine(path=path_full)
+    degree_counter = Counter([val for pos, val in subgraph.degree])
+    degree_counter.pop(2, None)
+    return NodalLine(graph=subgraph, degree_count=degree_counter)
 
 
-def _get_shortest_path(
-    *,
-    positions,
-    index_mapping,
-    neighbour_mapping,
-    weight_func=lambda dist: dist
+def _patch_all_subgraph_holes(
+    *, subgraph, graph, coordinate_system, feature_size
 ):
     """
-    Get the shortest path between the start and end of a list of positions.
+    Check for 'holes' where the subgraph is disconnected while the original graph is not, and patch them by adding the shortest path on the full graph between the points in the subgraph.
     """
-    # For certain scipy versions on Python 3.5
-    from scipy.sparse import csgraph
+    pair_to_patch = namedtuple('pair_to_patch', ['edge', 'dist_original'])
+    to_patch = []
+    for pos1, pos2 in itertools.combinations(subgraph.nodes, r=2):
+        # The minimum distance is used here only to improve performance,
+        # because it is much quicker to calculate than the shortest path.
+        # By using the distance in the coordinate system as a lower limit for
+        # 'dist_original', we can abort early in many cases.
+        dist_minimal = coordinate_system.distance(
+            np.array(pos1), np.array(pos2)
+        )
+        if dist_minimal < 2 * feature_size:
+            dist_reduced = nx.algorithms.shortest_path_length(
+                subgraph, pos1, pos2, weight=_DISTANCE_KEY
+            )
+            if dist_reduced > max(feature_size, 2 * dist_minimal):
+                dist_original = nx.algorithms.shortest_path_length(
+                    graph, pos1, pos2, weight=_DISTANCE_KEY
+                )
+                if dist_reduced > 2 * dist_original and dist_original < 2 * feature_size:
+                    to_patch.append(
+                        pair_to_patch(
+                            edge=(pos1, pos2), dist_original=dist_original
+                        )
+                    )
 
-    num_pos = len(positions)
-    weight_array = np.zeros(shape=(num_pos, num_pos))
-    for pos1, neighbours in neighbour_mapping.items():
-        for pos2, distance in neighbours:
-            with suppress(KeyError):
-                weight = weight_func(distance)
-                weight_array[index_mapping[pos1], index_mapping[pos2]] = weight
+    to_patch = sorted(to_patch, key=operator.attrgetter('dist_original'))
+    for edge, dist_original in to_patch:
+        # might have changed since the subgraph is being patched
+        dist_reduced = nx.algorithms.shortest_path_length(
+            subgraph, *edge, weight=_DISTANCE_KEY
+        )
+        if dist_reduced > 2 * dist_original:
+            IDENTIFY_LOGGER.debug(
+                'Patching hole {} in sub-graph.'.format(edge)
+            )
+            start, end = edge
+            _patch_subgraph_hole(
+                subgraph=subgraph, graph=graph, start=start, end=end
+            )
 
-    _, predecessors = csgraph.shortest_path(
-        weight_array, directed=False, return_predecessors=True
+
+def _patch_subgraph_hole(*, subgraph, graph, start, end):
+    """
+    Patch a single hole in the subgraph between the given start and end points.
+    """
+    shortest_path = nx.algorithms.shortest_path(
+        graph, start, end, weight=_DISTANCE_KEY
     )
-    start_idx = 0
-    end_idx = num_pos - 1
-    path = [end_idx]
-    current = predecessors[start_idx, end_idx]
-    while True:
-        path.append(current)
-        if current == start_idx:
-            break
-        current = predecessors[start_idx, current]
-    return [positions[idx] for idx in path]
+    for node in shortest_path[1:-1]:
+        subgraph.add_node(node)
+    for edge in zip(shortest_path[:-1], shortest_path[1:]):
+        subgraph.add_edge(*edge, **graph.edges[edge])
+
+
+def _remove_duplicate_paths(subgraph):
+    """
+    Remove all "duplicate" edges from the graph where there is another path with lower total weight connecting the two points.
+    """
+    for *edge, _ in sorted(
+        subgraph.edges(data=_WEIGHT_KEY), key=lambda e: -e[2]
+    ):
+        shortest_path = nx.algorithms.shortest_path(
+            subgraph, *edge, weight=_WEIGHT_KEY
+        )
+        if len(shortest_path) > 2:
+            subgraph.remove_edge(*edge)
