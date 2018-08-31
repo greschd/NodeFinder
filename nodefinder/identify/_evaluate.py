@@ -117,9 +117,12 @@ def _evaluate_line_shortest_path(
     graph.add_nodes_from(positions)
     for node, neighbours in neighbour_mapping.items():
         if node in positions:
-            graph.add_weighted_edges_from([(node, nbr.pos, nbr.distance**4)
-                                           for nbr in neighbours],
-                                          weight=_WEIGHT_KEY)
+            distance_func = lambda x: x + x**2
+            graph.add_weighted_edges_from(
+                [(node, nbr.pos, distance_func(nbr.distance / feature_size))
+                 for nbr in neighbours],
+                weight=_WEIGHT_KEY
+            )
 
     candidate_positions = set(graph.nodes)
 
@@ -128,6 +131,7 @@ def _evaluate_line_shortest_path(
         coordinate_system=coordinate_system,
         feature_size=feature_size
     )
+    IDENTIFY_LOGGER.debug('Starting from position {}.'.format(first_pos))
     start_neighbours = set(graph.neighbors(first_pos)) | {first_pos}
     candidate_positions -= start_neighbours
 
@@ -146,6 +150,7 @@ def _evaluate_line_shortest_path(
         tmp_graph = graph.copy()
         end_pos = None
         min_dist = 0
+        # TODO: Calculate all distances only once.
         for pos in candidate_positions:
             dist = min(
                 coordinate_system.distance(np.array(pos), np.array(node))
