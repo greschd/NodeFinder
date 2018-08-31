@@ -99,3 +99,7 @@ def nodal_line(shape, *, axis, color, feature_size=None):
         if la.norm(np.array(pos2) - np.array(pos1)) > 2 * feature_size:
             continue
         axis.plot(*np.array(edge).T, color=color)
+
+    for node, deg in graph.degree:
+        if deg > 2:
+            axis.scatter(*np.array(node).T, color=color)

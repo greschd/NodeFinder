@@ -15,7 +15,7 @@ from ._logging import IDENTIFY_LOGGER
 
 
 @export
-def run(result, feature_size=None):
+def run(result, feature_size=None, evaluate_line_method='shortest_path'):
     """Identify the nodal clusters from a :func:`.search.run` result.
 
     Arguments
@@ -35,12 +35,19 @@ def run(result, feature_size=None):
     return run_from_positions(
         positions=positions,
         coordinate_system=coordinate_system,
-        feature_size=feature_size
+        feature_size=feature_size,
+        evaluate_line_method=evaluate_line_method,
     )
 
 
 @export
-def run_from_positions(positions, *, coordinate_system, feature_size):
+def run_from_positions(
+    positions,
+    *,
+    coordinate_system,
+    feature_size,
+    evaluate_line_method='shortest_path'
+):
     """Identify the nodal clusters from a list of positions.
 
     Arguments
@@ -79,6 +86,7 @@ def run_from_positions(positions, *, coordinate_system, feature_size):
                 coordinate_system=coordinate_system,
                 neighbour_mapping=neighbour_mapping,
                 feature_size=feature_size,
+                evaluate_line_method=evaluate_line_method
             )
         )
         results.append(res)

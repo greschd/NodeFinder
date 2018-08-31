@@ -23,7 +23,12 @@ _WEIGHT_KEY = '_weight'
 
 @export
 def evaluate_cluster(
-    positions, dim, coordinate_system, neighbour_mapping, feature_size
+    positions,
+    dim,
+    coordinate_system,
+    neighbour_mapping,
+    feature_size,
+    evaluate_line_method='shortest_path'
 ):
     """
     Evaluate the shape of a cluster with the given positions.
@@ -58,7 +63,8 @@ def evaluate_cluster(
                 coordinate_system=coordinate_system,
                 neighbour_mapping={p: neighbour_mapping[p]
                                    for p in positions},
-                feature_size=feature_size
+                feature_size=feature_size,
+                method=evaluate_line_method,
             )
         except (IndexError, ValueError) as exc:
             warnings.warn('Could not identify line: {}'.format(exc))
@@ -74,10 +80,187 @@ def _evaluate_point(positions, coordinate_system):
 
 
 def _evaluate_line(
+    positions,
+    coordinate_system,
+    neighbour_mapping,
+    feature_size,
+    method='shortest_path'
+):
+    """
+    Evaluate the positions of a nodal line.
+    """
+    if method == 'shortest_path':
+        return _evaluate_line_shortest_path(
+            positions=positions,
+            coordinate_system=coordinate_system,
+            neighbour_mapping=neighbour_mapping,
+            feature_size=feature_size
+        )
+    elif method == 'dominating_set':
+        return _evaluate_line_dominating_set(
+            positions=positions,
+            coordinate_system=coordinate_system,
+            neighbour_mapping=neighbour_mapping,
+            feature_size=feature_size
+        )
+    else:
+        raise ValueError('Invalid value for \'method\': {}'.format(method))
+
+
+def _evaluate_line_shortest_path(
     positions, coordinate_system, neighbour_mapping, feature_size
 ):
     """
-    Evaluate the positions of a closed line.
+    Evaluate the positions of a nodal line using the 'shortest path' method.
+    """
+    graph = nx.Graph()
+    graph.add_nodes_from(positions)
+    for node, neighbours in neighbour_mapping.items():
+        if node in positions:
+            graph.add_weighted_edges_from([(node, nbr.pos, nbr.distance**4)
+                                           for nbr in neighbours],
+                                          weight=_WEIGHT_KEY)
+
+    candidate_positions = set(graph.nodes)
+
+    first_pos = _get_first_position(
+        candidate_positions=candidate_positions,
+        coordinate_system=coordinate_system,
+        feature_size=feature_size
+    )
+    start_neighbours = set(graph.neighbors(first_pos)) | {first_pos}
+    candidate_positions -= start_neighbours
+
+    result_graph = nx.Graph()
+    result_graph.add_node(first_pos)
+
+    high_degree_nodes = set()
+    # num_pos = 0
+    for num_pos in itertools.count():
+        # while candidate_positions:
+        if not candidate_positions:
+            break
+        # prioritize "crossings"
+        _update_high_degree_nodes(graph, result_graph, high_degree_nodes)
+
+        tmp_graph = graph.copy()
+        end_pos = None
+        min_dist = 0
+        for pos in candidate_positions:
+            dist = min(
+                coordinate_system.distance(np.array(pos), np.array(node))
+                for node in result_graph.nodes
+            )
+            if dist > min_dist:
+                min_dist = dist
+                end_pos = pos
+
+        if min_dist < feature_size:
+            break
+        elif min_dist < 3 * feature_size:
+            single_path_only = True
+            num_pos += 1
+        else:
+            single_path_only = False
+            num_pos += 1
+
+        end_neighbours = set(graph.neighbors(end_pos)) | {end_pos}
+        candidate_positions -= end_neighbours
+        start_end_neighbours = start_neighbours | end_neighbours
+
+        for num_paths in itertools.count():
+            if single_path_only and num_paths > 0:
+                break
+            try:
+                path = nx.algorithms.shortest_path(
+                    tmp_graph,
+                    source=first_pos,
+                    target=end_pos,
+                    weight=_WEIGHT_KEY,
+                )
+            except nx.NetworkXNoPath:
+                break
+            edges = list(zip(path, path[1:]))
+            result_graph.add_edges_from(edges)
+            for edge in edges:
+                graph.edges[edge][_WEIGHT_KEY] = 0
+                tmp_graph.edges[edge][_WEIGHT_KEY] = 0
+            new_neighbours = set()
+            for node in path:
+                new_neighbours.update(graph.neighbors(node))
+                new_neighbours.add(node)
+            candidate_positions -= new_neighbours
+
+            nodes_to_remove = new_neighbours - start_end_neighbours
+            tmp_graph.remove_nodes_from(nodes_to_remove)
+        if num_paths > 0:  # pylint: disable=undefined-loop-variable
+            IDENTIFY_LOGGER.debug(
+                'Found {} path(s) to point {}.'.format(num_paths, end_pos)  # pylint: disable=undefined-loop-variable
+            )
+        else:
+            IDENTIFY_LOGGER.warning(
+                'No paths to point {} found.'.format(end_pos)
+            )
+    if num_pos > 0:
+        IDENTIFY_LOGGER.debug(
+            'Calcualted paths to {} positions.'.format(num_pos)
+        )
+    else:
+        IDENTIFY_LOGGER.warning(
+            'Could not find any positions with sufficient spacing using the \'shortest_path\' method. Using \'dominating_set\' method instead.'
+        )
+        return _evaluate_line_dominating_set(
+            positions=positions,
+            coordinate_system=coordinate_system,
+            neighbour_mapping=neighbour_mapping,
+            feature_size=feature_size
+        )
+
+    return NodalLine(
+        graph=result_graph, degree_count=_create_degree_count(result_graph)
+    )
+
+
+def _get_first_position(candidate_positions, coordinate_system, feature_size):
+    """
+    Get the first position in such a way that it there is a second position that
+    is far away.
+    """
+    first_pos = None
+    max_dist = 0
+    for pos1, pos2 in itertools.combinations(candidate_positions, r=2):
+        dist = coordinate_system.distance(np.array(pos1), np.array(pos2))
+        if dist > max_dist:
+            first_pos = pos1
+            max_dist = dist
+        if max_dist > 3 * feature_size:
+            break
+    return first_pos
+
+
+def _update_high_degree_nodes(graph, result_graph, high_degree_nodes):
+    """
+    Update the high degree nodes, and adjust the weight of the edges for new
+    high degree nodes.
+    """
+    for node, deg in result_graph.degree:
+        if deg > 2 and node not in high_degree_nodes:
+            high_degree_nodes.add(node)
+            for nbr in graph.neighbors(node):
+                graph.edges[(node, nbr)][_WEIGHT_KEY] *= 0.1
+
+
+def _create_degree_count(graph):
+    degree_counter = Counter([val for pos, val in graph.degree])
+    degree_counter.pop(2, None)
+    return degree_counter
+
+
+def _evaluate_line_dominating_set(
+    positions, coordinate_system, neighbour_mapping, feature_size
+):
+    """
+    Evaluate the positions of a nodal line using the 'dominating set' method.
     """
     graph = nx.Graph()
     graph.add_nodes_from(positions)
@@ -106,9 +289,9 @@ def _evaluate_line(
     )
     _remove_duplicate_paths(subgraph)
 
-    degree_counter = Counter([val for pos, val in subgraph.degree])
-    degree_counter.pop(2, None)
-    return NodalLine(graph=subgraph, degree_count=degree_counter)
+    return NodalLine(
+        graph=subgraph, degree_count=_create_degree_count(subgraph)
+    )
 
 
 def _patch_all_subgraph_holes(
@@ -119,6 +302,8 @@ def _patch_all_subgraph_holes(
     """
     pair_to_patch = namedtuple('pair_to_patch', ['edge', 'dist_original'])
     to_patch = []
+
+    patch_cutoff = 1.001
     for pos1, pos2 in itertools.combinations(subgraph.nodes, r=2):
         # The minimum distance is used here only to improve performance,
         # because it is much quicker to calculate than the shortest path.
@@ -131,11 +316,11 @@ def _patch_all_subgraph_holes(
             dist_reduced = nx.algorithms.shortest_path_length(
                 subgraph, pos1, pos2, weight=_DISTANCE_KEY
             )
-            if dist_reduced > max(feature_size, 2 * dist_minimal):
+            if dist_reduced > max(feature_size, patch_cutoff * dist_minimal):
                 dist_original = nx.algorithms.shortest_path_length(
                     graph, pos1, pos2, weight=_DISTANCE_KEY
                 )
-                if dist_reduced > 2 * dist_original and dist_original < 2 * feature_size:
+                if dist_reduced > patch_cutoff * dist_original and dist_original < 2 * feature_size:
                     to_patch.append(
                         pair_to_patch(
                             edge=(pos1, pos2), dist_original=dist_original
