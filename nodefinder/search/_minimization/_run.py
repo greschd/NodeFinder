@@ -45,6 +45,11 @@ async def run_minimization(
         Keyword arguments passed to the Nelder-Mead algorithm.
     """
     if fake_potential is not None:
+        # TODO: Check if deepcopying fake potential is valid / better. The
+        # possible issue when not deep-copying is that the fake potential may
+        # change during minimization, and the Nelder-Mead algorithm could get
+        # horribly stuck when the current best value is within the 'infinite'
+        # region.
         modified_kwargs = dict(nelder_mead_kwargs)
         modified_kwargs['ftol'] = float('inf')
         res_fake = await root_nelder_mead(
@@ -53,9 +58,9 @@ async def run_minimization(
             **modified_kwargs
         )
         simplex_final = res_fake.simplex_history[-1]
-        simplex_blowup = simplex_final[
-            0
-        ] + 5 * (simplex_final - simplex_final[0])
+        simplex_blowup = simplex_final[0] + 5 * (
+            simplex_final - simplex_final[0]
+        )
 
         res = await root_nelder_mead(
             func=func, initial_simplex=simplex_blowup, **nelder_mead_kwargs
