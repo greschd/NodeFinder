@@ -4,8 +4,9 @@ Defines the container classes for the identification results.
 
 from types import SimpleNamespace
 
+import numpy as np
 from fsc.export import export
-from fsc.hdf5_io import subscribe_hdf5, SimpleHDF5Mapping
+from fsc.hdf5_io import subscribe_hdf5, SimpleHDF5Mapping, HDF5Enabled, to_hdf5, from_hdf5
 
 
 @export
@@ -41,7 +42,7 @@ class IdentificationResultContainer(SimpleNamespace, SimpleHDF5Mapping):
 
 @export
 @subscribe_hdf5('nodefinder.identification_result')
-class IdentificationResult(SimpleNamespace, SimpleHDF5Mapping):
+class IdentificationResult(SimpleNamespace, HDF5Enabled):
     """Contains the attributes of an identified object.
 
     Attributes
@@ -55,7 +56,8 @@ class IdentificationResult(SimpleNamespace, SimpleHDF5Mapping):
         Dimension of the identified object. Is set to ``None`` if the dimension
         is ambiguous.
     """
-    HDF5_ATTRIBUTES = ['positions', 'shape', 'dimension']
+
+    # HDF5_ATTRIBUTES = ['positions', 'shape', 'dimension']
 
     def __init__(self, positions, dimension, shape=None):
         self.positions = positions
@@ -66,3 +68,18 @@ class IdentificationResult(SimpleNamespace, SimpleHDF5Mapping):
         return 'IdentificationResult(dimension={}, shape={}, positions=<{} values>)'.format(
             self.dimension, self.shape, len(self.positions)
         )
+
+    def to_hdf5(self, hdf5_handle):
+        hdf5_handle['dimension'] = self.dimension
+        hdf5_handle['positions'] = np.array(self.positions)
+        to_hdf5(self.shape, hdf5_handle.create_group('shape'))
+
+    @classmethod
+    def from_hdf5(cls, hdf5_handle):
+        shape = from_hdf5(hdf5_handle['shape'])
+        dimension = hdf5_handle['dimension'].value
+        try:
+            positions = [tuple(x) for x in hdf5_handle['positions'].value]
+        except AttributeError:
+            positions = from_hdf5(hdf5_handle['positions'])
+        return cls(positions=positions, dimension=dimension, shape=shape)
