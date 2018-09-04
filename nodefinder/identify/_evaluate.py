@@ -118,11 +118,12 @@ def _evaluate_line_shortest_path(
     for node, neighbours in neighbour_mapping.items():
         if node in positions:
             distance_func = lambda x: x + x**2
-            graph.add_weighted_edges_from(
-                [(node, nbr.pos, distance_func(nbr.distance / feature_size))
-                 for nbr in neighbours],
-                weight=_WEIGHT_KEY
-            )
+            graph.add_weighted_edges_from([(
+                node, nbr.pos,
+                feature_size * distance_func(nbr.distance / feature_size)
+            ) for nbr in neighbours],
+                                          weight=_WEIGHT_KEY)
+    graph_unmodified = graph.copy()
 
     candidate_positions = set(graph.nodes)
 
@@ -221,6 +222,22 @@ def _evaluate_line_shortest_path(
             feature_size=feature_size
         )
 
+    for edge in result_graph.edges:
+        result_graph.edges[edge][_WEIGHT_KEY
+                                 ] = graph_unmodified.edges[edge][_WEIGHT_KEY]
+
+    unusual_nodes = [
+        node for node, degree in result_graph.degree if degree != 2
+    ]
+    _patch_all_subgraph_holes(
+        subgraph=result_graph,
+        graph=graph_unmodified,
+        coordinate_system=coordinate_system,
+        feature_size=feature_size,
+        candidates=unusual_nodes,
+        weight=_WEIGHT_KEY
+    )
+
     return NodalLine(
         graph=result_graph, degree_count=_create_degree_count(result_graph)
     )
@@ -290,7 +307,7 @@ def _evaluate_line_dominating_set(
         subgraph=subgraph,
         graph=graph,
         coordinate_system=coordinate_system,
-        feature_size=feature_size
+        feature_size=feature_size,
     )
     _remove_duplicate_paths(subgraph)
 
@@ -300,7 +317,13 @@ def _evaluate_line_dominating_set(
 
 
 def _patch_all_subgraph_holes(
-    *, subgraph, graph, coordinate_system, feature_size
+    *,
+    subgraph,
+    graph,
+    coordinate_system,
+    feature_size,
+    candidates=None,
+    weight=_DISTANCE_KEY
 ):
     """
     Check for 'holes' where the subgraph is disconnected while the original graph is not, and patch them by adding the shortest path on the full graph between the points in the subgraph.
@@ -309,7 +332,9 @@ def _patch_all_subgraph_holes(
     to_patch = []
 
     patch_cutoff = 1.001
-    for pos1, pos2 in itertools.combinations(subgraph.nodes, r=2):
+    if candidates is None:
+        candidates = subgraph.nodes
+    for pos1, pos2 in itertools.combinations(candidates, r=2):
         # The minimum distance is used here only to improve performance,
         # because it is much quicker to calculate than the shortest path.
         # By using the distance in the coordinate system as a lower limit for
@@ -319,11 +344,11 @@ def _patch_all_subgraph_holes(
         )
         if dist_minimal < 2 * feature_size:
             dist_reduced = nx.algorithms.shortest_path_length(
-                subgraph, pos1, pos2, weight=_DISTANCE_KEY
+                subgraph, pos1, pos2, weight=weight
             )
             if dist_reduced > max(feature_size, patch_cutoff * dist_minimal):
                 dist_original = nx.algorithms.shortest_path_length(
-                    graph, pos1, pos2, weight=_DISTANCE_KEY
+                    graph, pos1, pos2, weight=weight
                 )
                 if dist_reduced > patch_cutoff * dist_original and dist_original < 2 * feature_size:
                     to_patch.append(
