@@ -60,7 +60,7 @@ class IdentificationResult(SimpleNamespace, HDF5Enabled):
     # HDF5_ATTRIBUTES = ['positions', 'shape', 'dimension']
 
     def __init__(self, positions, dimension, shape=None):
-        self.positions = positions
+        self.positions = [tuple(pos) for pos in positions]
         self.dimension = dimension
         self.shape = shape
 
