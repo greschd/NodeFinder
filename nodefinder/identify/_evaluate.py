@@ -252,7 +252,7 @@ def _update_high_degree_nodes(graph, result_graph, high_degree_nodes):
         if deg > 2 and node not in high_degree_nodes:
             high_degree_nodes.add(node)
             for nbr in graph.neighbors(node):
-                graph.edges[(node, nbr)][_WEIGHT_KEY] *= 0.1
+                graph.edges[(node, nbr)][_WEIGHT_KEY] *= 0.5
 
 
 def _create_degree_count(graph):
