@@ -3,14 +3,11 @@
 
 import os
 import json
-import logging
 import operator
 
 import pytest
 
 from score_fixtures import *  # pylint: disable=unused-wildcard-import
-
-logging.getLogger('nodefinder').setLevel(logging.DEBUG)
 
 
 def pytest_addoption(parser):

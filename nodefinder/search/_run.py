@@ -32,7 +32,9 @@ async def run_async(
     feature_size=2e-3,
     use_fake_potential=False,
     nelder_mead_kwargs=MappingProxyType({}),
-    num_minimize_parallel=50
+    num_minimize_parallel=50,
+    recheck_pos_dist=True,
+    recheck_count_cutoff=3,
 ):
     """Run the nodal point search.
 
@@ -80,6 +82,12 @@ async def run_async(
     num_minimize_parallel : int
         Maximum number of minimization calculations which are launched in
         parallel.
+    recheck_pos_dist : bool
+        Indicates whether the position of a refinement box is checked again
+        before launching the corresponding refinement.
+    recheck_count_cutoff : int
+        Number of positions which are allowed to be within the cutoff distance
+        when re-checking the position.
 
     Returns
     -------
@@ -103,7 +111,9 @@ async def run_async(
         nelder_mead_kwargs=nelder_mead_kwargs,
         num_minimize_parallel=num_minimize_parallel,
         refinement_box_size=refinement_box_size,
-        refinement_mesh_size=refinement_mesh_size
+        refinement_mesh_size=refinement_mesh_size,
+        recheck_pos_dist=recheck_pos_dist,
+        recheck_count_cutoff=recheck_count_cutoff,
     )
     SEARCH_LOGGER.debug('Running search controller.')
     await controller.run()
