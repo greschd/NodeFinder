@@ -94,12 +94,43 @@ def nodal_line(shape, *, axis, color, feature_size=None):
         feature_size = np.inf
 
     graph = shape.graph
-    for edge in graph.edges:
-        pos1, pos2 = edge
-        if la.norm(np.array(pos2) - np.array(pos1)) > 2 * feature_size:
-            continue
-        axis.plot(*np.array(edge).T, color=color)
 
-    for node, deg in graph.degree:
-        if deg > 2:
-            axis.scatter(*np.array(node).T, color=color)
+    paths = _get_graph_paths(graph, feature_size=feature_size)
+
+    for path in paths:
+        axis.plot(*np.array(path).T, color=color)
+
+
+def _get_graph_paths(graph, feature_size):
+    """
+    Separate a graph into paths, breaking when there is no neighbor or when
+    passing across the periodic boundary.
+    """
+    working_graph = graph.copy()
+
+    paths = []
+    while working_graph.edges:
+        curr_node = _get_next_starting_point(working_graph)
+        curr_path = [curr_node]
+        while True:
+            try:
+                next_node = next(working_graph.neighbors(curr_node))
+            except StopIteration:
+                paths.append(curr_path)
+                break
+            if la.norm(np.array(next_node) -
+                       np.array(curr_node)) > 2 * feature_size:
+                paths.append(curr_path)
+                curr_path = [next_node]
+            else:
+                curr_path.append(next_node)
+
+            working_graph.remove_edge(curr_node, next_node)
+            curr_node = next_node
+    return paths
+
+
+def _get_next_starting_point(graph):
+    return min(
+        graph.degree, key=lambda val: val[1] if val[1] != 2 else float('inf')
+    )[0]
