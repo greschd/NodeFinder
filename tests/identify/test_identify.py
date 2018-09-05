@@ -56,6 +56,7 @@ def test_line(run_single_identify):  # pylint: disable=redefined-outer-name
     assert len(res.shape.graph.nodes) > 10
     assert res.shape.degree_count == dict()
 
+
 def test_surface(run_single_identify):  # pylint: disable=redefined-outer-name
     """
     Test that a surface is correctly identified.
@@ -75,6 +76,7 @@ def test_two_lines(run_identify):  # pylint: disable=redefined-outer-name
         assert identified_object.dimension == 1
         assert len(identified_object.shape.graph.nodes) > 10
 
+
 def test_cross(run_single_identify):  # pylint: disable=redefined-outer-name
     """
     Test that the cross is identified without holes.
@@ -82,3 +84,12 @@ def test_cross(run_single_identify):  # pylint: disable=redefined-outer-name
     res = run_single_identify('cross.hdf5')
     assert res.dimension == 1
     assert res.shape.degree_count == {4: 1}
+
+
+def test_line_short_paths(run_single_identify):  # pylint: disable=redefined-outer-name
+    """
+    Test that the cross is identified without holes.
+    """
+    res = run_single_identify('line_1d.hdf5')
+    assert res.dimension == 1
+    assert res.shape.degree_count == dict()

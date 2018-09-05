@@ -108,156 +108,121 @@ def _evaluate_line(
 
 
 def _evaluate_line_shortest_path(
-    positions, coordinate_system, neighbour_mapping, feature_size
+    positions,
+    coordinate_system,  # pylint: disable=unused-argument
+    neighbour_mapping,
+    feature_size
 ):
     """
     Evaluate the positions of a nodal line using the 'shortest path' method.
     """
     graph = nx.Graph()
     graph.add_nodes_from(positions)
+    distance_func = lambda x: x + x**2
     for node, neighbours in neighbour_mapping.items():
         if node in positions:
-            distance_func = lambda x: x + x**2
-            graph.add_weighted_edges_from([(
-                node, nbr.pos,
-                feature_size * distance_func(nbr.distance / feature_size)
-            ) for nbr in neighbours],
-                                          weight=_WEIGHT_KEY)
-    graph_unmodified = graph.copy()
+            for nbr in neighbours:
+                graph.add_edge(
+                    node, nbr.pos, **{
+                        _WEIGHT_KEY:
+                        feature_size *
+                        distance_func(nbr.distance / feature_size),
+                        _DISTANCE_KEY:
+                        nbr.distance
+                    }
+                )
 
-    candidate_positions = set(graph.nodes)
+    work_graph = graph.copy()
 
-    first_pos = _get_first_position(
-        candidate_positions=candidate_positions,
-        coordinate_system=coordinate_system,
-        feature_size=feature_size
-    )
-    IDENTIFY_LOGGER.debug('Starting from position {}.'.format(first_pos))
-    start_neighbours = set(graph.neighbors(first_pos)) | {first_pos}
-    candidate_positions -= start_neighbours
+    candidate_positions = set(work_graph.nodes)
+
+    start_positions = set()
+    first_pos = candidate_positions.pop()
+    start_positions.add(first_pos)
+    candidate_positions -= set(work_graph.neighbors(first_pos))
 
     result_graph = nx.Graph()
     result_graph.add_node(first_pos)
 
     high_degree_nodes = set()
-    # num_pos = 0
-    for num_pos in itertools.count():
-        # while candidate_positions:
-        if not candidate_positions:
-            break
-        # prioritize "crossings"
-        _update_high_degree_nodes(graph, result_graph, high_degree_nodes)
 
-        tmp_graph = graph.copy()
-        end_pos = None
-        min_dist = 0
-        # TODO: Calculate all distances only once.
-        for pos in candidate_positions:
-            dist = min(
-                coordinate_system.distance(np.array(pos), np.array(node))
-                for node in result_graph.nodes
-            )
-            if dist > min_dist:
-                min_dist = dist
-                end_pos = pos
+    while candidate_positions:
 
-        if min_dist < feature_size:
-            break
-        elif min_dist < 3 * feature_size:
-            single_path_only = True
-            num_pos += 1
-        else:
-            single_path_only = False
-            num_pos += 1
-
-        end_neighbours = set(graph.neighbors(end_pos)) | {end_pos}
+        end_pos = candidate_positions.pop()
+        end_neighbours = set(work_graph.neighbors(end_pos)) | {end_pos}
         candidate_positions -= end_neighbours
-        start_end_neighbours = start_neighbours | end_neighbours
 
-        for num_paths in itertools.count():
-            if single_path_only and num_paths > 0:
-                break
-            try:
-                path = nx.algorithms.shortest_path(
-                    tmp_graph,
-                    source=first_pos,
-                    target=end_pos,
-                    weight=_WEIGHT_KEY,
+        for start_pos in start_positions:
+            # prioritize "crossings"
+            _update_high_degree_nodes(
+                work_graph, result_graph, high_degree_nodes
+            )
+            tmp_graph = work_graph.copy()
+
+            start_neighbours = set(work_graph.neighbors(start_pos)
+                                   ) | {start_pos}
+            start_end_neighbours = start_neighbours | end_neighbours
+
+            for num_paths in itertools.count():
+                try:
+                    path = nx.algorithms.shortest_path(
+                        tmp_graph,
+                        source=start_pos,
+                        target=end_pos,
+                        weight=_WEIGHT_KEY,
+                    )
+                except nx.NetworkXNoPath:
+                    break
+
+                new_neighbours = set()
+                for node in path:
+                    new_neighbours.update(work_graph.neighbors(node))
+                    new_neighbours.add(node)
+                candidate_positions -= new_neighbours
+
+                edges = list(zip(path, path[1:]))
+                path_length = sum(
+                    (graph.edges[edge][_DISTANCE_KEY] for edge in edges), 0
                 )
-            except nx.NetworkXNoPath:
-                break
-            edges = list(zip(path, path[1:]))
-            result_graph.add_edges_from(edges)
-            for edge in edges:
-                graph.edges[edge][_WEIGHT_KEY] = 0
-                tmp_graph.edges[edge][_WEIGHT_KEY] = 0
-            new_neighbours = set()
-            for node in path:
-                new_neighbours.update(graph.neighbors(node))
-                new_neighbours.add(node)
-            candidate_positions -= new_neighbours
+                if path_length < 3 * feature_size:
+                    IDENTIFY_LOGGER.debug(
+                        'Path {} identified as a short path, length {}.'.
+                        format(path, path_length)
+                    )
+                    neighbours_in_result = {
+                        nbr
+                        for nbr in start_end_neighbours
+                        if nbr in result_graph.nodes
+                    }
+                    nodes_to_remove = (new_neighbours -
+                                       neighbours_in_result) | set(path[1:-1])
+                else:
+                    nodes_to_remove = new_neighbours - start_end_neighbours
 
-            nodes_to_remove = new_neighbours - start_end_neighbours
-            tmp_graph.remove_nodes_from(nodes_to_remove)
-        if num_paths > 0:  # pylint: disable=undefined-loop-variable
-            IDENTIFY_LOGGER.debug(
-                'Found {} path(s) to point {}.'.format(num_paths, end_pos)  # pylint: disable=undefined-loop-variable
-            )
-        else:
-            IDENTIFY_LOGGER.warning(
-                'No paths to point {} found.'.format(end_pos)
-            )
-    if num_pos > 0:
-        IDENTIFY_LOGGER.debug(
-            'Calcualted paths to {} positions.'.format(num_pos)
-        )
-    else:
-        IDENTIFY_LOGGER.warning(
-            'Could not find any positions with sufficient spacing using the \'shortest_path\' method. Using \'dominating_set\' method instead.'
-        )
-        return _evaluate_line_dominating_set(
-            positions=positions,
-            coordinate_system=coordinate_system,
-            neighbour_mapping=neighbour_mapping,
-            feature_size=feature_size
-        )
+                result_graph.add_edges_from(edges)
+                for edge in edges:
+                    work_graph.edges[edge][_WEIGHT_KEY] = 0
+                    tmp_graph.edges[edge][_WEIGHT_KEY] = 0
 
-    for edge in result_graph.edges:
-        result_graph.edges[edge][_WEIGHT_KEY
-                                 ] = graph_unmodified.edges[edge][_WEIGHT_KEY]
+                tmp_graph.remove_nodes_from(nodes_to_remove)
 
-    # unusual_nodes = [
-    #     node for node, degree in result_graph.degree if degree != 2
-    # ]
-    # _patch_all_subgraph_holes(
-    #     subgraph=result_graph,
-    #     graph=graph_unmodified,
-    #     coordinate_system=coordinate_system,
-    #     feature_size=feature_size,
-    #     candidates=unusual_nodes,
-    #     weight=_WEIGHT_KEY
-    # )
+            if num_paths > 0:  # pylint: disable=undefined-loop-variable
+                IDENTIFY_LOGGER.debug(
+                    'Found {} path(s) from point {} to point {}.'.format(
+                        num_paths,  # pylint: disable=undefined-loop-variable
+                        start_pos,
+                        end_pos
+                    )
+                )
+            else:
+                IDENTIFY_LOGGER.warning(
+                    'No paths to point {} found.'.format(end_pos)
+                )
+        start_positions.add(end_pos)
 
     return NodalLine(
         graph=result_graph, degree_count=_create_degree_count(result_graph)
     )
-
-
-def _get_first_position(candidate_positions, coordinate_system, feature_size):
-    """
-    Get the first position in such a way that it there is a second position that
-    is far away.
-    """
-    first_pos = None
-    max_dist = 0
-    for pos1, pos2 in itertools.combinations(candidate_positions, r=2):
-        dist = coordinate_system.distance(np.array(pos1), np.array(pos2))
-        if dist > max_dist:
-            first_pos = pos1
-            max_dist = dist
-        if max_dist > 3 * feature_size:
-            break
-    return first_pos
 
 
 def _update_high_degree_nodes(graph, result_graph, high_degree_nodes):

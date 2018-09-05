@@ -133,4 +133,6 @@ class SearchResultContainer(SimpleHDF5Mapping):
         """
         candidates = self._get_neighbour_iterator(pos)
         positions = np.array([c.pos for c in candidates])
+        if not positions:
+            return []
         return self.coordinate_system.distance(pos, positions)

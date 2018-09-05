@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import numpy as np
 import nodefinder as nf
 import matplotlib.pyplot as plt
 

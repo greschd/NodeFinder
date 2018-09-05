@@ -101,6 +101,46 @@ def test_nodal_line_2d(nodal_line_2d_properties, score_nodal_line):  # pylint: d
 
 
 @pytest.fixture
+def nodal_line_1d_properties():
+    """
+    Fixture which defines the helper functions describing the properties of the
+    two 2D nodal lines.
+    """
+
+    def gap_fct(pos):  # pylint: disable=unused-argument
+        return 0
+
+    def parametrization(t):
+        return np.array([t])
+
+    return None, gap_fct, parametrization
+
+
+def test_nodal_line_1d(nodal_line_1d_properties, score_nodal_line):  # pylint: disable=redefined-outer-name
+    """
+    Test that searching a nodal line in 1D works.
+    """
+    dist_fct, gap_fct, parametrization = nodal_line_1d_properties
+
+    result = run(
+        gap_fct=gap_fct,
+        limits=[(0, 1)],
+        gap_threshold=2e-4,
+        feature_size=0.05,
+        refinement_mesh_size=3,
+        initial_mesh_size=3,
+        use_fake_potential=True,
+    )
+    score_nodal_line(
+        result=result,
+        dist_func=dist_fct,
+        line_parametrization=parametrization,
+        cutoff_accuracy=2e-3,
+        cutoff_coverage=0.05,
+    )
+
+
+@pytest.fixture
 def nodal_line_nonperiodic_properties():  # pylint: disable=invalid-name
     """
     Fixture which defines the helper functions describing the properties of the
