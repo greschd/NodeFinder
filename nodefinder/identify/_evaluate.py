@@ -226,17 +226,17 @@ def _evaluate_line_shortest_path(
         result_graph.edges[edge][_WEIGHT_KEY
                                  ] = graph_unmodified.edges[edge][_WEIGHT_KEY]
 
-    unusual_nodes = [
-        node for node, degree in result_graph.degree if degree != 2
-    ]
-    _patch_all_subgraph_holes(
-        subgraph=result_graph,
-        graph=graph_unmodified,
-        coordinate_system=coordinate_system,
-        feature_size=feature_size,
-        candidates=unusual_nodes,
-        weight=_WEIGHT_KEY
-    )
+    # unusual_nodes = [
+    #     node for node, degree in result_graph.degree if degree != 2
+    # ]
+    # _patch_all_subgraph_holes(
+    #     subgraph=result_graph,
+    #     graph=graph_unmodified,
+    #     coordinate_system=coordinate_system,
+    #     feature_size=feature_size,
+    #     candidates=unusual_nodes,
+    #     weight=_WEIGHT_KEY
+    # )
 
     return NodalLine(
         graph=result_graph, degree_count=_create_degree_count(result_graph)
