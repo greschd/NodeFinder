@@ -20,6 +20,8 @@ from ._logging import IDENTIFY_LOGGER
 _DISTANCE_KEY = '_distance'
 _WEIGHT_KEY = '_weight'
 
+_MAX_NUM_PATHS = 20
+
 
 @export
 def evaluate_cluster(
@@ -163,7 +165,20 @@ def _evaluate_line_shortest_path(
                                    ) | {start_pos}
             start_end_neighbours = start_neighbours | end_neighbours
 
-            for num_paths in itertools.count():
+            unweighted_path_length = nx.algorithms.shortest_path_length(
+                tmp_graph,
+                source=start_pos,
+                target=end_pos,
+            )
+            if unweighted_path_length <= 4:
+                max_paths = 1
+                IDENTIFY_LOGGER.debug(
+                    'Positions %s and %s are too close, calculating only one path.',
+                    start_pos, end_pos
+                )
+            else:
+                max_paths = _MAX_NUM_PATHS
+            for num_paths in range(max_paths):
                 try:
                     path = nx.algorithms.shortest_path(
                         tmp_graph,
@@ -174,31 +189,18 @@ def _evaluate_line_shortest_path(
                 except nx.NetworkXNoPath:
                     break
 
+                if num_paths > 3:
+                    print(path)
                 new_neighbours = set()
                 for node in path:
-                    new_neighbours.update(work_graph.neighbors(node))
+                    new_neighbours.update(tmp_graph.neighbors(node))
                     new_neighbours.add(node)
                 candidate_positions -= new_neighbours
 
-                edges = list(zip(path, path[1:]))
-                path_length = sum(
-                    (graph.edges[edge][_DISTANCE_KEY] for edge in edges), 0
-                )
-                if path_length < 3 * feature_size:
-                    IDENTIFY_LOGGER.debug(
-                        'Path {} identified as a short path, length {}.'.
-                        format(path, path_length)
-                    )
-                    neighbours_in_result = {
-                        nbr
-                        for nbr in start_end_neighbours
-                        if nbr in result_graph.nodes
-                    }
-                    nodes_to_remove = (new_neighbours -
-                                       neighbours_in_result) | set(path[1:-1])
-                else:
-                    nodes_to_remove = new_neighbours - start_end_neighbours
+                nodes_to_remove = new_neighbours - start_end_neighbours
+                assert nodes_to_remove or (max_paths == 1)
 
+                edges = list(zip(path, path[1:]))
                 result_graph.add_edges_from(edges)
                 for edge in edges:
                     work_graph.edges[edge][_WEIGHT_KEY] = 0
