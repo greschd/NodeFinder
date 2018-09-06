@@ -131,6 +131,9 @@ def _get_graph_paths(graph, feature_size):
 
 
 def _get_next_starting_point(graph):
+    nonzero_degree = [(node, degree) for node, degree in graph.degree
+                      if degree > 0]
     return min(
-        graph.degree, key=lambda val: val[1] if val[1] != 2 else float('inf')
+        nonzero_degree,
+        key=lambda val: val[1] if val[1] != 2 else float('inf')
     )[0]
