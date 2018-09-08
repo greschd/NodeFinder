@@ -97,8 +97,11 @@ def nodal_line(shape, *, axis, color, feature_size=None):
 
     paths = _get_graph_paths(graph, feature_size=feature_size)
 
-    for path in paths:
-        axis.plot(*np.array(path).T, color=color)
+    if paths:
+        for path in paths:
+            axis.plot(*np.array(path).T, color=color)
+    else:
+        axis.scatter(*np.array(list(graph.nodes)).T, color=color)
 
 
 def _get_graph_paths(graph, feature_size):
@@ -118,8 +121,8 @@ def _get_graph_paths(graph, feature_size):
             except StopIteration:
                 paths.append(curr_path)
                 break
-            if la.norm(np.array(next_node) -
-                       np.array(curr_node)) > 2 * feature_size:
+            if la.norm(np.array(next_node) - np.array(curr_node)
+                       ) > 2 * feature_size:
                 paths.append(curr_path)
                 curr_path = [next_node]
             else:

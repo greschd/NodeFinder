@@ -171,14 +171,16 @@ def _evaluate_line_shortest_path(
                 target=end_pos,
             )
             if unweighted_path_length <= 4:
-                max_paths = 1
+                single_path_only = True
                 IDENTIFY_LOGGER.debug(
                     'Positions %s and %s are too close, calculating only one path.',
                     start_pos, end_pos
                 )
             else:
-                max_paths = _MAX_NUM_PATHS
-            for num_paths in range(max_paths):
+                single_path_only = False
+            for num_paths in range(_MAX_NUM_PATHS):
+                if single_path_only and num_paths == 1:
+                    break
                 try:
                     path = nx.algorithms.shortest_path(
                         tmp_graph,
@@ -198,7 +200,7 @@ def _evaluate_line_shortest_path(
                 candidate_positions -= new_neighbours
 
                 nodes_to_remove = new_neighbours - start_end_neighbours
-                assert nodes_to_remove or (max_paths == 1)
+                assert nodes_to_remove or single_path_only
 
                 edges = list(zip(path, path[1:]))
                 result_graph.add_edges_from(edges)
