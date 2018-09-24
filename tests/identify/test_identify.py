@@ -86,9 +86,13 @@ def test_cross(run_single_identify):  # pylint: disable=redefined-outer-name
     assert res.shape.degree_count == {4: 1}
 
 
+@pytest.mark.skip(
+    reason=
+    "Test for short lines is skipped, since they cannot reliably be identified."
+)
 def test_line_short_paths(run_single_identify):  # pylint: disable=redefined-outer-name
     """
-    Test that the cross is identified without holes.
+    Test that a short line is identified correctly, without holes.
     """
     res = run_single_identify('line_1d.hdf5')
     assert res.dimension == 1

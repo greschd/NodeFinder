@@ -16,4 +16,4 @@ install:
 
 script:
   - if [ "$TEST_TYPE" == "compliance" ] ; then pip install .[dev]; pre-commit run --all-files ; fi
-  - if [ "$TEST_TYPE" == "test" ] ; then cd tests; py.test ; fi
+  - if [ "$TEST_TYPE" == "test" ] ; then cd tests; pytest --no-plot-compare ; fi
