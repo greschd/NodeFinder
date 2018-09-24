@@ -33,7 +33,7 @@ def score_nodal_points(score, score_num_fev):  # pylint: disable=redefined-outer
     Fixture for scoring the result of a calculation which contains only nodal points.
     """
 
-    def inner(  # pylint: disable=missing-docstring
+    def inner(
         result,
         exact_points,
         cutoff_accuracy=None,
@@ -82,7 +82,7 @@ def score_nodal_line(score, score_num_fev):  # pylint: disable=redefined-outer-n
         cutoff_accuracy=None,
         cutoff_coverage=None,
         num_line_points=10**4
-    ):  # pylint: disable=missing-docstring
+    ):
         score_num_fev(result)
 
         if dist_func is not None:
@@ -129,7 +129,7 @@ def score_nodal_surface(score, score_num_fev):  # pylint: disable=redefined-oute
         cutoff_accuracy=None,
         cutoff_coverage=None,
         num_line_points=100
-    ):  # pylint: disable=missing-docstring
+    ):
 
         score_num_fev(result)
 

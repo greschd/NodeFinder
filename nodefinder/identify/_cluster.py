@@ -77,7 +77,7 @@ def _create_cluster(starting_pos, neighbour_mapping):
     get_neighbours_from = set([starting_pos])
     while get_neighbours_from:
         pos = get_neighbours_from.pop()
-        neighbours = set([n.pos for n in neighbour_mapping[pos]])
+        neighbours = {n.pos for n in neighbour_mapping[pos]}
         new_positions = neighbours - cluster
         get_neighbours_from.update(new_positions)
         cluster.update(new_positions)

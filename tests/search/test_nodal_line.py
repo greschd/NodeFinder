@@ -66,7 +66,7 @@ def nodal_line_2d_properties():
         x, y = pos
         return abs(np.sin(x) + 0.8 * np.cos(y))
 
-    def parametrization(t):  # pylint: disable=missing-docstring
+    def parametrization(t):
         y = 2 * t % 1
         x = np.arcsin(-0.8 * np.cos(y))
         if t > 0.5:
@@ -150,7 +150,7 @@ def nodal_line_nonperiodic_properties():  # pylint: disable=invalid-name
     def gap_fct(pos):
         return np.abs(1 - np.max(np.abs(pos)))
 
-    def parametrization(t):  # pylint: disable=missing-docstring
+    def parametrization(t):
         if t < 0.25:
             return [-1 + 8 * t, -1]
         elif t < 0.5:

@@ -45,7 +45,7 @@ async def run_minimization(
         Keyword arguments passed to the Nelder-Mead algorithm.
     """
     if fake_potential is not None:
-        # TODO: Check if deepcopying fake potential is valid / better. The
+        # TODO: Check if deepcopying fake potential is valid / better.
         # possible issue when not deep-copying is that the fake potential may
         # change during minimization, and the Nelder-Mead algorithm could get
         # horribly stuck when the current best value is within the 'infinite'

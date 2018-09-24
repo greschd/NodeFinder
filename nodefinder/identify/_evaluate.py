@@ -109,7 +109,7 @@ def _evaluate_line(
         raise ValueError('Invalid value for \'method\': {}'.format(method))
 
 
-def _evaluate_line_shortest_path(
+def _evaluate_line_shortest_path(  # pylint: disable=too-many-locals,too-many-statements,too-many-branches
     positions,
     coordinate_system,  # pylint: disable=unused-argument
     neighbour_mapping,
