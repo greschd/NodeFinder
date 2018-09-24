@@ -121,8 +121,8 @@ def _get_graph_paths(graph, feature_size):
             except StopIteration:
                 paths.append(curr_path)
                 break
-            if la.norm(np.array(next_node) - np.array(curr_node)
-                       ) > 2 * feature_size:
+            if la.norm(np.array(next_node) -
+                       np.array(curr_node)) > 2 * feature_size:
                 paths.append(curr_path)
                 curr_path = [next_node]
             else:

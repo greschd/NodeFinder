@@ -113,8 +113,8 @@ class Controller:
         dim_refinement_mesh_size = len(refinement_mesh_size)
         if not dim_limits == dim_mesh_size == dim_refinement_mesh_size:
             raise ValueError(
-                'Inconsistent dimensions given: limits: {}, mesh_size: {}, refinement_mesh_size: {}'.
-                format(dim_limits, dim_mesh_size, dim_refinement_mesh_size)
+                'Inconsistent dimensions given: limits: {}, mesh_size: {}, refinement_mesh_size: {}'
+                .format(dim_limits, dim_mesh_size, dim_refinement_mesh_size)
             )
         return dim_limits, mesh_size, refinement_mesh_size
 

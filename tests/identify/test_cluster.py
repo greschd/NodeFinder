@@ -10,9 +10,10 @@ from nodefinder.identify._cluster import create_clusters
 
 
 @pytest.mark.parametrize(
-    'sample_name, num_clusters',
-    [('search/two_lines.hdf5', 2), ('search/point.hdf5', 1),
-     ('search/line.hdf5', 1), ('search/surface.hdf5', 1)]
+    'sample_name, num_clusters', [('search/two_lines.hdf5', 2),
+                                  ('search/point.hdf5', 1),
+                                  ('search/line.hdf5', 1),
+                                  ('search/surface.hdf5', 1)]
 )
 def test_clustering(sample, sample_name, num_clusters):
     """
