@@ -55,8 +55,9 @@ class NodalLine(SimpleNamespace):
         Serialize the object and store in under the given HDF5 handle.
         """
         graph_group = hdf5_handle.create_group('graph')
-        graph_group['nodes'] = np.array(self.graph.nodes)
-        graph_group['edges'] = np.array(self.graph.edges)
+        graph_group['nodes'] = np.array(list(self.graph.nodes))
+        if self.graph.edges:
+            graph_group['edges'] = np.array(list(self.graph.edges))
 
         degree_count_group = hdf5_handle.create_group('degree_count')
         to_hdf5(self.degree_count, degree_count_group)
@@ -70,8 +71,9 @@ class NodalLine(SimpleNamespace):
         graph = nx.Graph()
 
         graph.add_nodes_from([tuple(n) for n in graph_group['nodes']])
-        graph.add_edges_from([(tuple(p1), tuple(p2))
-                              for p1, p2 in graph_group['edges']])
+        if 'edges' in graph_group:
+            graph.add_edges_from([(tuple(p1), tuple(p2))
+                                  for p1, p2 in graph_group['edges']])
 
         degree_count = from_hdf5(hdf5_handle['degree_count'])
         return cls(graph=graph, degree_count=degree_count)

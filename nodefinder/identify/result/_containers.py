@@ -70,14 +70,17 @@ class IdentificationResult(SimpleNamespace, HDF5Enabled):
         )
 
     def to_hdf5(self, hdf5_handle):
-        hdf5_handle['dimension'] = self.dimension
+        to_hdf5(self.dimension, hdf5_handle.create_group('dimension'))
         hdf5_handle['positions'] = np.array(self.positions)
         to_hdf5(self.shape, hdf5_handle.create_group('shape'))
 
     @classmethod
     def from_hdf5(cls, hdf5_handle):
         shape = from_hdf5(hdf5_handle['shape'])
-        dimension = hdf5_handle['dimension'].value
+        try:
+            dimension = hdf5_handle['dimension'].value
+        except AttributeError:
+            dimension = from_hdf5(hdf5_handle['dimension'])
         try:
             positions = [tuple(x) for x in hdf5_handle['positions'].value]
         except AttributeError:
