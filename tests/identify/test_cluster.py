@@ -26,7 +26,7 @@ def test_clustering(sample, sample_name, num_clusters):
     coordinate_system = search_result.coordinate_system
     feature_size = search_result.dist_cutoff * _DIST_CUTOFF_FACTOR
 
-    clusters, _ = create_clusters(
+    clusters = create_clusters(
         positions=positions,
         coordinate_system=coordinate_system,
         feature_size=feature_size

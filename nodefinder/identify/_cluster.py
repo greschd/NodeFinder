@@ -2,16 +2,11 @@
 Defines the clustering function used to group nodal points.
 """
 
-import copy
-import itertools
-from collections import namedtuple
-
 import numpy as np
+import networkx as nx
 from fsc.export import export
 
-__all__ = ['Neighbour']
-
-Neighbour = namedtuple('Neighbour', ['pos', 'distance'])
+DISTANCE_KEY = 'distance'
 
 
 @export
@@ -31,57 +26,34 @@ def create_clusters(positions, *, feature_size, coordinate_system):
 
     Returns
     -------
-    list(set) :
-        Clusters of positions.
-    dict:
-        Mapping containing the list of neighbours for each position.
+    list(nx.Graph) :
+        A list of connected graphs, each representing one cluster.
     """
-    if not positions:
-        return [], {}
-    positions_unique = set(tuple(pos) for pos in positions)
-    neighbour_mapping = {pos: [] for pos in positions_unique}
-    pos_pairs_iterator = itertools.combinations(positions_unique, r=2)
-    while True:
-        pos_pairs_list = list(itertools.islice(pos_pairs_iterator, 10000))
-        if not pos_pairs_list:
-            break
-        pos_pairs_array = np.array(pos_pairs_list)
-        distances = coordinate_system.distance(
-            pos_pairs_array[:, 0], pos_pairs_array[:, 1]
-        )
+    graph = _create_graph(
+        positions,
+        feature_size=feature_size,
+        coordinate_system=coordinate_system
+    )
+    return list(nx.algorithms.connected_component_subgraphs(graph))
+
+
+def _create_graph(positions, *, feature_size, coordinate_system):
+    """
+    Create a graph from the positions, where nodes which are less than the feature
+    size apart are connected by an edge, whose 'distance' weight is their
+    distance.
+    """
+    graph = nx.Graph()
+
+    pos_unique = list(set(tuple(pos) for pos in positions))
+    graph.add_nodes_from(pos_unique)
+    pos_unique_array = np.array(pos_unique)
+    for i, (pos, pos_arr) in enumerate(zip(pos_unique[:-1], pos_unique_array)):
+        offset = i + 1
+        candidates = pos_unique_array[offset:]
+        distances = coordinate_system.distance(pos_arr, candidates)
         for idx in np.flatnonzero(distances <= feature_size):
-            pos1, pos2 = pos_pairs_list[idx]
+            nbr = pos_unique[idx + offset]
             dist = distances[idx]
-            neighbour_mapping[pos1].append(Neighbour(pos=pos2, distance=dist))
-            neighbour_mapping[pos2].append(Neighbour(pos=pos1, distance=dist))
-    clusters = []
-    pos_to_evaluate = copy.copy(positions_unique)
-    while pos_to_evaluate:
-        new_pos = pos_to_evaluate.pop()
-        new_cluster = _create_cluster(
-            starting_pos=new_pos, neighbour_mapping=neighbour_mapping
-        )
-        pos_to_evaluate -= new_cluster
-        clusters.append(new_cluster)
-
-    # check consistency
-    for cl1, cl2 in itertools.combinations(clusters, r=2):
-        assert not cl1.intersection(cl2), "Inconsistent neighbour mapping."
-
-    return clusters, neighbour_mapping
-
-
-def _create_cluster(starting_pos, neighbour_mapping):
-    """
-    Create
-    """
-    print('Creating cluster from', starting_pos)
-    cluster = set([starting_pos])
-    get_neighbours_from = set([starting_pos])
-    while get_neighbours_from:
-        pos = get_neighbours_from.pop()
-        neighbours = {n.pos for n in neighbour_mapping[pos]}
-        new_positions = neighbours - cluster
-        get_neighbours_from.update(new_positions)
-        cluster.update(new_positions)
-    return cluster
+            graph.add_edge(pos, nbr, **{DISTANCE_KEY: dist})
+    return graph
