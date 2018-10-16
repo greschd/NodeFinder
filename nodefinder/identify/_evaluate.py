@@ -147,6 +147,7 @@ def _evaluate_line_shortest_path(  # pylint: disable=too-many-locals,too-many-st
     result_graph.add_node(first_pos)
 
     high_degree_nodes = set()
+    degree_one_nodes = set()
 
     while candidate_positions:
 
@@ -158,6 +159,10 @@ def _evaluate_line_shortest_path(  # pylint: disable=too-many-locals,too-many-st
             # prioritize "crossings"
             _update_high_degree_nodes(
                 work_graph, result_graph, high_degree_nodes
+            )
+            # prioritize ends
+            _update_degree_one_nodes(
+                work_graph, result_graph, degree_one_nodes
             )
             tmp_graph = work_graph.copy()
 
@@ -237,9 +242,30 @@ def _update_high_degree_nodes(graph, result_graph, high_degree_nodes):
     for node, deg in result_graph.degree:
         if deg > 2 and node not in high_degree_nodes:
             high_degree_nodes.add(node)
-            for nbr in graph.neighbors(node):
-                graph.edges[(node, nbr)][_WEIGHT_KEY] *= 0.5
+            _update_neighbour_weights(node, graph=graph, multiplier=0.5)
 
+
+def _update_degree_one_nodes(graph, result_graph, degree_one_nodes):
+    """
+    Update the nodes of degree one. Decrease the weight of edges for
+    new nodes of degree one, and increase the weight for those whose
+    degree is no longer one.
+    """
+    current_deg_one_nodes = set(
+        node for node, deg in result_graph.degree if deg == 1
+    )
+    new_nodes = current_deg_one_nodes - degree_one_nodes
+    outdated_nodes = degree_one_nodes - current_deg_one_nodes
+    for node in new_nodes:
+        _update_neighbour_weights(node, graph=graph, multiplier=0.1)
+    for node in outdated_nodes:
+        _update_neighbour_weights(node, graph=graph, multiplier=10)
+    degree_one_nodes.clear()
+    degree_one_nodes.update(current_deg_one_nodes)
+
+def _update_neighbour_weights(node, graph, multiplier):
+    for nbr in graph.neighbors(node):
+        graph.edges[(node, nbr)][_WEIGHT_KEY] *= multiplier
 
 def _create_degree_count(graph):
     degree_counter = Counter([val for pos, val in graph.degree])
