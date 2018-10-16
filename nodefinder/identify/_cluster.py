@@ -40,21 +40,22 @@ def create_clusters(positions, *, feature_size, coordinate_system):
         return [], {}
     positions_unique = set(tuple(pos) for pos in positions)
     neighbour_mapping = {pos: [] for pos in positions_unique}
-    pos_pairs = list(itertools.combinations(positions_unique, r=2))
-    pos_pairs_array = np.array(pos_pairs)
-    distances = coordinate_system.distance(
-        pos_pairs_array[:, 0], pos_pairs_array[:, 1]
-    )
-    assert len(distances) == len(pos_pairs)
-    for idx in np.flatnonzero(distances <= feature_size):
-        pos1, pos2 = pos_pairs[idx]
-        dist = distances[idx]
-        neighbour_mapping[pos1].append(Neighbour(pos=pos2, distance=dist))
-        neighbour_mapping[pos2].append(Neighbour(pos=pos1, distance=dist))
-
+    pos_pairs_iterator = itertools.combinations(positions_unique, r=2)
+    while True:
+        pos_pairs_list = list(itertools.islice(pos_pairs_iterator, 10000))
+        if not pos_pairs_list:
+            break
+        pos_pairs_array = np.array(pos_pairs_list)
+        distances = coordinate_system.distance(
+            pos_pairs_array[:, 0], pos_pairs_array[:, 1]
+        )
+        for idx in np.flatnonzero(distances <= feature_size):
+            pos1, pos2 = pos_pairs_list[idx]
+            dist = distances[idx]
+            neighbour_mapping[pos1].append(Neighbour(pos=pos2, distance=dist))
+            neighbour_mapping[pos2].append(Neighbour(pos=pos1, distance=dist))
     clusters = []
     pos_to_evaluate = copy.copy(positions_unique)
-
     while pos_to_evaluate:
         new_pos = pos_to_evaluate.pop()
         new_cluster = _create_cluster(
@@ -71,8 +72,10 @@ def create_clusters(positions, *, feature_size, coordinate_system):
 
 
 def _create_cluster(starting_pos, neighbour_mapping):
-    """Create
     """
+    Create
+    """
+    print('Creating cluster from', starting_pos)
     cluster = set([starting_pos])
     get_neighbours_from = set([starting_pos])
     while get_neighbours_from:

@@ -263,9 +263,11 @@ def _update_degree_one_nodes(graph, result_graph, degree_one_nodes):
     degree_one_nodes.clear()
     degree_one_nodes.update(current_deg_one_nodes)
 
+
 def _update_neighbour_weights(node, graph, multiplier):
     for nbr in graph.neighbors(node):
         graph.edges[(node, nbr)][_WEIGHT_KEY] *= multiplier
+
 
 def _create_degree_count(graph):
     degree_counter = Counter([val for pos, val in graph.degree])
