@@ -96,15 +96,17 @@ class _BallisticLineImpl:
         self.result_graph.add_node(node)
         on_graph = False
         while True:
-            new_node, previous_direction = self.get_next_pos(
+            new_node, new_direction = self.get_next_pos(
                 node=node,
                 previous_direction=previous_direction,
             )
             if new_node is None:
                 self.evaluated_end_nodes.add(node)
                 IDENTIFY_LOGGER.debug(
-                    "Loop search finished -- no more nodes in given direction."
+                    "Loop search finished -- no more nodes in given direction. Current node: %s, direction: %s",
+                    node, previous_direction
                 )
+                assert previous_direction is not None
                 break
             elif new_node in self.result_graph:
                 if on_graph:
@@ -117,6 +119,7 @@ class _BallisticLineImpl:
                 on_graph = False
             self.result_graph.add_edge(node, new_node)
             node = new_node
+            previous_direction = new_direction
 
     def get_next_pos(self, *, node, previous_direction):
         """
@@ -163,6 +166,10 @@ class _BallisticLineImpl:
             for i in positive_angle_idx
         ]) / self.feature_size
         weights /= (1 + _MULTIPLIER_DISTANCE * distances_normalized)
+
+        # avoid nodes which are much too close
+        too_close = distances_normalized < 1e-3
+        weights *= 1 - too_close.astype(int)
 
         idx = positive_angle_idx[np.argmax(weights)]
         chosen_candidate = neighbors[idx]
