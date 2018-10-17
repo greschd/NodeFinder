@@ -2,7 +2,6 @@
 Defines the functions used to evaluate the shape of a given cluster of points.
 """
 
-import copy
 import operator
 import warnings
 import itertools
@@ -16,19 +15,17 @@ from fsc.export import export
 from ..search._controller import _DIST_CUTOFF_FACTOR
 from .result import NodalLine, NodalPoint
 from ._logging import IDENTIFY_LOGGER
+from ._cluster import _DISTANCE_KEY
 
-_DISTANCE_KEY = '_distance'
 _WEIGHT_KEY = '_weight'
-
 _MAX_NUM_PATHS = 20
 
 
 @export
 def evaluate_cluster(
-    positions,
+    graph,
     dim,
     coordinate_system,
-    neighbour_mapping,
     feature_size,
     evaluate_line_method='shortest_path'
 ):
@@ -37,14 +34,12 @@ def evaluate_cluster(
 
     Arguments
     ---------
-    positions : set(tuple(float))
-        Positions of the points in the cluster.
+    graph : nx.Graph
+        Graph describing the cluster.
     dim : int
         Dimension of the cluster.
     coordinate_system : CoordinateSystem
         Coordinate system used to calculate distances.
-    neighbour_mapping : dict
-        Mapping containing a list of neighbours for each position.
     feature_size : float
         Distance between two nodal points at which they are considered distinct.
 
@@ -56,15 +51,13 @@ def evaluate_cluster(
     """
     if dim == 0:
         return _evaluate_point(
-            positions=positions, coordinate_system=coordinate_system
+            positions=list(graph.nodes), coordinate_system=coordinate_system
         )
     elif dim == 1:
         try:
             return _evaluate_line(
-                positions=positions,
+                graph=graph,
                 coordinate_system=coordinate_system,
-                neighbour_mapping={p: neighbour_mapping[p]
-                                   for p in positions},
                 feature_size=feature_size,
                 method=evaluate_line_method,
             )
@@ -82,27 +75,21 @@ def _evaluate_point(positions, coordinate_system):
 
 
 def _evaluate_line(
-    positions,
-    coordinate_system,
-    neighbour_mapping,
-    feature_size,
-    method='shortest_path'
+    graph, coordinate_system, feature_size, method='shortest_path'
 ):
     """
     Evaluate the positions of a nodal line.
     """
     if method == 'shortest_path':
         return _evaluate_line_shortest_path(
-            positions=positions,
+            graph=graph,
             coordinate_system=coordinate_system,
-            neighbour_mapping=neighbour_mapping,
             feature_size=feature_size
         )
     elif method == 'dominating_set':
         return _evaluate_line_dominating_set(
-            positions=positions,
+            graph=graph,
             coordinate_system=coordinate_system,
-            neighbour_mapping=neighbour_mapping,
             feature_size=feature_size
         )
     else:
@@ -110,31 +97,21 @@ def _evaluate_line(
 
 
 def _evaluate_line_shortest_path(  # pylint: disable=too-many-locals,too-many-statements,too-many-branches
-    positions,
+    graph,
     coordinate_system,  # pylint: disable=unused-argument
-    neighbour_mapping,
     feature_size
 ):
     """
     Evaluate the positions of a nodal line using the 'shortest path' method.
     """
-    graph = nx.Graph()
-    graph.add_nodes_from(positions)
-    distance_func = lambda x: x + x**2
-    for node, neighbours in neighbour_mapping.items():
-        if node in positions:
-            for nbr in neighbours:
-                graph.add_edge(
-                    node, nbr.pos, **{
-                        _WEIGHT_KEY:
-                        feature_size *
-                        distance_func(nbr.distance / feature_size),
-                        _DISTANCE_KEY:
-                        nbr.distance
-                    }
-                )
-
     work_graph = graph.copy()
+    distance_func = lambda x: x + x**2
+    for edge in work_graph.edges:
+        edge_attrs = work_graph.edges[edge]
+        dist = edge_attrs[_DISTANCE_KEY]
+        edge_attrs[_WEIGHT_KEY] = feature_size * distance_func(
+            dist / feature_size
+        )
 
     candidate_positions = set(work_graph.nodes)
 
@@ -275,34 +252,27 @@ def _create_degree_count(graph):
     return degree_counter
 
 
-def _evaluate_line_dominating_set(
-    positions, coordinate_system, neighbour_mapping, feature_size
-):
+def _evaluate_line_dominating_set(graph, coordinate_system, feature_size):
     """
     Evaluate the positions of a nodal line using the 'dominating set' method.
     """
-    graph = nx.Graph()
-    graph.add_nodes_from(positions)
-    graph_reduced_neighbours = copy.deepcopy(graph)
-    for node, neighbours in neighbour_mapping.items():
-        for nbr in neighbours:
-            if nbr not in graph.nodes:
-                edge = (node, nbr.pos)
-                graph.add_edge(
-                    *edge, **{
-                        _DISTANCE_KEY: nbr.distance,
-                        _WEIGHT_KEY: nbr.distance**4
-                    }
-                )
-                if nbr.distance < feature_size / _DIST_CUTOFF_FACTOR:
-                    graph_reduced_neighbours.add_edge(*edge)
+    graph_copy = graph.copy()
+    graph_reduced_neighbours = nx.Graph()
+    graph_reduced_neighbours.add_nodes_from(graph_copy.nodes)
+
+    for edge in graph_copy.edges:
+        edge_attrs = graph_copy.edges[edge]
+        distance = edge_attrs[_DISTANCE_KEY]
+        edge_attrs[_WEIGHT_KEY] = distance**4
+        if distance < feature_size / _DIST_CUTOFF_FACTOR:
+            graph_reduced_neighbours.add_edge(*edge)
 
     dominating_set = nx.algorithms.dominating_set(graph_reduced_neighbours)
     subgraph = graph.subgraph(dominating_set).copy()
 
     _patch_all_subgraph_holes(
         subgraph=subgraph,
-        graph=graph,
+        graph=graph_copy,
         coordinate_system=coordinate_system,
         feature_size=feature_size,
     )

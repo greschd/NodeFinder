@@ -60,17 +60,16 @@ def run_from_positions(
         Distance between two nodal points at which they are considered distinct.
     """
     IDENTIFY_LOGGER.debug('Calculating clusters.')
-    clusters, neighbour_mapping = create_clusters(
+    clusters = create_clusters(
         positions,
         coordinate_system=coordinate_system,
         feature_size=feature_size
     )
     results = []
-    for cluster in clusters:
+    for graph in clusters:
         IDENTIFY_LOGGER.debug('Calculating cluster dimension.')
         dim = calculate_dimension(
-            positions=cluster,
-            neighbour_mapping=neighbour_mapping,
+            graph=graph,
             coordinate_system=coordinate_system,
             feature_size=feature_size
         )
@@ -78,13 +77,12 @@ def run_from_positions(
             'Evaluating result with dimension {}.'.format(dim)
         )
         res = IdentificationResult(
-            positions=cluster,
+            positions=list(graph.nodes),
             dimension=dim,
             shape=evaluate_cluster(
-                positions=cluster,
+                graph=graph,
                 dim=dim,
                 coordinate_system=coordinate_system,
-                neighbour_mapping=neighbour_mapping,
                 feature_size=feature_size,
                 evaluate_line_method=evaluate_line_method
             )
