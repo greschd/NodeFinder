@@ -86,6 +86,18 @@ def test_cross(run_single_identify):  # pylint: disable=redefined-outer-name
     assert res.shape.degree_count == {4: 1}
 
 
+def test_open_line(run_single_identify):  # pylint: disable=redefined-outer-name
+    """
+    Test that an open line is identified correctly.
+    """
+    res = run_single_identify('line_open.hdf5')
+    assert res.dimension == 1
+    assert res.shape.degree_count == {1: 2}
+    positions = np.array(list(res.shape.graph.nodes))
+    assert np.min(positions) < -0.49
+    assert np.max(positions) > 0.49
+
+
 @pytest.mark.skip(
     reason=
     "Test for short lines is skipped, since they cannot reliably be identified."
