@@ -15,7 +15,7 @@ from ._logging import IDENTIFY_LOGGER
 
 
 @export
-def run(result, feature_size=None, evaluate_line_method='shortest_path'):
+def run(result, feature_size=None, evaluate_line_method='ballistic'):
     """Identify the nodal clusters from a :func:`.search.run` result.
 
     Arguments

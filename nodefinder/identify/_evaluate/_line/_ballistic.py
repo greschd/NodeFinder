@@ -9,6 +9,7 @@ import numpy as np
 import scipy.linalg as la
 import networkx as nx
 
+from ..._logging import IDENTIFY_LOGGER
 from ..._cluster import _DISTANCE_KEY
 
 # Multipliers for the weight which determines the next point to pick
@@ -48,6 +49,7 @@ class _BallisticLineImpl:
         """
         Runs the ballistic line evaluation.
         """
+        IDENTIFY_LOGGER.debug('Starting ballistic line evaluation.')
         # node = next(iter(self.graph.nodes))
         # self.find_loop(starting_node=node, initial_direction=None)
         while not nx.is_dominating_set(self.graph, self.result_graph.nodes):
@@ -85,6 +87,10 @@ class _BallisticLineImpl:
         direction. Stops when either the loop is closed (two nodes within the
         result graph found), or there are no more available steps.
         """
+        IDENTIFY_LOGGER.debug(
+            "Searching loop starting from node %s, with direction %s",
+            starting_node, initial_direction
+        )
         node = starting_node
         previous_direction = initial_direction
         self.result_graph.add_node(node)
@@ -96,9 +102,15 @@ class _BallisticLineImpl:
             )
             if new_node is None:
                 self.evaluated_end_nodes.add(node)
+                IDENTIFY_LOGGER.debug(
+                    "Loop search finished -- no more nodes in given direction."
+                )
                 break
             elif new_node in self.result_graph:
                 if on_graph:
+                    IDENTIFY_LOGGER.debug(
+                        "Loop search finished -- reached existing result nodes."
+                    )
                     break
                 on_graph = True
             else:
@@ -111,7 +123,7 @@ class _BallisticLineImpl:
         Determine the next node based on the current node and previous step
         direction.
         """
-        neighbors = list(self.graph.neighbors(node))
+        neighbors = [nbr for nbr in self.graph.neighbors(node) if nbr != node]
 
         deltas = self.coordinate_system.connecting_vector(
             np.array(node), np.array(neighbors)

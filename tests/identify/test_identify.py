@@ -98,10 +98,6 @@ def test_open_line(run_single_identify):  # pylint: disable=redefined-outer-name
     assert np.max(positions) > 0.49
 
 
-@pytest.mark.skip(
-    reason=
-    "Test for short lines is skipped, since they cannot reliably be identified."
-)
 def test_line_short_paths(run_single_identify):  # pylint: disable=redefined-outer-name
     """
     Test that a short line is identified correctly, without holes.
