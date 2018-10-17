@@ -8,7 +8,7 @@ import numpy as np
 import scipy.linalg as la
 from fsc.export import export
 
-from ._evaluate import NodalPoint, NodalLine
+from .result import NodalPoint, NodalLine
 
 from .._common_plot import _setup_plot
 
