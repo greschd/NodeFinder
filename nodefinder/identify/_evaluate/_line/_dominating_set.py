@@ -10,16 +10,13 @@ import numpy as np
 import networkx as nx
 
 from ....search._controller import _DIST_CUTOFF_FACTOR
-from ...result import NodalLine
 from ..._cluster import _DISTANCE_KEY
 from ..._logging import IDENTIFY_LOGGER
-
-from ._graph_helpers import _create_degree_count
 
 _WEIGHT_KEY = '_weight'
 
 
-def _evaluate_line_dominating_set(graph, coordinate_system, feature_size):
+def _evaluate_line_dominating_set(*, graph, coordinate_system, feature_size):
     """
     Evaluate the positions of a nodal line using the 'dominating set' method.
     """
@@ -45,9 +42,7 @@ def _evaluate_line_dominating_set(graph, coordinate_system, feature_size):
     )
     _remove_duplicate_paths(subgraph)
 
-    return NodalLine(
-        graph=subgraph, degree_count=_create_degree_count(subgraph)
-    )
+    return subgraph
 
 
 def _patch_all_subgraph_holes(

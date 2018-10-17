@@ -4,16 +4,14 @@ Implements line evaluation with the shortest path method.
 
 import networkx as nx
 
-from ...result import NodalLine
 from ..._cluster import _DISTANCE_KEY
 from ..._logging import IDENTIFY_LOGGER
-
-from ._graph_helpers import _create_degree_count
 
 _WEIGHT_KEY = '_weight'
 _MAX_NUM_PATHS = 20
 
 def _evaluate_line_shortest_path(  # pylint: disable=too-many-locals,too-many-statements,too-many-branches
+    *,
     graph,
     coordinate_system,  # pylint: disable=unused-argument
     feature_size
@@ -123,9 +121,7 @@ def _evaluate_line_shortest_path(  # pylint: disable=too-many-locals,too-many-st
                 )
         start_positions.add(end_pos)
 
-    return NodalLine(
-        graph=result_graph, degree_count=_create_degree_count(result_graph)
-    )
+    return result_graph
 
 
 def _update_high_degree_nodes(graph, result_graph, high_degree_nodes):
