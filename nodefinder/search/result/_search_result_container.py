@@ -33,8 +33,9 @@ class SearchResultContainer(SimpleHDF5Mapping):
 
     HDF5_ATTRIBUTES = [
         'coordinate_system', 'minimization_results', 'dist_cutoff',
-        'gap_threshold'
+        'gap_threshold', 'refined_results'
     ]
+    HDF5_OPTIONAL = ['refined_results']
 
     def __init__(
         self,
@@ -42,7 +43,8 @@ class SearchResultContainer(SimpleHDF5Mapping):
         coordinate_system,
         minimization_results=(),
         gap_threshold,
-        dist_cutoff
+        dist_cutoff,
+        refined_results=()
     ):
         self.coordinate_system = coordinate_system
         self.gap_threshold = gap_threshold
@@ -67,6 +69,11 @@ class SearchResultContainer(SimpleHDF5Mapping):
         self.rejected_results = []
         for res in minimization_results:
             self.add_result(res)
+        self.refined_results = CellList(
+            num_cells=num_cells, periodic=self.coordinate_system.periodic
+        )
+        for res in refined_results:
+            self.set_refined(res)
         self.needs_saving = True
 
     def __repr__(self):
@@ -90,6 +97,20 @@ class SearchResultContainer(SimpleHDF5Mapping):
         else:
             self.nodes.add_point(self.coordinate_system.get_frac(res.pos), res)
             return True
+        self.needs_saving = True
+
+    def set_refined(self, pos):
+        """
+        Set a position to be refined.
+
+        Arguments
+        ---------
+        pos : np.array
+            The position from where refinement started.
+        """
+        self.refined_results.add_point(
+            self.coordinate_system.get_frac(pos), pos
+        )
         self.needs_saving = True
 
     @property
@@ -120,6 +141,22 @@ class SearchResultContainer(SimpleHDF5Mapping):
         return (
             self.coordinate_system.distance(pos, c.pos) for c in candidates
         )
+
+    def get_refined_neighbour_distance_iterator(self, pos):  # pylint: disable=invalid-name
+        """
+        Returns an iterator over the distance to neighboring nodes which have
+        been used as a starting point in a refinement procedure.
+
+        Arguments
+        ---------
+        pos : numpy.ndarray
+            Position for which to calculate the distances.
+        """
+        candidates = self.refined_results.get_neighbour_values(
+            frac=self.coordinate_system.get_frac(pos)
+        )
+        candidates = (c for c in candidates if np.any(c != pos))
+        return (self.coordinate_system.distance(pos, c) for c in candidates)
 
     def get_all_neighbour_distances(self, pos):
         """

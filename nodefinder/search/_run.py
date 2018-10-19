@@ -33,7 +33,8 @@ async def run_async(
     nelder_mead_kwargs=MappingProxyType({}),
     num_minimize_parallel=50,
     recheck_pos_dist=True,
-    recheck_count_cutoff=3
+    recheck_count_cutoff=0,
+    simplex_check_cutoff=0
 ):
     """Run the nodal point search.
 
@@ -88,6 +89,9 @@ async def run_async(
     recheck_count_cutoff : int
         Number of positions which are allowed to be within the cutoff distance
         when re-checking the position.
+    simplex_check_cutoff : int
+        Number of vertices which are allowed to be within the cutoff distance
+        when re-checking the simplex.
 
     Returns
     -------
@@ -113,6 +117,7 @@ async def run_async(
         refinement_stencil=refinement_stencil,
         recheck_pos_dist=recheck_pos_dist,
         recheck_count_cutoff=recheck_count_cutoff,
+        simplex_check_cutoff=simplex_check_cutoff
     )
     SEARCH_LOGGER.debug('Running search controller.')
     await controller.run()

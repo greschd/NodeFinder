@@ -42,8 +42,8 @@ def get_auto_stencil(*, dim):
     dim : int
         The problem dimension.
     """
-    # if dim == 3:
-    #     return get_sphere_stencil(num_points=30)
+    if dim == 3:
+        return get_sphere_stencil(num_points=10)
     return get_mesh_stencil(mesh_size=[3] * dim)
 
 
@@ -58,8 +58,8 @@ def get_sphere_stencil(*, num_points):
     num_points : int
         The number of simplices which are placed on the sphere.
     """
-    points = 2.5 * np.array(_fibonacci_sphere_points(num_points))
-    simplex_edge_length = 0.3 / np.sqrt(num_points)
+    points = 1.1 * np.array(_fibonacci_sphere_points(num_points))
+    simplex_edge_length = 3 / np.sqrt(num_points)
     simplex = np.zeros((4, 3))
     simplex[1:, :] = (0.25 + 0.75 * np.eye(3)) * simplex_edge_length
     q_mat_1, r_mat_1 = la.qr([[1, 0, 0], [1, 0, 0], [1, 0, 0]])

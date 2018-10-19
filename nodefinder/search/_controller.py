@@ -8,6 +8,7 @@ import asyncio
 import tempfile
 from collections import ChainMap
 
+import numpy as np
 from fsc.export import export
 from fsc.async_tools import PeriodicTask, wrap_to_coroutine
 
@@ -51,7 +52,8 @@ class Controller:
         refinement_stencil,
         use_fake_potential=True,
         recheck_pos_dist=True,
-        recheck_count_cutoff=3
+        recheck_count_cutoff=0,
+        simplex_check_cutoff=0
     ):
         self.gap_fct = wrap_to_coroutine(gap_fct)
 
@@ -100,6 +102,7 @@ class Controller:
         self.task_futures = set()
         self.recheck_pos_dist = recheck_pos_dist
         self.recheck_count_cutoff = recheck_count_cutoff
+        self.simplex_check_cutoff = simplex_check_cutoff
 
     @staticmethod
     def check_dimensions(limits, mesh_size):
@@ -200,12 +203,14 @@ class Controller:
                                     pos,
                                     count_cutoff=self.recheck_count_cutoff
                                 ):
+                                self.state.simplex_queue.add_objects(
+                                    pos + self.refinement_stencil
+                                )
+                                self.state.result.set_refined(np.array(pos))
+                            else:
                                 SEARCH_LOGGER.debug(
                                     'Discarding refinement of position {}'.
                                     format(pos)
-                                )
-                                self.state.simplex_queue.add_objects(
-                                    pos + self.refinement_stencil
                                 )
                         else:
                             break
@@ -269,7 +274,9 @@ class Controller:
         within the cutoff distance can be given.
         """
         count = 0
-        for dist in self.state.result.get_neighbour_distance_iterator(pos):
+        for dist in self.state.result.get_refined_neighbour_distance_iterator(
+            pos
+        ):
             if dist < self.dist_cutoff:
                 count += 1
             if count > count_cutoff:
@@ -281,14 +288,15 @@ class Controller:
         Check if a simplex should be evaluated. Returns False if all vertices
         of the simplex are within dist_cutoff from an existing node.
         """
+        count = 0
         for pos in simplex:
             for dist in self.state.result.get_neighbour_distance_iterator(pos):
                 if dist < self.dist_cutoff:
+                    count += 1
+                    if count > self.simplex_check_cutoff:
+                        return False
                     break
-            # This position does not have a neighbor which is too close.
-            else:
-                return True
-        return False
+        return True
 
     def save(self):
         """
