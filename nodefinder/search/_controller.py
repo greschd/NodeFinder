@@ -172,17 +172,19 @@ class Controller:
 
     def get_initial_simplices(self, initial_mesh_size):
         return self.generate_simplices(
-            limits=self.coordinate_system.limits, mesh_size=initial_mesh_size
+            limits=self.coordinate_system.limits,
+            mesh_size=initial_mesh_size,
+            periodic=self.coordinate_system.periodic
         )
 
-    def generate_simplices(self, limits, mesh_size):
+    def generate_simplices(self, limits, mesh_size, periodic=False):
         """
         Generate the starting simplices for given limits and mesh size.
         """
         vertices = list(
             itertools.product(
                 *[
-                    np.linspace(lower, upper, m)
+                    np.linspace(lower, upper, m, endpoint=not periodic)
                     for (lower, upper), m in zip(limits, mesh_size)
                 ]
             )
