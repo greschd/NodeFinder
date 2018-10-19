@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 from nodefinder.search import run
+from nodefinder.search.refinement_stencil import get_mesh_stencil
 
 
 @pytest.fixture
@@ -38,7 +39,7 @@ def test_nodal_surface(nodal_surface_properties, score_nodal_surface):  # pylint
         gap_fct=gap_fct,
         gap_threshold=1e-4,
         feature_size=1e-1,
-        refinement_mesh_size=(2, 2, 2),
+        refinement_stencil=get_mesh_stencil(mesh_size=(2, 2, 2)),
         initial_mesh_size=(3, 3, 3),
         use_fake_potential=False,
     )

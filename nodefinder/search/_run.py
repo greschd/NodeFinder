@@ -26,8 +26,7 @@ async def run_async(
     load_quiet=True,
     initial_mesh_size=10,
     force_initial_mesh=False,
-    refinement_box_size=None,
-    refinement_mesh_size=3,
+    refinement_stencil='auto',
     gap_threshold=1e-6,
     feature_size=2e-3,
     use_fake_potential=False,
@@ -62,11 +61,12 @@ async def run_async(
     force_initial_mesh : bool
         If ``True``, add the initial mesh also when restarting the calculation
         from an intermediate result.
-    refinement_box_size : float
-        Size of the box where refinement starting points are placed after
-        finding a new node.
-    refinement_mesh_size : int or tuple(int)
-        Mesh size for the refinement step.
+    refinement_stencil : np.array
+        The stencil of simplices used in the refinement. Normalized such that
+        the starting point is at the origin, and the dist_cutoff is one. The
+        array must have dimensions (N, dim + 1, dim), where dim is the dimension
+        of the problem, and N can be chosen to be the number of refinement
+        minimization runs.
     gap_threshold : float
         Threshold for the function value for which a given point is considered
         to be a node.
@@ -110,8 +110,7 @@ async def run_async(
         use_fake_potential=use_fake_potential,
         nelder_mead_kwargs=nelder_mead_kwargs,
         num_minimize_parallel=num_minimize_parallel,
-        refinement_box_size=refinement_box_size,
-        refinement_mesh_size=refinement_mesh_size,
+        refinement_stencil=refinement_stencil,
         recheck_pos_dist=recheck_pos_dist,
         recheck_count_cutoff=recheck_count_cutoff,
     )

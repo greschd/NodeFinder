@@ -29,7 +29,7 @@ def get_num_nodes(splitting):
         partial(gap_fct, splitting=splitting),
         limits=[(-0.5, 0.5)] * 3,
         initial_mesh_size=5,
-        refinement_mesh_size=0,
+        refinement_stencil=None,
         feature_size=FEATURE_SIZE,
         gap_threshold=1e-5,
         periodic=False,

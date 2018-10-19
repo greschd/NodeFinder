@@ -42,7 +42,7 @@ def test_nodal_line(nodal_line_properties, score_nodal_line):  # pylint: disable
         gap_fct=gap_fct,
         gap_threshold=2e-4,
         feature_size=0.05,
-        refinement_mesh_size=(3, 3, 3),
+        refinement_stencil='auto',
         initial_mesh_size=(3, 3, 3),
         use_fake_potential=True,
     )
@@ -87,7 +87,7 @@ def test_nodal_line_2d(nodal_line_2d_properties, score_nodal_line):  # pylint: d
         limits=[(0, 2 * np.pi), (0, 2 * np.pi)],
         gap_threshold=2e-4,
         feature_size=0.05,
-        refinement_mesh_size=3,
+        refinement_stencil='auto',
         initial_mesh_size=3,
         use_fake_potential=True,
     )
@@ -127,7 +127,7 @@ def test_nodal_line_1d(nodal_line_1d_properties, score_nodal_line):  # pylint: d
         limits=[(0, 1)],
         gap_threshold=2e-4,
         feature_size=0.05,
-        refinement_mesh_size=3,
+        refinement_stencil='auto',
         initial_mesh_size=3,
         use_fake_potential=True,
     )
@@ -176,7 +176,7 @@ def test_nodal_line_nonperiodic(
         limits=[(-1, 1)] * 2,
         gap_threshold=1e-3,
         feature_size=0.2,
-        refinement_mesh_size=3,
+        refinement_stencil='auto',
         initial_mesh_size=3,
         use_fake_potential=True,
         periodic=False

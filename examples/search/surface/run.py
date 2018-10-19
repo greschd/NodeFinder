@@ -15,7 +15,9 @@ if __name__ == '__main__':
     result = nf.search.run(
         gap_fct,
         initial_mesh_size=(1, 1, 1),
-        refinement_mesh_size=(2, 2, 2),
+        refinement_stencil=nf.search.refinement_stencil.get_mesh_stencil(
+            mesh_size=(2, 2, 2)
+        ),
         gap_threshold=1e-4,
         feature_size=5e-2,
         use_fake_potential=False,
