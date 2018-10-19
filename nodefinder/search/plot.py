@@ -84,7 +84,7 @@ def stencil(
     line_settings=MappingProxyType(dict(color='C0')),
     origin_settings=MappingProxyType(dict(color='C1')),
     plot_sphere=True,
-    sphere_settings=MappingProxyType(dict(color='C2', alpha=0.2)),
+    sphere_settings=MappingProxyType(dict(color='C2', alpha=0.2))
 ):
     """
     Plot a refinement stencil.
