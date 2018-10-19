@@ -30,5 +30,8 @@ if __name__ == '__main__':
         nf.io.save(identify_result, 'identify_result.hdf5')
     print(identify_result)
 
+    nf.search.plot.points(search_result)
+    plt.show()
+
     nf.identify.plot.result(identify_result)
     plt.show()

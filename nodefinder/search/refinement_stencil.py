@@ -42,16 +42,41 @@ def get_auto_stencil(*, dim):
     dim : int
         The problem dimension.
     """
-    if dim == 3:
+    if dim == 2:
+        return get_circle_stencil(num_points=5)
+    elif dim == 3:
         return get_sphere_stencil(num_points=10)
     return get_mesh_stencil(mesh_size=[3] * dim)
 
 
+def get_circle_stencil(*, num_points):
+    """
+    Produce a stencil with simplices along a circle. Only suitable for
+    two-dimensional problems.
+
+    Arguments
+    ---------
+    num_points : int
+        The number of points on the circle / number of simplices.
+    """
+    phi = np.linspace(0, 2 * np.pi, num_points, endpoint=False)
+    simplex = (
+        np.array([[0, 0], [1 / 2, np.sqrt(3) / 2],
+                  [-1 / 2, np.sqrt(3) / 2]]) * 5 / num_points
+    ) + [0, 1.5]
+    res = np.zeros((num_points, 3, 2))
+    for i, phi_val in enumerate(phi):
+        res[i, :, :] = (
+            np.array([[np.cos(phi_val), -np.sin(phi_val)],
+                      [np.sin(phi_val), np.cos(phi_val)]]) @ simplex.T
+        ).T
+    return res
+
+
 def get_sphere_stencil(*, num_points):
     """
-    Produce a stencil with simplices on the surface of a sphere.
-
-    Note: It is not recommended to use this stencil.
+    Produce a stencil with simplices on the surface of a sphere. Only suitable
+    for three-dimensional problems.
 
     Arguments
     ---------
