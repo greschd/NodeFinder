@@ -7,7 +7,9 @@ import itertools
 import numpy as np
 
 
-def _generate_mesh_simplices(*, limits, mesh_size, periodic=False):
+def _generate_mesh_simplices(
+    *, limits, mesh_size, periodic=False, skip_origin=False
+):
     """
         Generate the starting simplices for given limits and mesh size.
         """
@@ -24,6 +26,8 @@ def _generate_mesh_simplices(*, limits, mesh_size, periodic=False):
             ]
         )
     )
+    if skip_origin:
+        vertices = [v for v in vertices if not np.allclose(v, 0)]
     size = np.array([upper - lower for lower, upper in limits])
     simplex_distances = size / (2 * np.array(mesh_size))
     simplex_stencil = np.zeros(shape=(dim + 1, dim))

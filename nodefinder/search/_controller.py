@@ -81,7 +81,9 @@ class Controller:
         else:
             self.fake_potential = None
 
-        if refinement_stencil == 'auto':
+        if isinstance(
+            refinement_stencil, str
+        ) and refinement_stencil == 'auto':
             refinement_stencil = get_auto_stencil(dim=self.dim)
         if refinement_stencil is not None:
             self.refinement_stencil = refinement_stencil * self.dist_cutoff
@@ -209,7 +211,10 @@ class Controller:
                             break
                     if self.state.simplex_queue.has_queued:
                         simplex = self.state.simplex_queue.pop_queued()
-                        self.schedule_minimization(simplex)
+                        if self._check_simplex(simplex):
+                            self.schedule_minimization(simplex)
+                        else:
+                            self.state.simplex_queue.set_finished(simplex)
                     else:
                         break
 
@@ -270,6 +275,20 @@ class Controller:
             if count > count_cutoff:
                 return False
         return True
+
+    def _check_simplex(self, simplex):
+        """
+        Check if a simplex should be evaluated. Returns False if all vertices
+        of the simplex are within dist_cutoff from an existing node.
+        """
+        for pos in simplex:
+            for dist in self.state.result.get_neighbour_distance_iterator(pos):
+                if dist < self.dist_cutoff:
+                    break
+            # This position does not have a neighbor which is too close.
+            else:
+                return True
+        return False
 
     def save(self):
         """
