@@ -88,9 +88,9 @@ class MinimizationResult(SimpleNamespace, HDF5Enabled):
         Number of evaluations of the objective functions.
     num_iter : int
         Number of iterations performed by the optimizer.
-    simplex_history : ndarray
+    simplex_history : ndarray, optional
         History of simplex values.
-    fun_simplex_history : ndarray
+    fun_simplex_history : ndarray, optional
         History of function values of the simplex.
     """
 
