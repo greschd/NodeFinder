@@ -10,6 +10,7 @@ import pytest
 import numpy as np
 import scipy.linalg as la
 
+import nodefinder as nf
 from nodefinder.search import run
 
 NODE_PARAMETERS = pytest.mark.parametrize(
@@ -127,6 +128,43 @@ def test_restart(
             cutoff_accuracy=1e-6,
             cutoff_coverage=1e-6,
             additional_tag='restart_'
+        )
+
+
+@NODE_PARAMETERS
+def test_restart_partial(gap_fct, node_positions, mesh_size):
+    """
+    Test that no additional refinement is done when restarting with a forced
+    initial mesh.
+    """
+    with tempfile.NamedTemporaryFile() as named_file:
+        refinement_stencil = nf.search.refinement_stencil.get_mesh_stencil(
+            mesh_size=[1, 1, 1]
+        )
+        result = run(
+            gap_fct=gap_fct,
+            save_file=named_file.name,
+            initial_mesh_size=mesh_size,
+            use_fake_potential=False,
+            refinement_stencil=refinement_stencil
+        )
+        # number of starting points + one refinement per node
+        assert (
+            len(result.nodes) == np.prod(mesh_size) +
+            len(node_positions) * len(refinement_stencil)
+        )
+        result2 = run(
+            gap_fct=gap_fct,
+            save_file=named_file.name,
+            initial_mesh_size=mesh_size,
+            load=True,
+            use_fake_potential=False,
+            refinement_stencil=refinement_stencil,
+            force_initial_mesh=True
+        )
+        assert (
+            len(result2.nodes) == 2 * np.prod(mesh_size) +
+            len(node_positions) * len(refinement_stencil)
         )
 
 

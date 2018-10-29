@@ -155,7 +155,6 @@ class SearchResultContainer(SimpleHDF5Mapping):
         candidates = self.refined_results.get_neighbour_values(
             frac=self.coordinate_system.get_frac(pos)
         )
-        candidates = (c for c in candidates if np.any(c != pos))
         return (self.coordinate_system.distance(pos, c) for c in candidates)
 
     def get_all_neighbour_distances(self, pos):

@@ -142,7 +142,8 @@ class Controller:
                 coordinate_system=self.coordinate_system,
                 minimization_results=initial_state.result.minimization_results,
                 gap_threshold=gap_threshold,
-                dist_cutoff=dist_cutoff
+                dist_cutoff=dist_cutoff,
+                refined_results=initial_state.result.refined_results
             )
             simplex_queue = SimplexQueue(
                 objects=initial_state.simplex_queue.objects
