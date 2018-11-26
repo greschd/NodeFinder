@@ -15,8 +15,9 @@ from ..._cluster import _DISTANCE_KEY
 # Multipliers for the weight which determines the next point to pick
 # These are the 'magic numbers' which determine how well the
 # line evaluation performs.
-_MULTIPLIER_DEGREE = 1
-_MULTIPLIER_EXISTING_NODE = 1
+_MULTIPLIER_HIGH_DEGREE = 1
+_MULTIPLIER_LOW_DEGREE = 1
+_MULTIPLIER_EXISTING_NODE = 0.2
 _MULTIPLIER_DISTANCE = 5
 
 
@@ -121,7 +122,7 @@ class _BallisticLineImpl:
             node = new_node
             previous_direction = new_direction
 
-    def get_next_pos(self, *, node, previous_direction):
+    def get_next_pos(self, *, node, previous_direction):  # pylint: disable=too-many-locals
         """
         Determine the next node based on the current node and previous step
         direction.
@@ -158,7 +159,12 @@ class _BallisticLineImpl:
         has_higher_degree = np.array([
             node_degrees.get(nbr, 0) > 2 for nbr in candidate_nodes
         ])
-        weights *= 1 + _MULTIPLIER_DEGREE * has_higher_degree.astype(int)
+        weights *= 1 + _MULTIPLIER_HIGH_DEGREE * has_higher_degree.astype(int)
+        # prefer nodes which have degree one
+        has_low_degree = np.array([
+            node_degrees.get(nbr, 0) == 1 for nbr in candidate_nodes
+        ])
+        weights *= 1 + _MULTIPLIER_LOW_DEGREE * has_low_degree.astype(int)
 
         # prefer nodes which are close to the current one
         distances_normalized = np.array([
