@@ -66,7 +66,7 @@ class CellList:
         vals = np.array(frac * self.num_cells, dtype=int)
         if not self.periodic:
             vals += 1
-            vals = np.maximum(0, np.minimum(vals, self._total_num_cells - 1))  # pylint: disable=assignment-from-no-return
+            vals = np.maximum(0, np.minimum(vals, self._total_num_cells - 1))  # pylint: disable=assignment-from-no-return,useless-suppression
         return tuple(vals)
 
     def values(self):

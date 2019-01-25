@@ -34,7 +34,7 @@ def gap_fct(node_positions):
 
     def inner(x):
         deltas = (np.array(x) - node_pos_array) % 1
-        deltas_periodic = np.minimum(deltas, 1 - deltas)  # pylint: disable=assignment-from-no-return
+        deltas_periodic = np.minimum(deltas, 1 - deltas)  # pylint: disable=assignment-from-no-return,useless-suppression
         distances = la.norm(deltas_periodic, axis=-1)
         return np.min(distances)
 

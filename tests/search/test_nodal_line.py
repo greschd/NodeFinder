@@ -72,7 +72,7 @@ def nodal_line_2d_properties():
 
     def parametrization(t):
         y = 2 * t % 1
-        x = np.arcsin(-0.8 * np.cos(y))  # pylint: disable=assignment-from-no-return
+        x = np.arcsin(-0.8 * np.cos(y))  # pylint: disable=assignment-from-no-return,useless-suppression
         if t > 0.5:
             x = np.pi - x
         return np.array([x, y])

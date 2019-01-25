@@ -73,7 +73,7 @@ class CoordinateSystem(SimpleHDF5Mapping):
         """
         if self.periodic:
             delta = (pos2 - pos1) % self.size
-            delta = np.minimum(self.size - delta, delta)  # pylint: disable=assignment-from-no-return
+            delta = np.minimum(self.size - delta, delta)  # pylint: disable=assignment-from-no-return,useless-suppression
         else:
             delta = pos2 - pos1
         return la.norm(delta, axis=-1)
