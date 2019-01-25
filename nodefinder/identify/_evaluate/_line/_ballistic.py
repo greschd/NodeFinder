@@ -127,12 +127,23 @@ class _BallisticLineImpl:
         Determine the next node based on the current node and previous step
         direction.
         """
-        neighbors = [nbr for nbr in self.graph.neighbors(node) if nbr != node]
+        neighbors_all = [nbr for nbr in self.graph.neighbors(node)]
 
-        deltas = self.coordinate_system.connecting_vector(
-            np.array(node), np.array(neighbors)
+        deltas_all = self.coordinate_system.connecting_vector(
+            np.array(node), np.array(neighbors_all)
         )
-        unit_vecs = (deltas.T / la.norm(deltas, axis=-1)).T
+        delta_norms_all = la.norm(deltas_all, axis=-1)
+
+        neighbors = []
+        unit_vecs = []
+        for nbr, delta, delta_norm in zip(
+            neighbors_all, deltas_all, delta_norms_all
+        ):
+            if delta_norm > 0:
+                neighbors.append(nbr)
+                unit_vecs.append(delta / delta_norm)
+        unit_vecs = np.array(unit_vecs)
+
         if previous_direction is not None:
             direction_angles = unit_vecs @ previous_direction
         else:
