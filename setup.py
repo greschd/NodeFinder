@@ -17,7 +17,7 @@ try:
     import pypandoc
     README = pypandoc.convert_text(README_MD, 'rst', 'md')
 except:
-    pass
+    README = ''
 
 with open('./nodefinder/__init__.py', 'r') as f:
     MATCH_EXPR = "__version__[^'\"]+(['\"])([^'\"]+)"
