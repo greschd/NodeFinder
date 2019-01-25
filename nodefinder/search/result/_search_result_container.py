@@ -53,7 +53,7 @@ class SearchResultContainer(SimpleHDF5Mapping):
         if dist_cutoff == 0:
             num_cells = np.full_like(self.coordinate_system.size, 100)
         else:
-            num_cells = np.minimum(
+            num_cells = np.minimum(  # pylint: disable=assignment-from-no-return,useless-suppression
                 100,
                 np.maximum(
                     1,
@@ -169,6 +169,7 @@ class SearchResultContainer(SimpleHDF5Mapping):
         """
         candidates = self._get_neighbour_iterator(pos)
         positions = np.array([c.pos for c in candidates])
-        if not positions:
+
+        if positions.size == 0:
             return []
         return self.coordinate_system.distance(pos, positions)

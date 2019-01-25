@@ -12,6 +12,7 @@ matrix:
       env: TEST_TYPE="compliance"
 
 install:
+  - pip install -U pytest
   - pip install --process-dependency-links .[test]
 
 script:

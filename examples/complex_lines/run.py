@@ -20,7 +20,7 @@ if __name__ == '__main__':
             initial_mesh_size=3,
             feature_size=0.1,
             gap_threshold=1e-4,
-            use_fake_potential=True
+            use_fake_potential=True,
         )
         nf.io.save(search_result, 'search_result.hdf5')
     try:

@@ -45,7 +45,7 @@ def get_auto_stencil(*, dim):
     if dim == 2:
         return get_circle_stencil(num_points=5)
     elif dim == 3:
-        return get_sphere_stencil(num_points=10)
+        return get_sphere_stencil(num_points=30)
     return get_mesh_stencil(mesh_size=[3] * dim)
 
 
