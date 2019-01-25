@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+# © 2017-2019, ETH Zurich, Institut für Theoretische Physik
+# Author: Dominik Gresch <greschd@gmx.ch>
 """pytest configuration file for NodeFinder tests."""
 # pylint: disable=unused-argument,protected-access,redefined-outer-name
 

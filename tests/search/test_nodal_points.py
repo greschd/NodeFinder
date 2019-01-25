@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+# © 2017-2019, ETH Zurich, Institut für Theoretische Physik
+# Author: Dominik Gresch <greschd@gmx.ch>
 """
 Tests with a single nodal point.
 """
@@ -30,7 +34,7 @@ def gap_fct(node_positions):
 
     def inner(x):
         deltas = (np.array(x) - node_pos_array) % 1
-        deltas_periodic = np.minimum(deltas, 1 - deltas)
+        deltas_periodic = np.minimum(deltas, 1 - deltas)  # pylint: disable=assignment-from-no-return
         distances = la.norm(deltas_periodic, axis=-1)
         return np.min(distances)
 

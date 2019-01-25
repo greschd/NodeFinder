@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+# © 2017-2019, ETH Zurich, Institut für Theoretische Physik
+# Author: Dominik Gresch <greschd@gmx.ch>
 """Usage: pip install .[dev]"""
 
 import re
@@ -7,7 +11,13 @@ from setuptools import setup, find_packages
 if sys.version_info < (3, 5):
     raise 'Must use Python version 3.5 or higher.'
 
-README = r"""TODO"""
+with open('./README.md', 'r') as f:
+    README_MD = f.read()
+try:
+    import pypandoc
+    README = pypandoc.convert_text(README_MD, 'rst', 'md')
+except:
+    pass
 
 with open('./nodefinder/__init__.py', 'r') as f:
     MATCH_EXPR = "__version__[^'\"]+(['\"])([^'\"]+)"
@@ -18,7 +28,7 @@ EXTRAS_REQUIRE = dict(
     doc=['sphinx', 'sphinx-rtd-theme', 'ipython>=6.2'],
     dev=[
         'pylint==2.1.1', 'pre-commit==1.11.1', 'prospector==1.1.2',
-        'yapf==0.24'
+        'yapf==0.24', 'pypandoc'
     ],
 )
 EXTRAS_REQUIRE['dev'] += EXTRAS_REQUIRE['doc'] + EXTRAS_REQUIRE['test']
@@ -28,7 +38,8 @@ setup(
     version=VERSION,
     author='Dominik Gresch',
     author_email='greschd@gmx.ch',
-    description='TODO',
+    description=
+    'A tool for studying the nodal features of potential lanscapes.',
     install_requires=[
         'numpy', 'scipy', 'matplotlib', 'decorator', 'fsc.export',
         'fsc.hdf5-io>=0.4.0', 'fsc.async_tools', 'networkx>=2.0'
@@ -49,7 +60,7 @@ setup(
         'Topic :: Scientific/Engineering :: Physics',
         'Development Status :: 4 - Beta'
     ],
-    license='GPL',
-    keywords=[],
+    license='Apache 2.0',
+    keywords=['minimization', 'node search'],
     packages=find_packages()
 )

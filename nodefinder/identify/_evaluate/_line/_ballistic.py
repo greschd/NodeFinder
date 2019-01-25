@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+# © 2017-2019, ETH Zurich, Institut für Theoretische Physik
+# Author: Dominik Gresch <greschd@gmx.ch>
 """
 Implements the 'ballistic' method for evaluating the line, which starts at a
 specific point and then tries going into the most populated direction. The

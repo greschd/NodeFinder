@@ -7,6 +7,9 @@
 #
 # The additional license terms given in ADDITIONAL_TERMS.txt apply to this
 # file.
+
+# © 2017-2019, ETH Zurich, Institut für Theoretische Physik
+# Author: Dominik Gresch <greschd@gmx.ch>
 """
 Defines the result classes for the minimization.
 """

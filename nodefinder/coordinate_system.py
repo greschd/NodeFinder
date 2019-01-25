@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+# © 2017-2019, ETH Zurich, Institut für Theoretische Physik
+# Author: Dominik Gresch <greschd@gmx.ch>
 """
 Defines the coordinate system class.
 """
@@ -69,7 +73,7 @@ class CoordinateSystem(SimpleHDF5Mapping):
         """
         if self.periodic:
             delta = (pos2 - pos1) % self.size
-            delta = np.minimum(self.size - delta, delta)
+            delta = np.minimum(self.size - delta, delta)  # pylint: disable=assignment-from-no-return
         else:
             delta = pos2 - pos1
         return la.norm(delta, axis=-1)

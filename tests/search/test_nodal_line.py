@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+# © 2017-2019, ETH Zurich, Institut für Theoretische Physik
+# Author: Dominik Gresch <greschd@gmx.ch>
 """
 Tests with a nodal line.
 """
@@ -68,7 +72,7 @@ def nodal_line_2d_properties():
 
     def parametrization(t):
         y = 2 * t % 1
-        x = np.arcsin(-0.8 * np.cos(y))
+        x = np.arcsin(-0.8 * np.cos(y))  # pylint: disable=assignment-from-no-return
         if t > 0.5:
             x = np.pi - x
         return np.array([x, y])

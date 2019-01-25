@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+# © 2017-2019, ETH Zurich, Institut für Theoretische Physik
+# Author: Dominik Gresch <greschd@gmx.ch>
 """
 Defines the cell list class, used for quicker lookup of the neighbours of a
 given position.
@@ -62,7 +66,7 @@ class CellList:
         vals = np.array(frac * self.num_cells, dtype=int)
         if not self.periodic:
             vals += 1
-            vals = np.maximum(0, np.minimum(vals, self._total_num_cells - 1))
+            vals = np.maximum(0, np.minimum(vals, self._total_num_cells - 1))  # pylint: disable=assignment-from-no-return
         return tuple(vals)
 
     def values(self):
