@@ -14,7 +14,7 @@ NodeFinder is a tool for finding and evaluating nodal features in potential land
     tutorial.rst
     reference.rst
 
-Please cite:
+**Please cite:**
 
 * *Identifying Topological Semimetals*, D. Gresch,  `PhD Thesis <https://doi.org/10.3929/ethz-b-000308602>`_.
 
