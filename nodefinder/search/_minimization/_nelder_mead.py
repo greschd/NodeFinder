@@ -121,9 +121,11 @@ async def root_nelder_mead(
     # sort so sim[0,:] has the lowest function value
     sim = np.take(sim, ind, 0)
 
+    # if keep_history is false, we still need the last simplex
+    simplex_history = [np.copy(sim)]
     if keep_history:
-        simplex_history = [np.copy(sim)]
         fun_simplex_history = [np.copy(fsim)]
+
 
     iterations = 1
 
@@ -196,6 +198,8 @@ async def root_nelder_mead(
         if keep_history:
             simplex_history.append(np.copy(sim))
             fun_simplex_history.append(np.copy(fsim))
+        else:
+            simplex_history[0] = np.copy(sim)
 
     x = sim[0]
     fval = np.min(fsim)
@@ -222,7 +226,7 @@ async def root_nelder_mead(
             fun_simplex_history=np.array(fun_simplex_history)
         )
     else:
-        hist_kwargs = {}
+        hist_kwargs = dict(simplex_history=np.array(simplex_history))
     result = MinimizationResult(
         pos=x,
         value=fval,

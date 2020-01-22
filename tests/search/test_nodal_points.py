@@ -69,6 +69,30 @@ def test_simple(
         cutoff_coverage=1e-6
     )
 
+@NODE_PARAMETERS
+def test_no_history(
+    gap_fct,
+    node_positions,
+    mesh_size,
+    use_fake_potential,
+    score_nodal_points,
+):
+    """
+    Test that a single nodal point is found.
+    """
+    result = run(
+        gap_fct=gap_fct,
+        initial_mesh_size=mesh_size,
+        use_fake_potential=use_fake_potential,
+        nelder_mead_kwargs={'keep_history': False}
+    )
+    score_nodal_points(
+        result,
+        exact_points=node_positions,
+        cutoff_accuracy=1e-6,
+        cutoff_coverage=1e-6
+    )
+
 
 @NODE_PARAMETERS
 def test_save(
