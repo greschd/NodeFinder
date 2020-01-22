@@ -24,3 +24,6 @@ tests/.cache
 htmlcov
 .pytest-score
 htmlscore
+
+# editor related
+.vscode
