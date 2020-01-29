@@ -41,7 +41,7 @@ setup(
         'numpy', 'scipy', 'matplotlib', 'decorator', 'fsc.export',
         'fsc.hdf5-io>=0.4.0', 'fsc.async_tools', 'networkx>=2.0'
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.5",
     extras_require=EXTRAS_REQUIRE,
     long_description=README,
     long_description_content_type="text/markdown",
@@ -52,6 +52,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Physics',
         'Development Status :: 4 - Beta'
