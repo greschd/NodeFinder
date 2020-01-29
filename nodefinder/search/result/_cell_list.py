@@ -18,7 +18,6 @@ class CellList:
     """
     Cell list container for the NodalPoint objects.
     """
-
     def __init__(self, num_cells, periodic):
         self.periodic = periodic
         self.num_cells = np.array(num_cells, dtype=int)

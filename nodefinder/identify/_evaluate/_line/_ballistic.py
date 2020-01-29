@@ -42,7 +42,6 @@ class _BallisticLineImpl:
     """
     Implementation class for the 'ballistic' line evaluation.
     """
-
     def __init__(self, *, graph, coordinate_system, feature_size):
         self.graph = graph
         self.coordinate_system = coordinate_system

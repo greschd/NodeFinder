@@ -11,13 +11,13 @@ import os
 import pytest
 import nodefinder as nf
 
-from plottest_helpers import *  # pylint: disable=import-error
+from plottest_helpers import *  # pylint: disable=unused-wildcard-import
 
 
 @pytest.mark.parametrize(
     'sample_name', ['line', 'point', 'surface', 'two_lines', 'line_periodic']
 )
-def test_result(sample, sample_name, assert_image_equal):
+def test_result(sample, sample_name, assert_image_equal):  # pylint: disable=redefined-outer-name
     """
     Test the 'identify.plot.result' plotting function
     """

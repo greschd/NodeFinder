@@ -19,7 +19,6 @@ class FakePotential:
     width : float
         Distance from existing nodes at which the fake potential should start.
     """
-
     def __init__(self, result, width):
         self.result = result
         self.width = width

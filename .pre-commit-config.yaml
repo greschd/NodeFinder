@@ -5,9 +5,11 @@ repos:
   - id: yapf
     language: system
 
-- repo: git://github.com/guykisel/prospector-mirror
-  rev: 7ff847e779347033ebbd9e3b88279e7f3a998b45
+- repo: local
   hooks:
   - id: prospector
+    name: prospector
+    entry: prospector
+    types: [file, python]
     language: system
     exclude: '^(doc/)|(examples/)'

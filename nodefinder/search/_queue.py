@@ -88,7 +88,6 @@ class RunningQueue(ObjectQueue, HDF5Enabled):  # pylint: disable=abstract-method
     need to be set to 'finished' to be removed from the queue. When reloading
     the queue, all running objects are put back into the queue.
     """
-
     def __init__(self, objects=frozenset()):
         super().__init__(objects=objects)
         self._running_objects = set()
@@ -135,7 +134,6 @@ class SimplexQueue(RunningQueue):
     """
     Queue class for the simplices which should be minimized.
     """
-
     @staticmethod
     def normalize(objects):
         return [
@@ -150,7 +148,6 @@ class PositionQueue(ObjectQueue):
     """
     Queue class for the positions which should be refined.
     """
-
     @staticmethod
     def normalize(objects):
         return [tuple(pos) for pos in objects]
