@@ -36,7 +36,6 @@ class Controller:
 
     Arguments are the same as defined in :func:`.search.run`.
     """
-
     def __init__(
         self,
         *,

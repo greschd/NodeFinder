@@ -6,7 +6,7 @@
 Tests with a single nodal point.
 """
 
-# pylint: disable=redefined-outer-name,unused-argument
+# pylint: disable=redefined-outer-name
 
 import tempfile
 
@@ -69,6 +69,7 @@ def test_simple(
         cutoff_coverage=1e-6
     )
 
+
 @NODE_PARAMETERS
 def test_no_history(
     gap_fct,
@@ -123,7 +124,6 @@ def test_restart(
     """
     Test that the calculation is done when restarting from a finished result.
     """
-
     def invalid_gap_fct(x):
         raise ValueError
 
@@ -200,8 +200,7 @@ def test_raises():
     """
     Test that using an invalid gap_fct raises the error.
     """
-
-    async def gap_fct(pos):  # pylint: disable=unused-argument
+    async def gap_fct(pos):
         raise ValueError('test error.')
 
     with pytest.raises(ValueError):

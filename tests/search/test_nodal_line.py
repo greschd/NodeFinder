@@ -65,7 +65,6 @@ def nodal_line_2d_properties():
     Fixture which defines the helper functions describing the properties of the
     two 2D nodal lines.
     """
-
     def gap_fct(pos):
         x, y = pos
         return abs(np.sin(x) + 0.8 * np.cos(y))
@@ -110,7 +109,6 @@ def nodal_line_1d_properties():
     Fixture which defines the helper functions describing the properties of the
     two 2D nodal lines.
     """
-
     def gap_fct(pos):  # pylint: disable=unused-argument
         return 0
 
@@ -150,7 +148,6 @@ def nodal_line_nonperiodic_properties():  # pylint: disable=invalid-name
     Fixture which defines the helper functions describing the properties of the
     nodal non-periodic line.
     """
-
     def gap_fct(pos):
         return np.abs(1 - np.max(np.abs(pos)))
 

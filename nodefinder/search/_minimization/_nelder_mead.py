@@ -126,7 +126,6 @@ async def root_nelder_mead(
     if keep_history:
         fun_simplex_history = [np.copy(fsim)]
 
-
     iterations = 1
 
     while (fcalls[0] < maxfun and iterations < maxiter):
