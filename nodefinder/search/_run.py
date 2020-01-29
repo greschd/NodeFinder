@@ -112,6 +112,7 @@ async def run_async(
         periodic=periodic,
         initial_state=initial_state,
         save_file=save_file,
+        save_delay=save_delay,
         load=load,
         load_quiet=load_quiet,
         initial_mesh_size=initial_mesh_size,

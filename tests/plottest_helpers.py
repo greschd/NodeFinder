@@ -48,12 +48,11 @@ def assert_image_equal(disable_diff_save, pytestconfig):
         if not os.path.exists(path):
             plt.savefig(path)
             raise ValueError('Reference plot did not exist.')
-        else:
-            with tempfile.NamedTemporaryFile(suffix='.png') as temp_file:
-                plt.savefig(temp_file.name)
-                if not pytestconfig.option.no_plot_compare:
-                    assert compare_images(
-                        path, temp_file.name, tol=tol, in_decorator=True
-                    ) is None
+        with tempfile.NamedTemporaryFile(suffix='.png') as temp_file:
+            plt.savefig(temp_file.name)
+            if not pytestconfig.option.no_plot_compare:
+                assert compare_images(
+                    path, temp_file.name, tol=tol, in_decorator=True
+                ) is None
 
     return inner

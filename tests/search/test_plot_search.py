@@ -11,13 +11,13 @@ import os
 import pytest
 import nodefinder as nf
 
-from plottest_helpers import *  # pylint: disable=unused-wildcard-import
+from plottest_helpers import *  # pylint: disable=import-error
 
 
 @pytest.mark.parametrize(
     'sample_name', ['line', 'point', 'surface', 'two_lines']
 )
-def test_points(sample, sample_name, assert_image_equal):  # pylint: disable=redefined-outer-name
+def test_points(sample, sample_name, assert_image_equal):
     """
     Test for the 'search.plot.points' function.
     """

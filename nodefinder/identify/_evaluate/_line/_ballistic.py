@@ -113,7 +113,7 @@ class _BallisticLineImpl:
                 )
                 assert previous_direction is not None
                 break
-            elif new_node in self.result_graph:
+            if new_node in self.result_graph:
                 if on_graph:
                     IDENTIFY_LOGGER.debug(
                         "Loop search finished -- reached existing result nodes."
@@ -131,7 +131,7 @@ class _BallisticLineImpl:
         Determine the next node based on the current node and previous step
         direction.
         """
-        neighbors_all = [nbr for nbr in self.graph.neighbors(node)]
+        neighbors_all = list(self.graph.neighbors(node))
 
         deltas_all = self.coordinate_system.connecting_vector(
             np.array(node), np.array(neighbors_all)

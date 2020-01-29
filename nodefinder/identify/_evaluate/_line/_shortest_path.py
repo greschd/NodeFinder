@@ -111,12 +111,10 @@ def _evaluate_line_shortest_path(  # pylint: disable=too-many-locals,too-many-st
 
                 tmp_graph.remove_nodes_from(nodes_to_remove)
 
-            if num_paths > 0:  # pylint: disable=undefined-loop-variable
+            if num_paths > 0:
                 IDENTIFY_LOGGER.debug(
                     'Found {} path(s) from point {} to point {}.'.format(
-                        num_paths,  # pylint: disable=undefined-loop-variable
-                        start_pos,
-                        end_pos
+                        num_paths, start_pos, end_pos
                     )
                 )
             else:

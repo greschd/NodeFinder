@@ -50,7 +50,7 @@ def _plot_positions(positions, *, axis, color):
 
 
 @singledispatch
-def _plot_result(shape, axis, color, feature_size):  # pylint: disable=unused-argument
+def _plot_result(shape, axis, color, feature_size):
     raise NotImplementedError
 
 
@@ -103,9 +103,9 @@ def nodal_line(shape, *, axis, color, feature_size=None):
 
     if paths:
         for path in paths:
-            axis.plot(*np.array(path).T, color=color)
+            axis.plot(*np.array(path).T, color=color)  # pylint: disable=not-an-iterable
     else:
-        axis.scatter(*np.array(list(graph.nodes)).T, color=color)
+        axis.scatter(*np.array(list(graph.nodes)).T, color=color)  # pylint: disable=not-an-iterable
 
 
 def _get_graph_paths(graph, feature_size):
@@ -125,8 +125,9 @@ def _get_graph_paths(graph, feature_size):
             except StopIteration:
                 paths.append(curr_path)
                 break
-            if la.norm(np.array(next_node) -
-                       np.array(curr_node)) > 2 * feature_size:
+            if la.norm(
+                np.array(next_node) - np.array(curr_node)
+            ) > 2 * feature_size:
                 paths.append(curr_path)
                 curr_path = [next_node]
             else:

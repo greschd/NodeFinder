@@ -24,7 +24,7 @@ class FakePotential:
         self.result = result
         self.width = width
 
-    def __call__(self, pos):  # pylint: disable=missing-docstring
+    def __call__(self, pos):  # pylint: disable=missing-function-docstring
         if any(
             dist < self.width
             for dist in self.result.get_all_neighbour_distances(pos)
