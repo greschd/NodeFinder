@@ -3,8 +3,8 @@
 # © 2017-2019, ETH Zurich, Institut für Theoretische Physik
 # Author: Dominik Gresch <greschd@gmx.ch>
 
+import os
 import time
-import sphinx_rtd_theme
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -54,11 +54,8 @@ master_doc = 'index'
 # General information about the project.
 project = u'NodeFinder'
 year = time.localtime().tm_year
-team = 'ETH Zurich'
-if year == 2017:
-    copyright = u'2017, {}'.format(team)
-else:
-    copyright = u'2017-{}, {}'.format(year, team)
+team = 'ETH Zurich; Dominik Gresch'
+copyright = u'2017-{}, {}'.format(year, team)
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -115,8 +112,10 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #~ html_theme = 'basicstrap'
-html_theme = 'sphinx_rtd_theme'
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+if not os.environ.get('READTHEDOCS', None) == 'True':
+    import sphinx_rtd_theme
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
