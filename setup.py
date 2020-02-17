@@ -35,6 +35,7 @@ setup(
     version=VERSION,
     author='Dominik Gresch',
     author_email='greschd@gmx.ch',
+    url='https://nodefinder.greschd.ch',
     description=
     'A tool for studying the nodal features of potential lanscapes.',
     install_requires=[
