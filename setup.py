@@ -40,7 +40,7 @@ setup(
     'A tool for studying the nodal features of potential lanscapes.',
     install_requires=[
         'numpy', 'scipy', 'matplotlib', 'decorator', 'fsc.export',
-        'fsc.hdf5-io>=0.4.0', 'fsc.async_tools', 'networkx>=2.0'
+        'fsc.hdf5-io>=0.6.0', 'fsc.async_tools', 'networkx>=2.0'
     ],
     python_requires=">=3.5",
     extras_require=EXTRAS_REQUIRE,
@@ -60,5 +60,6 @@ setup(
     ],
     license='Apache 2.0',
     keywords=['minimization', 'node search'],
+    entry_points={'fsc.hdf5_io.load': ['nodefinder = nodefinder']},
     packages=find_packages()
 )
