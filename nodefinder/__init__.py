@@ -5,7 +5,7 @@
 """A tool to find and identify nodal features in band structures.
 """
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 from . import coordinate_system
 from . import search
