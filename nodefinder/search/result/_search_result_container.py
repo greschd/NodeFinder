@@ -36,8 +36,10 @@ class SearchResultContainer(SimpleHDF5Mapping):
     """
 
     HDF5_ATTRIBUTES = [
-        'coordinate_system', 'minimization_results', 'dist_cutoff',
-        'gap_threshold', 'refined_results'
+        'coordinate_system',
+        'minimization_results',
+        'dist_cutoff',
+        'gap_threshold',
     ]
     HDF5_OPTIONAL = ['refined_results']
 

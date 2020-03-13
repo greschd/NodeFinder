@@ -8,8 +8,8 @@ import re
 import sys
 from setuptools import setup, find_packages
 
-if sys.version_info < (3, 5):
-    raise 'Must use Python version 3.5 or higher.'
+if sys.version_info < (3, 6):
+    raise 'Must use Python version 3.6 or higher.'
 
 with open('./README.md', 'r') as f:
     README = f.read()
@@ -40,9 +40,9 @@ setup(
     'A tool for studying the nodal features of potential lanscapes.',
     install_requires=[
         'numpy', 'scipy', 'matplotlib', 'decorator', 'fsc.export',
-        'fsc.hdf5-io>=0.6.0', 'fsc.async_tools', 'networkx>=2.0'
+        'fsc.hdf5-io~=1.0', 'fsc.async_tools', 'networkx>=2.0'
     ],
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     extras_require=EXTRAS_REQUIRE,
     long_description=README,
     long_description_content_type="text/markdown",
@@ -50,7 +50,6 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English', 'Operating System :: Unix',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
