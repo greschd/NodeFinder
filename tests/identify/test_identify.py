@@ -19,7 +19,6 @@ def run_identify(sample):
     """
     Fixture to run the identification step for a given sample file.
     """
-
     def inner(sample_name):
         search_res = nf.io.load(sample(os.path.join('search', sample_name)))
         return nf.identify.run(search_res)
@@ -33,7 +32,6 @@ def run_single_identify(run_identify):  # pylint: disable=redefined-outer-name
     Fixture to run the identification step for a given sample file which should
     contain only one cluster, and return the result for that cluster.
     """
-
     def inner(sample_name):
         res = run_identify(sample_name)
         assert len(res) == 1

@@ -1,13 +1,15 @@
 repos:
 - repo: git://github.com/pre-commit/mirrors-yapf
-  sha: v0.24.0
+  rev: v0.29.0
   hooks:
   - id: yapf
     language: system
 
-- repo: git://github.com/guykisel/prospector-mirror
-  sha: 7ff847e779347033ebbd9e3b88279e7f3a998b45
+- repo: local
   hooks:
   - id: prospector
+    name: prospector
+    entry: prospector
+    types: [file, python]
     language: system
     exclude: '^(doc/)|(examples/)'

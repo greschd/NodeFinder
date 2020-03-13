@@ -26,6 +26,7 @@ async def run_async(
     periodic=True,
     initial_state=None,
     save_file=None,
+    save_delay=5.,
     load=False,
     load_quiet=True,
     initial_mesh_size=10,
@@ -55,6 +56,8 @@ async def run_async(
         coordinate system.
     save_file : str
         Path to the file where the intermediate results are stored.
+    save_delay : float
+        Minimum delay (in seconds) between saving the results.
     load : bool
         Enable or disable loading the initial state from ``save_file``.
     load_quiet : bool
@@ -109,6 +112,7 @@ async def run_async(
         periodic=periodic,
         initial_state=initial_state,
         save_file=save_file,
+        save_delay=save_delay,
         load=load,
         load_quiet=load_quiet,
         initial_mesh_size=initial_mesh_size,

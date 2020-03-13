@@ -11,12 +11,12 @@ def _setup_plot(limits, axis=None):
     """Sets up the figure axes and handles options common to all plots."""
     # import is here s.t. the import of the package does not fail
     # if matplotlib is not present
-    import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt  # pylint: disable=import-outside-toplevel
 
     dim = len(limits)
     if dim == 3:
         is_3d = True
-        from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=unused-variable
+        from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=import-outside-toplevel,unused-import
     else:
         is_3d = False
         assert dim == 2

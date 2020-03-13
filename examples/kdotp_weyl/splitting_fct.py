@@ -16,8 +16,8 @@ with open('data/fit.json', 'r') as f:
 
 def c00(k, a, j, m, o, q, **kwargs):
     kx, ky, kz = k
-    return a + j * (kx**2 + ky**
-                    2) + m * kx * ky + o * (kx * kz - ky * kz) + q * kz**2
+    return a + j * (kx**2 +
+                    ky**2) + m * kx * ky + o * (kx * kz - ky * kz) + q * kz**2
 
 
 def cxz(k, c, **kwargs):
@@ -32,8 +32,8 @@ def cy0(k, d, **kwargs):
 
 def cz0(k, b, l, n, p, r, **kwargs):
     kx, ky, kz = k
-    return b + l * (kx**2 + ky**
-                    2) + n * kx * ky + p * (kx * kz - ky * kz) + r * kz**2
+    return b + l * (kx**2 +
+                    ky**2) + n * kx * ky + p * (kx * kz - ky * kz) + r * kz**2
 
 
 def cxx(k, e, g, **kwargs):

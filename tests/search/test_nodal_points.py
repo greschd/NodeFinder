@@ -6,7 +6,7 @@
 Tests with a single nodal point.
 """
 
-# pylint: disable=redefined-outer-name,unused-argument
+# pylint: disable=redefined-outer-name
 
 import tempfile
 
@@ -71,6 +71,31 @@ def test_simple(
 
 
 @NODE_PARAMETERS
+def test_no_history(
+    gap_fct,
+    node_positions,
+    mesh_size,
+    use_fake_potential,
+    score_nodal_points,
+):
+    """
+    Test that a single nodal point is found.
+    """
+    result = run(
+        gap_fct=gap_fct,
+        initial_mesh_size=mesh_size,
+        use_fake_potential=use_fake_potential,
+        nelder_mead_kwargs={'keep_history': False}
+    )
+    score_nodal_points(
+        result,
+        exact_points=node_positions,
+        cutoff_accuracy=1e-6,
+        cutoff_coverage=1e-6
+    )
+
+
+@NODE_PARAMETERS
 def test_save(
     gap_fct, node_positions, mesh_size, use_fake_potential, score_nodal_points
 ):
@@ -99,7 +124,6 @@ def test_restart(
     """
     Test that the calculation is done when restarting from a finished result.
     """
-
     def invalid_gap_fct(x):
         raise ValueError
 
@@ -176,8 +200,7 @@ def test_raises():
     """
     Test that using an invalid gap_fct raises the error.
     """
-
-    async def gap_fct(pos):  # pylint: disable=unused-argument
+    async def gap_fct(pos):
         raise ValueError('test error.')
 
     with pytest.raises(ValueError):

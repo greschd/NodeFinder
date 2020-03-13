@@ -43,7 +43,6 @@ class NodalLine(SimpleNamespace):
     graph : networkx.Graph
         A graph describing the line.
     """
-
     def __init__(self, graph, degree_count):
         self.graph = graph
         self.degree_count = degree_count

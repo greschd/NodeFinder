@@ -82,11 +82,11 @@ class IdentificationResult(SimpleNamespace, HDF5Enabled):
     def from_hdf5(cls, hdf5_handle):
         shape = from_hdf5(hdf5_handle['shape'])
         try:
-            dimension = hdf5_handle['dimension'].value
+            dimension = hdf5_handle['dimension'][()]
         except AttributeError:
             dimension = from_hdf5(hdf5_handle['dimension'])
         try:
-            positions = [tuple(x) for x in hdf5_handle['positions'].value]
+            positions = [tuple(x) for x in hdf5_handle['positions'][()]]
         except AttributeError:
             positions = from_hdf5(hdf5_handle['positions'])
         return cls(positions=positions, dimension=dimension, shape=shape)

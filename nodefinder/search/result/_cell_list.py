@@ -18,7 +18,6 @@ class CellList:
     """
     Cell list container for the NodalPoint objects.
     """
-
     def __init__(self, num_cells, periodic):
         self.periodic = periodic
         self.num_cells = np.array(num_cells, dtype=int)
@@ -47,7 +46,7 @@ class CellList:
             self._neighbour_indices[idx] = res
             return res
 
-    def _calculate_neighbour_indices(self, idx):  # pylint: disable=missing-docstring
+    def _calculate_neighbour_indices(self, idx):  # pylint: disable=missing-function-docstring
         indices = idx + self._neighbour_offset
 
         if self.periodic:
@@ -62,7 +61,7 @@ class CellList:
         self._cells[idx].append(value)
         self._values_flat.append(value)
 
-    def get_index(self, frac):  # pylint: disable=missing-docstring
+    def get_index(self, frac):  # pylint: disable=missing-function-docstring
         vals = np.array(frac * self.num_cells, dtype=int)
         if not self.periodic:
             vals += 1

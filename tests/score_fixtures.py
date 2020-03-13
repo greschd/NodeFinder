@@ -17,7 +17,6 @@ def score_num_fev(score):
     """
     Fixture for scoring the number of function evaluations that were performed.
     """
-
     def inner(result, cutoff=None, additional_tag=''):
         num_fev = sum(res.num_fev for res in result.minimization_results)
         score(
@@ -36,7 +35,6 @@ def score_nodal_points(score, score_num_fev):  # pylint: disable=redefined-outer
     """
     Fixture for scoring the result of a calculation which contains only nodal points.
     """
-
     def inner(
         result,
         exact_points,
@@ -77,7 +75,6 @@ def score_nodal_line(score, score_num_fev):  # pylint: disable=redefined-outer-n
     """
     Fixture for scoring the accuracy and coverage of a nodal line.
     """
-
     def inner(
         result,
         *,
@@ -124,7 +121,6 @@ def score_nodal_surface(score, score_num_fev):  # pylint: disable=redefined-oute
     """
     Fixture for scoring the accuracy and coverage of a nodal surface.
     """
-
     def inner(
         result,
         *,

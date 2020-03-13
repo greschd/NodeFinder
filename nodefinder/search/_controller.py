@@ -36,7 +36,6 @@ class Controller:
 
     Arguments are the same as defined in :func:`.search.run`.
     """
-
     def __init__(
         self,
         *,
@@ -45,6 +44,7 @@ class Controller:
         periodic,
         initial_state,
         save_file,
+        save_delay=5.,
         load,
         load_quiet,
         initial_mesh_size,
@@ -68,6 +68,7 @@ class Controller:
             limits, initial_mesh_size
         )
         self.save_file = save_file
+        self.save_delay = save_delay
 
         self.dist_cutoff = feature_size / _DIST_CUTOFF_FACTOR
         self.state = self.create_state(
@@ -191,7 +192,7 @@ class Controller:
         """
         Create minimization tasks until the calculation is finished.
         """
-        async with PeriodicTask(self.save, delay=5.):
+        async with PeriodicTask(self.save, delay=self.save_delay):
             while (
                 not self.state.simplex_queue.finished
             ) or self.state.position_queue.has_queued:

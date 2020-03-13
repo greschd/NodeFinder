@@ -39,8 +39,8 @@ def create_clusters(positions, *, feature_size, coordinate_system):
         coordinate_system=coordinate_system
     )
     return [
-        nx.freeze(subgraph)
-        for subgraph in nx.algorithms.connected_component_subgraphs(graph)
+        nx.freeze(graph.subgraph(nodes).copy())
+        for nodes in nx.algorithms.connected_components(graph)
     ]
 
 
