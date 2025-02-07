@@ -25,7 +25,7 @@ class CellList:
         if not self.periodic:
             self._total_num_cells += 2  # add 'boundary' boxes for outside points.
         assert np.all(self.num_cells > 0)
-        self._cells = np.empty(shape=self._total_num_cells, dtype=np.object)
+        self._cells = np.empty(shape=self._total_num_cells, dtype=object)
         filler = np.frompyfunc(lambda x: list(), 1, 1)
         filler(self._cells, self._cells)
         self._values_flat = []

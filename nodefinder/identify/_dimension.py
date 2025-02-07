@@ -190,4 +190,4 @@ def _get_volume(pos, neighbour_tuple, coordinate_system):
     svd = la.svd(mat, compute_uv=False)
     if len(svd) < len(neighbour_tuple):
         return 0
-    return abs(np.product(svd))
+    return abs(np.prod(svd))
