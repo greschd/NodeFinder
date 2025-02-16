@@ -18,8 +18,7 @@ def gap_fct(pos):
     return np.sqrt(np.abs(dx**2 + dy**2 - radius**2) + dz**2)
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     result = nf.search.run(
         gap_fct,
         initial_mesh_size=(3, 3, 3),
@@ -27,6 +26,6 @@ if __name__ == '__main__':
         feature_size=2e-2,
         use_fake_potential=True,
     )
-    nf.io.save(result, 'result.hdf5')
+    nf.io.save(result, "result.hdf5")
     nf.search.plot.points(result)
     plt.show()

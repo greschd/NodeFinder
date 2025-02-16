@@ -27,7 +27,7 @@ def calculate_dimension(
     coordinate_system,
     max_dim=3,
     min_pos_evaluations=5,
-    min_neighbour_evaluations=10
+    min_neighbour_evaluations=10,
 ):
     """
     Calculate the dimension of a cluster of positions.
@@ -60,19 +60,21 @@ def calculate_dimension(
             finished, dim = _check_count(dim_counter)
             if finished:
                 return dim
-        dim_counter.update([
-            _get_dimension(
-                pos,
-                coordinate_system=coordinate_system,
-                graph=graph,
-                feature_size=feature_size,
-                max_dim=max_dim,
-                min_neighbour_evaluations=min_neighbour_evaluations
-            )
-        ])
+        dim_counter.update(
+            [
+                _get_dimension(
+                    pos,
+                    coordinate_system=coordinate_system,
+                    graph=graph,
+                    feature_size=feature_size,
+                    max_dim=max_dim,
+                    min_neighbour_evaluations=min_neighbour_evaluations,
+                )
+            ]
+        )
     finished, dim = _check_count(dim_counter)
     if not finished:
-        warnings.warn('Inconclusive dimension count: {}'.format(dim_counter))
+        warnings.warn("Inconclusive dimension count: {}".format(dim_counter))
         return None
     return dim
 
@@ -90,8 +92,7 @@ def _check_count(counter):
 
 
 def _get_dimension(
-    pos, *, graph, coordinate_system, feature_size, max_dim,
-    min_neighbour_evaluations
+    pos, *, graph, coordinate_system, feature_size, max_dim, min_neighbour_evaluations
 ):
     """
     Get the dimension from a given position.
@@ -103,15 +104,14 @@ def _get_dimension(
             coordinate_system=coordinate_system,
             dim=dim,
             min_neighbour_evaluations=min_neighbour_evaluations,
-            feature_size=feature_size
+            feature_size=feature_size,
         ):
             return dim - 1
     return max_dim
 
 
 def _has_dimension(
-    pos, *, graph, coordinate_system, dim, min_neighbour_evaluations,
-    feature_size
+    pos, *, graph, coordinate_system, dim, min_neighbour_evaluations, feature_size
 ):
     """
     Check if a position has at least the given dimension.
@@ -126,7 +126,7 @@ def _has_dimension(
         limit_value = feature_size**dim * EXACT_VALUES[dim] / 2
     except KeyError:
         raise NotImplementedError(
-            'Getting the {}-dimensional volume is not implemented'.format(dim)
+            "Getting the {}-dimensional volume is not implemented".format(dim)
         )
 
     def draw_neighbour_tuple():
@@ -148,10 +148,10 @@ def _has_dimension(
 
         # switch to directly sampling from the remaining combinations
         # efficient when there are not so many (remaining) combinations
-        neighbour_tuples = set(
-            tuple(sorted(n))
-            for n in itertools.combinations(neighbours, r=dim)
-        ) - used_tuples
+        neighbour_tuples = (
+            set(tuple(sorted(n)) for n in itertools.combinations(neighbours, r=dim))
+            - used_tuples
+        )
         num_draws = 10
         while neighbour_tuples:
             vals = random.sample(
@@ -171,7 +171,7 @@ def _has_dimension(
             _get_volume(
                 pos=pos,
                 neighbour_tuple=neighbour_tuple,
-                coordinate_system=coordinate_system
+                coordinate_system=coordinate_system,
             )
         )
     return np.average(results) > limit_value
@@ -182,9 +182,8 @@ def _get_volume(pos, neighbour_tuple, coordinate_system):
     Get the volume spanned by a position and the given neighbours.
     """
     connecting_vectors = [
-        coordinate_system.connecting_vector(
-            np.array(neighbour), np.array(pos)
-        ) for neighbour in neighbour_tuple
+        coordinate_system.connecting_vector(np.array(neighbour), np.array(pos))
+        for neighbour in neighbour_tuple
     ]
     mat = np.array(connecting_vectors)
     svd = la.svd(mat, compute_uv=False)

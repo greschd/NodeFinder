@@ -30,9 +30,7 @@ def _evaluate_line_ballistic(*, graph, coordinate_system, feature_size):
     Runs the line evaluation using the 'ballistic' method.
     """
     runner = _BallisticLineImpl(
-        graph=graph,
-        coordinate_system=coordinate_system,
-        feature_size=feature_size
+        graph=graph, coordinate_system=coordinate_system, feature_size=feature_size
     )
     runner.run()
     return runner.result_graph
@@ -42,6 +40,7 @@ class _BallisticLineImpl:
     """
     Implementation class for the 'ballistic' line evaluation.
     """
+
     def __init__(self, *, graph, coordinate_system, feature_size):
         self.graph = graph
         self.coordinate_system = coordinate_system
@@ -53,15 +52,12 @@ class _BallisticLineImpl:
         """
         Runs the ballistic line evaluation.
         """
-        IDENTIFY_LOGGER.debug('Starting ballistic line evaluation.')
+        IDENTIFY_LOGGER.debug("Starting ballistic line evaluation.")
         # node = next(iter(self.graph.nodes))
         # self.find_loop(starting_node=node, initial_direction=None)
         while not nx.is_dominating_set(self.graph, self.result_graph.nodes):
             # First, try starting from an end node
-            end_nodes = {
-                node
-                for node, deg in self.result_graph.degree if deg == 1
-            }
+            end_nodes = {node for node, deg in self.result_graph.degree if deg == 1}
             new_end_nodes = end_nodes - self.evaluated_end_nodes
             if new_end_nodes:
                 node = new_end_nodes.pop()
@@ -71,17 +67,14 @@ class _BallisticLineImpl:
                 )
                 # go in the opposite direction from the previous path
                 initial_direction = -(delta / la.norm(delta))
-                self.find_loop(
-                    starting_node=node, initial_direction=initial_direction
-                )
+                self.find_loop(starting_node=node, initial_direction=initial_direction)
                 self.evaluated_end_nodes.add(node)
             # Otherwise, pick an arbitrary starting node not in the vicinity of the result graph
             else:
                 neighbor_graph = self.graph.edge_subgraph(
                     self.graph.edges(self.result_graph.nodes)
                 )
-                candidate_nodes = set(self.graph.nodes
-                                      ) - set(neighbor_graph.nodes)
+                candidate_nodes = set(self.graph.nodes) - set(neighbor_graph.nodes)
                 node = candidate_nodes.pop()
                 self.find_loop(starting_node=node, initial_direction=None)
 
@@ -93,7 +86,8 @@ class _BallisticLineImpl:
         """
         IDENTIFY_LOGGER.debug(
             "Searching loop starting from node %s, with direction %s",
-            starting_node, initial_direction
+            starting_node,
+            initial_direction,
         )
         node = starting_node
         previous_direction = initial_direction
@@ -108,7 +102,8 @@ class _BallisticLineImpl:
                 self.evaluated_end_nodes.add(node)
                 IDENTIFY_LOGGER.debug(
                     "Loop search finished -- no more nodes in given direction. Current node: %s, direction: %s",
-                    node, previous_direction
+                    node,
+                    previous_direction,
                 )
                 assert previous_direction is not None
                 break
@@ -139,9 +134,7 @@ class _BallisticLineImpl:
 
         neighbors = []
         unit_vecs = []
-        for nbr, delta, delta_norm in zip(
-            neighbors_all, deltas_all, delta_norms_all
-        ):
+        for nbr, delta, delta_norm in zip(neighbors_all, deltas_all, delta_norms_all):
             if delta_norm > 0:
                 neighbors.append(nbr)
                 unit_vecs.append(delta / delta_norm)
@@ -163,29 +156,34 @@ class _BallisticLineImpl:
         weights *= direction_angles[positive_angle_idx]
 
         # prefer nodes which are already in the result graph
-        in_result_graph = np.array([
-            nbr in self.result_graph.nodes for nbr in candidate_nodes
-        ])
+        in_result_graph = np.array(
+            [nbr in self.result_graph.nodes for nbr in candidate_nodes]
+        )
         weights *= 1 + _MULTIPLIER_EXISTING_NODE * in_result_graph.astype(int)
 
         node_degrees = dict(self.result_graph.degree)
         # prefer nodes which have a higher degree
-        has_higher_degree = np.array([
-            node_degrees.get(nbr, 0) > 2 for nbr in candidate_nodes
-        ])
+        has_higher_degree = np.array(
+            [node_degrees.get(nbr, 0) > 2 for nbr in candidate_nodes]
+        )
         weights *= 1 + _MULTIPLIER_HIGH_DEGREE * has_higher_degree.astype(int)
         # prefer nodes which have degree one
-        has_low_degree = np.array([
-            node_degrees.get(nbr, 0) == 1 for nbr in candidate_nodes
-        ])
+        has_low_degree = np.array(
+            [node_degrees.get(nbr, 0) == 1 for nbr in candidate_nodes]
+        )
         weights *= 1 + _MULTIPLIER_LOW_DEGREE * has_low_degree.astype(int)
 
         # prefer nodes which are close to the current one
-        distances_normalized = np.array([
-            self.graph.edges[(node, neighbors[i])][_DISTANCE_KEY]
-            for i in positive_angle_idx
-        ]) / self.feature_size
-        weights /= (1 + _MULTIPLIER_DISTANCE * distances_normalized)
+        distances_normalized = (
+            np.array(
+                [
+                    self.graph.edges[(node, neighbors[i])][_DISTANCE_KEY]
+                    for i in positive_angle_idx
+                ]
+            )
+            / self.feature_size
+        )
+        weights /= 1 + _MULTIPLIER_DISTANCE * distances_normalized
 
         # avoid nodes which are much too close
         too_close = distances_normalized < 1e-3

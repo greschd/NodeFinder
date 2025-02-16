@@ -34,13 +34,9 @@ def result(res, *, axis=None):
         shape = identification_result.shape
         color = axis._get_lines.get_next_color()  # pylint: disable=protected-access
         if shape is None:
-            _plot_positions(
-                identification_result.positions, axis=axis, color=color
-            )
+            _plot_positions(identification_result.positions, axis=axis, color=color)
         else:
-            _plot_result(
-                shape, axis=axis, color=color, feature_size=feature_size
-            )
+            _plot_result(shape, axis=axis, color=color, feature_size=feature_size)
     return fig, axis
 
 
@@ -125,9 +121,7 @@ def _get_graph_paths(graph, feature_size):
             except StopIteration:
                 paths.append(curr_path)
                 break
-            if la.norm(
-                np.array(next_node) - np.array(curr_node)
-            ) > 2 * feature_size:
+            if la.norm(np.array(next_node) - np.array(curr_node)) > 2 * feature_size:
                 paths.append(curr_path)
                 curr_path = [next_node]
             else:
@@ -139,9 +133,7 @@ def _get_graph_paths(graph, feature_size):
 
 
 def _get_next_starting_point(graph):
-    nonzero_degree = [(node, degree) for node, degree in graph.degree
-                      if degree > 0]
-    return min(
-        nonzero_degree,
-        key=lambda val: val[1] if val[1] != 2 else float('inf')
-    )[0]
+    nonzero_degree = [(node, degree) for node, degree in graph.degree if degree > 0]
+    return min(nonzero_degree, key=lambda val: val[1] if val[1] != 2 else float("inf"))[
+        0
+    ]

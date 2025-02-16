@@ -11,4 +11,4 @@ they can also handle other objects which are registered with the same system.
 
 from fsc.hdf5_io import save, load
 
-__all__ = ['save', 'load']
+__all__ = ["save", "load"]

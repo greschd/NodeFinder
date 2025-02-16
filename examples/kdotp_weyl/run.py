@@ -10,7 +10,8 @@ from functools import partial
 from concurrent.futures import ProcessPoolExecutor
 
 import z2pack
-logging.getLogger('z2pack').setLevel(logging.WARNING)
+
+logging.getLogger("z2pack").setLevel(logging.WARNING)
 
 import phasemap as pm
 import nodefinder as nf
@@ -28,7 +29,7 @@ async def phase_func(splitting, loop, executor):
 
 
 def get_num_nodes(splitting):
-    print('Calculating splitting:', splitting)
+    print("Calculating splitting:", splitting)
     search_res = nf.search.run(
         partial(gap_fct, splitting=splitting),
         limits=[(-0.5, 0.5)] * 3,
@@ -38,7 +39,7 @@ def get_num_nodes(splitting):
         gap_threshold=1e-5,
         periodic=False,
         use_fake_potential=True,
-        nelder_mead_kwargs={'fprime_cutoff': 100}
+        nelder_mead_kwargs={"fprime_cutoff": 100},
     )
     identify_res = nf.identify.run(search_res)
     weyl_count = 0
@@ -58,22 +59,21 @@ def get_chern(splitting, k):
         surface=z2pack.shape.Sphere(k, FEATURE_SIZE),
         pos_tol=1e-3,
         min_neighbour_dist=1e-8,
-        iterator=range(50, 401, 8)
+        iterator=range(50, 401, 8),
     )
     return z2pack.invariant.chern(res)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     executor = ProcessPoolExecutor(max_workers=4)
     res = pm.run(
-        lambda pos:
-        phase_func([pos[0], 0, pos[1]], loop=loop, executor=executor),
+        lambda pos: phase_func([pos[0], 0, pos[1]], loop=loop, executor=executor),
         limits=[(-0.3, 0.3)] * 2,
         mesh=3,
         num_steps=5,
-        save_file='res.json',
+        save_file="res.json",
         load=True,
     )
     pm.plot.boxes(res)
-    plt.savefig('result.pdf', bbox_inches='tight')
+    plt.savefig("result.pdf", bbox_inches="tight")

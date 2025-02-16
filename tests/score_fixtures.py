@@ -17,13 +17,11 @@ def score_num_fev(score):
     """
     Fixture for scoring the number of function evaluations that were performed.
     """
-    def inner(result, cutoff=None, additional_tag=''):
+
+    def inner(result, cutoff=None, additional_tag=""):
         num_fev = sum(res.num_fev for res in result.minimization_results)
         score(
-            num_fev,
-            tag=additional_tag + 'num_fev',
-            less_is_better=True,
-            cutoff=cutoff
+            num_fev, tag=additional_tag + "num_fev", less_is_better=True, cutoff=cutoff
         )
 
     return inner
@@ -35,12 +33,13 @@ def score_nodal_points(score, score_num_fev):  # pylint: disable=redefined-outer
     """
     Fixture for scoring the result of a calculation which contains only nodal points.
     """
+
     def inner(
         result,
         exact_points,
         cutoff_accuracy=None,
         cutoff_coverage=None,
-        additional_tag=''
+        additional_tag="",
     ):
         score_num_fev(result, additional_tag=additional_tag)
         distances = _get_distances(result=result, exact_points=exact_points)
@@ -50,23 +49,25 @@ def score_nodal_points(score, score_num_fev):  # pylint: disable=redefined-outer
             accuracy,
             less_is_better=True,
             cutoff=cutoff_accuracy,
-            tag=additional_tag + 'accuracy'
+            tag=additional_tag + "accuracy",
         )
         score(
             coverage,
             less_is_better=True,
             cutoff=cutoff_coverage,
-            tag=additional_tag + 'coverage'
+            tag=additional_tag + "coverage",
         )
 
     return inner
 
 
 def _get_distances(result, exact_points):
-    return np.array([
-        result.coordinate_system.distance(res.pos, np.array(exact_points))
-        for res in result.nodes.values()
-    ])
+    return np.array(
+        [
+            result.coordinate_system.distance(res.pos, np.array(exact_points))
+            for res in result.nodes.values()
+        ]
+    )
 
 
 @export
@@ -75,6 +76,7 @@ def score_nodal_line(score, score_num_fev):  # pylint: disable=redefined-outer-n
     """
     Fixture for scoring the accuracy and coverage of a nodal line.
     """
+
     def inner(
         result,
         *,
@@ -82,7 +84,7 @@ def score_nodal_line(score, score_num_fev):  # pylint: disable=redefined-outer-n
         line_parametrization=None,
         cutoff_accuracy=None,
         cutoff_coverage=None,
-        num_line_points=10**4
+        num_line_points=10**4,
     ):
         score_num_fev(result)
 
@@ -91,26 +93,15 @@ def score_nodal_line(score, score_num_fev):  # pylint: disable=redefined-outer-n
                 if dist_func(res.pos) > 0.1:
                     print(dist_func(res.pos), res.pos)
             accuracy = max(dist_func(res.pos) for res in result.nodes)
-            score(
-                accuracy,
-                tag='accuracy',
-                cutoff=cutoff_accuracy,
-                less_is_better=True
-            )
+            score(accuracy, tag="accuracy", cutoff=cutoff_accuracy, less_is_better=True)
 
         if line_parametrization is not None:
-            line_points = np.array([
-                line_parametrization(x)
-                for x in np.linspace(0, 1, num_line_points)
-            ])
+            line_points = np.array(
+                [line_parametrization(x) for x in np.linspace(0, 1, num_line_points)]
+            )
             distances = _get_distances(result=result, exact_points=line_points)
             coverage = np.max(np.min(distances, axis=0))
-        score(
-            coverage,
-            tag='coverage',
-            cutoff=cutoff_coverage,
-            less_is_better=True
-        )
+        score(coverage, tag="coverage", cutoff=cutoff_coverage, less_is_better=True)
 
     return inner
 
@@ -121,6 +112,7 @@ def score_nodal_surface(score, score_num_fev):  # pylint: disable=redefined-oute
     """
     Fixture for scoring the accuracy and coverage of a nodal surface.
     """
+
     def inner(
         result,
         *,
@@ -128,9 +120,8 @@ def score_nodal_surface(score, score_num_fev):  # pylint: disable=redefined-oute
         surface_parametrization=None,
         cutoff_accuracy=None,
         cutoff_coverage=None,
-        num_line_points=100
+        num_line_points=100,
     ):
-
         score_num_fev(result)
 
         if dist_func is not None:
@@ -138,28 +129,18 @@ def score_nodal_surface(score, score_num_fev):  # pylint: disable=redefined-oute
                 if dist_func(res.pos) > 0.1:
                     print(dist_func(res.pos), res.pos)
             accuracy = max(dist_func(res.pos) for res in result.nodes)
-            score(
-                accuracy,
-                tag='accuracy',
-                cutoff=cutoff_accuracy,
-                less_is_better=True
-            )
+            score(accuracy, tag="accuracy", cutoff=cutoff_accuracy, less_is_better=True)
 
         if surface_parametrization is not None:
-            surface_points = np.array([
-                surface_parametrization(s, t)
-                for s in np.linspace(0, 1, num_line_points)
-                for t in np.linspace(0, 1, num_line_points)
-            ])
-            distances = _get_distances(
-                result=result, exact_points=surface_points
+            surface_points = np.array(
+                [
+                    surface_parametrization(s, t)
+                    for s in np.linspace(0, 1, num_line_points)
+                    for t in np.linspace(0, 1, num_line_points)
+                ]
             )
+            distances = _get_distances(result=result, exact_points=surface_points)
             coverage = np.max(np.min(distances, axis=0))
-        score(
-            coverage,
-            tag='coverage',
-            cutoff=cutoff_coverage,
-            less_is_better=True
-        )
+        score(coverage, tag="coverage", cutoff=cutoff_coverage, less_is_better=True)
 
     return inner

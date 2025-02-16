@@ -22,16 +22,16 @@ from ._logging import SEARCH_LOGGER
 async def run_async(
     gap_fct,
     *,
-    limits=((0, 1), ) * 3,
+    limits=((0, 1),) * 3,
     periodic=True,
     initial_state=None,
     save_file=None,
-    save_delay=5.,
+    save_delay=5.0,
     load=False,
     load_quiet=True,
     initial_mesh_size=10,
     force_initial_mesh=False,
-    refinement_stencil='auto',
+    refinement_stencil="auto",
     gap_threshold=1e-6,
     feature_size=2e-3,
     use_fake_potential=False,
@@ -39,7 +39,7 @@ async def run_async(
     num_minimize_parallel=50,
     recheck_pos_dist=True,
     recheck_count_cutoff=0,
-    simplex_check_cutoff=0
+    simplex_check_cutoff=0,
 ):
     """Run the nodal point search.
 
@@ -105,7 +105,7 @@ async def run_async(
     SearchResultContainer:
         The result of the search algorithm.
     """
-    SEARCH_LOGGER.debug('Initializing search controller.')
+    SEARCH_LOGGER.debug("Initializing search controller.")
     controller = Controller(
         gap_fct=gap_fct,
         limits=limits,
@@ -125,11 +125,11 @@ async def run_async(
         refinement_stencil=refinement_stencil,
         recheck_pos_dist=recheck_pos_dist,
         recheck_count_cutoff=recheck_count_cutoff,
-        simplex_check_cutoff=simplex_check_cutoff
+        simplex_check_cutoff=simplex_check_cutoff,
     )
-    SEARCH_LOGGER.debug('Running search controller.')
+    SEARCH_LOGGER.debug("Running search controller.")
     await controller.run()
-    SEARCH_LOGGER.debug('Search controller finished.')
+    SEARCH_LOGGER.debug("Search controller finished.")
     return controller.state.result
 
 
@@ -148,13 +148,13 @@ def run(*args, **kwargs):
         loop = asyncio.get_event_loop()
         close_loop = False
     except RuntimeError:
-        SEARCH_LOGGER.debug('Creating a new event loop.')
+        SEARCH_LOGGER.debug("Creating a new event loop.")
         loop = asyncio.new_event_loop()
         close_loop = True
 
     try:
         if loop.is_running():
-            SEARCH_LOGGER.debug('Running in a separate thread.')
+            SEARCH_LOGGER.debug("Running in a separate thread.")
             res_queue = queue.Queue()
             exc_queue = queue.Queue()
             thread = threading.Thread(
@@ -163,18 +163,18 @@ def run(*args, **kwargs):
                     *args,
                     res_queue=res_queue,
                     exc_queue=exc_queue,
-                    **kwargs
+                    **kwargs,
                 )
             )
-            SEARCH_LOGGER.debug('Starting thread.')
+            SEARCH_LOGGER.debug("Starting thread.")
             thread.start()
-            SEARCH_LOGGER.debug('Joining thread.')
+            SEARCH_LOGGER.debug("Joining thread.")
             thread.join()
             if not exc_queue.empty():
                 raise exc_queue.get()
             res = res_queue.get()
         else:
-            SEARCH_LOGGER.debug('Running in the current thread.')
+            SEARCH_LOGGER.debug("Running in the current thread.")
             res = loop.run_until_complete(run_async(*args, **kwargs))
     finally:
         if close_loop:

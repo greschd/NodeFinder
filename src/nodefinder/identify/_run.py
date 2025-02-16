@@ -19,7 +19,7 @@ from ._logging import IDENTIFY_LOGGER
 
 
 @export
-def run(result, feature_size=None, evaluate_line_method='ballistic'):
+def run(result, feature_size=None, evaluate_line_method="ballistic"):
     """Identify the nodal clusters from a :func:`.search.run` result.
 
     Arguments
@@ -46,11 +46,7 @@ def run(result, feature_size=None, evaluate_line_method='ballistic'):
 
 @export
 def run_from_positions(
-    positions,
-    *,
-    coordinate_system,
-    feature_size,
-    evaluate_line_method='shortest_path'
+    positions, *, coordinate_system, feature_size, evaluate_line_method="shortest_path"
 ):
     """Identify the nodal clusters from a list of positions.
 
@@ -63,23 +59,17 @@ def run_from_positions(
     feature_size : float
         Distance between two nodal points at which they are considered distinct.
     """
-    IDENTIFY_LOGGER.debug('Calculating clusters.')
+    IDENTIFY_LOGGER.debug("Calculating clusters.")
     clusters = create_clusters(
-        positions,
-        coordinate_system=coordinate_system,
-        feature_size=feature_size
+        positions, coordinate_system=coordinate_system, feature_size=feature_size
     )
     results = []
     for graph in clusters:
-        IDENTIFY_LOGGER.debug('Calculating cluster dimension.')
+        IDENTIFY_LOGGER.debug("Calculating cluster dimension.")
         dim = calculate_dimension(
-            graph=graph,
-            coordinate_system=coordinate_system,
-            feature_size=feature_size
+            graph=graph, coordinate_system=coordinate_system, feature_size=feature_size
         )
-        IDENTIFY_LOGGER.debug(
-            'Evaluating result with dimension {}.'.format(dim)
-        )
+        IDENTIFY_LOGGER.debug("Evaluating result with dimension {}.".format(dim))
         res = IdentificationResult(
             positions=list(graph.nodes),
             dimension=dim,
@@ -88,12 +78,10 @@ def run_from_positions(
                 dim=dim,
                 coordinate_system=coordinate_system,
                 feature_size=feature_size,
-                evaluate_line_method=evaluate_line_method
-            )
+                evaluate_line_method=evaluate_line_method,
+            ),
         )
         results.append(res)
     return IdentificationResultContainer(
-        coordinate_system=coordinate_system,
-        feature_size=feature_size,
-        results=results
+        coordinate_system=coordinate_system, feature_size=feature_size, results=results
     )
