@@ -155,7 +155,7 @@ def _has_dimension(
         num_draws = 10
         while neighbour_tuples:
             vals = random.sample(
-                neighbour_tuples, min(num_draws, len(neighbour_tuples))
+                list(neighbour_tuples), min(num_draws, len(neighbour_tuples))
             )
             yield from vals
             neighbour_tuples -= set(vals)

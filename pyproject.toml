@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nodefinder"
+version = "0.1.1"
+description = "A tool for studying the nodal features of potential lanscapes."
+readme = "README.md"
+authors = [
+    { name = "Dominik Gresch", email = "mail@greschd.ch" }
+]
+license = { file = "LICENSE.txt" }
+keywords = ["minimization", "node search"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Operating System :: Unix",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Development Status :: 4 - Beta",
+]
+
+requires-python = ">=3.9"
+dependencies = [
+    "decorator>=5.1.1",
+    "fsc-async-tools>=0.3.0",
+    "fsc-export>=1.2.0",
+    "fsc-hdf5-io>=1.0.3",
+    "matplotlib>=3.5.3",
+    "networkx>=2.6.3",
+    "numpy>=1.21.6",
+    "scipy>=1.7.3",
+]
+
+[project.urls]
+documentation = "https://nodefinder.greschd.ch"
+repository = "https://github.com/greschd/NodeFinder"
+
+[project.entry-points."fsc.hdf5_io.load"]
+nodefinder = "nodefinder"
+
+[dependency-groups]
+dev = [
+    "ipython>=7.34.0",
+    "pre-commit>=2.21.0",
+    "prospector>=1.8.4",
+    "pylint>=2.13.9",
+    "pytest>=7.4.4",
+    "pytest-cov>=4.1.0",
+    "sphinx>=5.3.0",
+    "sphinx-rtd-theme>=2.0.0",
+    "yapf>=0.43.0",
+]
