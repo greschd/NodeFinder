@@ -18,10 +18,11 @@ import nodefinder as nf
 from nodefinder.search import run
 
 NODE_PARAMETERS = pytest.mark.parametrize(
-    'node_positions, mesh_size', [
+    "node_positions, mesh_size",
+    [
         ([(0.5, 0.5, 0.5)], (1, 2, 1)),
         ([(0.2, 0.9, 0.6), (0.99, 0.01, 0.0), (0.7, 0.2, 0.8)], (3, 3, 3)),
-    ]
+    ],
 )
 
 
@@ -60,13 +61,10 @@ def test_simple(
     result = run(
         gap_fct=gap_fct,
         initial_mesh_size=mesh_size,
-        use_fake_potential=use_fake_potential
+        use_fake_potential=use_fake_potential,
     )
     score_nodal_points(
-        result,
-        exact_points=node_positions,
-        cutoff_accuracy=1e-6,
-        cutoff_coverage=1e-6
+        result, exact_points=node_positions, cutoff_accuracy=1e-6, cutoff_coverage=1e-6
     )
 
 
@@ -85,13 +83,10 @@ def test_no_history(
         gap_fct=gap_fct,
         initial_mesh_size=mesh_size,
         use_fake_potential=use_fake_potential,
-        nelder_mead_kwargs={'keep_history': False}
+        nelder_mead_kwargs={"keep_history": False},
     )
     score_nodal_points(
-        result,
-        exact_points=node_positions,
-        cutoff_accuracy=1e-6,
-        cutoff_coverage=1e-6
+        result, exact_points=node_positions, cutoff_accuracy=1e-6, cutoff_coverage=1e-6
     )
 
 
@@ -113,7 +108,7 @@ def test_save(
             result,
             exact_points=node_positions,
             cutoff_accuracy=1e-6,
-            cutoff_coverage=1e-6
+            cutoff_coverage=1e-6,
         )
 
 
@@ -124,6 +119,7 @@ def test_restart(
     """
     Test that the calculation is done when restarting from a finished result.
     """
+
     def invalid_gap_fct(x):
         raise ValueError
 
@@ -132,14 +128,14 @@ def test_restart(
             gap_fct=gap_fct,
             save_file=named_file.name,
             initial_mesh_size=mesh_size,
-            use_fake_potential=use_fake_potential
+            use_fake_potential=use_fake_potential,
         )
         score_nodal_points(
             result,
             exact_points=node_positions,
             cutoff_accuracy=1e-6,
             cutoff_coverage=1e-6,
-            additional_tag='initial_'
+            additional_tag="initial_",
         )
 
         restart_result = run(
@@ -148,14 +144,14 @@ def test_restart(
             load=True,
             load_quiet=False,
             initial_mesh_size=mesh_size,
-            use_fake_potential=use_fake_potential
+            use_fake_potential=use_fake_potential,
         )
         score_nodal_points(
             restart_result,
             exact_points=node_positions,
             cutoff_accuracy=1e-6,
             cutoff_coverage=1e-6,
-            additional_tag='restart_'
+            additional_tag="restart_",
         )
 
 
@@ -174,12 +170,11 @@ def test_restart_partial(gap_fct, node_positions, mesh_size):
             save_file=named_file.name,
             initial_mesh_size=mesh_size,
             use_fake_potential=False,
-            refinement_stencil=refinement_stencil
+            refinement_stencil=refinement_stencil,
         )
         # number of starting points + one refinement per node
-        assert (
-            len(result.nodes) == np.prod(mesh_size) +
-            len(node_positions) * len(refinement_stencil)
+        assert len(result.nodes) == np.prod(mesh_size) + len(node_positions) * len(
+            refinement_stencil
         )
         result2 = run(
             gap_fct=gap_fct,
@@ -188,11 +183,10 @@ def test_restart_partial(gap_fct, node_positions, mesh_size):
             load=True,
             use_fake_potential=False,
             refinement_stencil=refinement_stencil,
-            force_initial_mesh=True
+            force_initial_mesh=True,
         )
-        assert (
-            len(result2.nodes) == 2 * np.prod(mesh_size) +
-            len(node_positions) * len(refinement_stencil)
+        assert len(result2.nodes) == 2 * np.prod(mesh_size) + len(node_positions) * len(
+            refinement_stencil
         )
 
 
@@ -200,8 +194,9 @@ def test_raises():
     """
     Test that using an invalid gap_fct raises the error.
     """
+
     async def gap_fct(pos):
-        raise ValueError('test error.')
+        raise ValueError("test error.")
 
     with pytest.raises(ValueError):
         run(gap_fct)

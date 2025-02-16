@@ -10,7 +10,7 @@ import numpy as np
 import networkx as nx
 from fsc.export import export
 
-_DISTANCE_KEY = '_distance'
+_DISTANCE_KEY = "_distance"
 
 
 @export
@@ -34,9 +34,7 @@ def create_clusters(positions, *, feature_size, coordinate_system):
         A list of connected graphs, each representing one cluster.
     """
     graph = _create_graph(
-        positions,
-        feature_size=feature_size,
-        coordinate_system=coordinate_system
+        positions, feature_size=feature_size, coordinate_system=coordinate_system
     )
     return [
         nx.freeze(graph.subgraph(nodes).copy())

@@ -19,14 +19,14 @@ class FakePotential:
     width : float
         Distance from existing nodes at which the fake potential should start.
     """
+
     def __init__(self, result, width):
         self.result = result
         self.width = width
 
     def __call__(self, pos):  # pylint: disable=missing-function-docstring
         if any(
-            dist < self.width
-            for dist in self.result.get_all_neighbour_distances(pos)
+            dist < self.width for dist in self.result.get_all_neighbour_distances(pos)
         ):
-            return float('inf')
+            return float("inf")
         return 0

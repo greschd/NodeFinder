@@ -23,7 +23,7 @@ def _setup_plot(limits, axis=None):
     # create axis if it does not exist
     if axis is None:
         fig = plt.figure()
-        axis = fig.add_subplot(111, projection='3d' if is_3d else None)
+        axis = fig.add_subplot(111, projection="3d" if is_3d else None)
     else:
         fig = None
 

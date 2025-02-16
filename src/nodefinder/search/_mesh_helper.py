@@ -11,17 +11,13 @@ import itertools
 import numpy as np
 
 
-def _generate_mesh_simplices(
-    *, limits, mesh_size, periodic=False, skip_origin=False
-):
+def _generate_mesh_simplices(*, limits, mesh_size, periodic=False, skip_origin=False):
     """
-        Generate the starting simplices for given limits and mesh size.
-        """
+    Generate the starting simplices for given limits and mesh size.
+    """
     dim = len(limits)
     if len(mesh_size) != dim:
-        raise ValueError(
-            "Inconsistent dimensions: {}, {}".format(dim, len(mesh_size))
-        )
+        raise ValueError("Inconsistent dimensions: {}, {}".format(dim, len(mesh_size)))
     vertices = list(
         itertools.product(
             *[

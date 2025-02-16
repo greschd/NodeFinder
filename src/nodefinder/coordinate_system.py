@@ -13,7 +13,7 @@ from fsc.hdf5_io import SimpleHDF5Mapping, subscribe_hdf5
 
 
 @export
-@subscribe_hdf5('nodefinder.coordinate_system')
+@subscribe_hdf5("nodefinder.coordinate_system")
 class CoordinateSystem(SimpleHDF5Mapping):
     """
     Defines a "box" coordinate system, which is used to calculate the distances
@@ -31,7 +31,8 @@ class CoordinateSystem(SimpleHDF5Mapping):
     size : numpy.ndarray
         Size of the coordinate system in each dimension.
     """
-    HDF5_ATTRIBUTES = ['limits', 'periodic']
+
+    HDF5_ATTRIBUTES = ["limits", "periodic"]
 
     def __init__(self, *, limits, periodic=True):
         self.limits = np.array([sorted(x) for x in limits])
@@ -40,7 +41,7 @@ class CoordinateSystem(SimpleHDF5Mapping):
         self.size = self._upper_limits - self._lower_limits
 
     def __repr__(self):
-        return 'CoordinateSystem(limits={0.limits!r}, periodic={0.periodic!r})'.format(
+        return "CoordinateSystem(limits={0.limits!r}, periodic={0.periodic!r})".format(
             self
         )
 
@@ -108,7 +109,6 @@ class CoordinateSystem(SimpleHDF5Mapping):
         boundary conditions for the periodic case.
         """
         if self.periodic:
-            return ((pos - self._lower_limits) %
-                    self.size) + self._lower_limits
+            return ((pos - self._lower_limits) % self.size) + self._lower_limits
         else:
             return pos

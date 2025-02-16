@@ -15,8 +15,7 @@ from ._cell_list import CellList
 
 @export
 @subscribe_hdf5(
-    'nodefinder.search_result_container',
-    extra_tags=['nodefinder.result_container']
+    "nodefinder.search_result_container", extra_tags=["nodefinder.result_container"]
 )
 class SearchResultContainer(SimpleHDF5Mapping):
     """
@@ -36,12 +35,12 @@ class SearchResultContainer(SimpleHDF5Mapping):
     """
 
     HDF5_ATTRIBUTES = [
-        'coordinate_system',
-        'minimization_results',
-        'dist_cutoff',
-        'gap_threshold',
+        "coordinate_system",
+        "minimization_results",
+        "dist_cutoff",
+        "gap_threshold",
     ]
-    HDF5_OPTIONAL = ['refined_results']
+    HDF5_OPTIONAL = ["refined_results"]
 
     def __init__(
         self,
@@ -50,7 +49,7 @@ class SearchResultContainer(SimpleHDF5Mapping):
         minimization_results=(),
         gap_threshold,
         dist_cutoff,
-        refined_results=()
+        refined_results=(),
     ):
         self.coordinate_system = coordinate_system
         self.gap_threshold = gap_threshold
@@ -63,11 +62,8 @@ class SearchResultContainer(SimpleHDF5Mapping):
                 100,
                 np.maximum(
                     1,
-                    np.array(
-                        self.coordinate_system.size / self.dist_cutoff,
-                        dtype=int
-                    )
-                )
+                    np.array(self.coordinate_system.size / self.dist_cutoff, dtype=int),
+                ),
             )
         self.nodes = CellList(
             num_cells=num_cells, periodic=self.coordinate_system.periodic
@@ -83,7 +79,7 @@ class SearchResultContainer(SimpleHDF5Mapping):
         self.needs_saving = True
 
     def __repr__(self):
-        return 'SearchResultContainer(coordinate_system={0.coordinate_system}, minimization_results=<{1} values>, gap_threshold={0.gap_threshold!r}, dist_cutoff={0.dist_cutoff!r})'.format(
+        return "SearchResultContainer(coordinate_system={0.coordinate_system}, minimization_results=<{1} values>, gap_threshold={0.gap_threshold!r}, dist_cutoff={0.dist_cutoff!r})".format(
             self, len(self.minimization_results)
         )
 
@@ -114,9 +110,7 @@ class SearchResultContainer(SimpleHDF5Mapping):
         pos : np.array
             The position from where refinement started.
         """
-        self.refined_results.add_point(
-            self.coordinate_system.get_frac(pos), pos
-        )
+        self.refined_results.add_point(self.coordinate_system.get_frac(pos), pos)
         self.needs_saving = True
 
     @property
@@ -144,9 +138,7 @@ class SearchResultContainer(SimpleHDF5Mapping):
             Position for which to calculate the distances.
         """
         candidates = self._get_neighbour_iterator(pos)
-        return (
-            self.coordinate_system.distance(pos, c.pos) for c in candidates
-        )
+        return (self.coordinate_system.distance(pos, c.pos) for c in candidates)
 
     def get_refined_neighbour_distance_iterator(self, pos):  # pylint: disable=invalid-name
         """

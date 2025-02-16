@@ -14,16 +14,12 @@ from fsc.export import export
 from ._point import _evaluate_point
 from ._line import _evaluate_line
 
-_WEIGHT_KEY = '_weight'
+_WEIGHT_KEY = "_weight"
 
 
 @export
 def evaluate_cluster(
-    graph,
-    dim,
-    coordinate_system,
-    feature_size,
-    evaluate_line_method='shortest_path'
+    graph, dim, coordinate_system, feature_size, evaluate_line_method="shortest_path"
 ):
     """
     Evaluate the shape of a cluster with the given positions.
@@ -58,6 +54,6 @@ def evaluate_cluster(
                 method=evaluate_line_method,
             )
         except (IndexError, ValueError) as exc:
-            warnings.warn('Could not identify line: {}'.format(exc))
+            warnings.warn("Could not identify line: {}".format(exc))
     else:
         return None

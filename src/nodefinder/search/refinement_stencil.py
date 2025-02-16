@@ -30,9 +30,7 @@ def get_mesh_stencil(*, mesh_size, dist_multiplier=2.5):
     """
     limits = [(-dist_multiplier, dist_multiplier)] * len(mesh_size)
     return np.array(
-        _generate_mesh_simplices(
-            mesh_size=mesh_size, limits=limits, skip_origin=True
-        )
+        _generate_mesh_simplices(mesh_size=mesh_size, limits=limits, skip_origin=True)
     )
 
 
@@ -65,14 +63,20 @@ def get_circle_stencil(*, num_points):
     """
     phi = np.linspace(0, 2 * np.pi, num_points, endpoint=False)
     simplex = (
-        np.array([[0, 0], [1 / 2, np.sqrt(3) / 2],
-                  [-1 / 2, np.sqrt(3) / 2]]) * 5 / num_points
+        np.array([[0, 0], [1 / 2, np.sqrt(3) / 2], [-1 / 2, np.sqrt(3) / 2]])
+        * 5
+        / num_points
     ) + [0, 1.5]
     res = np.zeros((num_points, 3, 2))
     for i, phi_val in enumerate(phi):
         res[i, :, :] = (
-            np.array([[np.cos(phi_val), -np.sin(phi_val)],
-                      [np.sin(phi_val), np.cos(phi_val)]]) @ simplex.T
+            np.array(
+                [
+                    [np.cos(phi_val), -np.sin(phi_val)],
+                    [np.sin(phi_val), np.cos(phi_val)],
+                ]
+            )
+            @ simplex.T
         ).T
     return res
 

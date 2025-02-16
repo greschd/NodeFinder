@@ -23,8 +23,7 @@ from fsc.hdf5_io import subscribe_hdf5, SimpleHDF5Mapping, HDF5Enabled
 
 @export
 @subscribe_hdf5(
-    'nodefinder.joined_minimization_result',
-    extra_tags=['nodefinder.joined_result']
+    "nodefinder.joined_minimization_result", extra_tags=["nodefinder.joined_result"]
 )
 class JoinedMinimizationResult(SimpleHDF5Mapping):
     """
@@ -37,10 +36,9 @@ class JoinedMinimizationResult(SimpleHDF5Mapping):
     child : MinimizationResult
         Result of the second minimization run.
     """
-    JOIN_KEYS = [
-        'num_fev', 'num_iter', 'simplex_history', 'fun_simplex_history'
-    ]
-    HDF5_ATTRIBUTES = ['ancestor', 'child']
+
+    JOIN_KEYS = ["num_fev", "num_iter", "simplex_history", "fun_simplex_history"]
+    HDF5_ATTRIBUTES = ["ancestor", "child"]
 
     def __init__(self, *, child, ancestor):
         self.child = child
@@ -52,9 +50,7 @@ class JoinedMinimizationResult(SimpleHDF5Mapping):
         child value otherwise.
         """
         if key in self.JOIN_KEYS:
-            return self._join(
-                getattr(self.ancestor, key), getattr(self.child, key)
-            )
+            return self._join(getattr(self.ancestor, key), getattr(self.child, key))
         else:
             return getattr(self.child, key)
 
@@ -70,9 +66,9 @@ class JoinedMinimizationResult(SimpleHDF5Mapping):
 
 
 @export
-@subscribe_hdf5('nodefinder.minimization_result')
+@subscribe_hdf5("nodefinder.minimization_result")
 class MinimizationResult(SimpleNamespace, HDF5Enabled):
-    """ Represents the optimization result.
+    """Represents the optimization result.
 
     Attributes
     ----------
@@ -96,16 +92,14 @@ class MinimizationResult(SimpleNamespace, HDF5Enabled):
     fun_simplex_history : ndarray, optional
         History of function values of the simplex.
     """
+
     def to_hdf5(self, hdf5_handle):
         for key, val in self.__dict__.items():
-            assert key != 'type_tag'
+            assert key != "type_tag"
             hdf5_handle[key] = val
 
     @classmethod
     def from_hdf5(cls, hdf5_handle):
         return cls(
-            **{
-                key: val[()]
-                for key, val in hdf5_handle.items() if key != 'type_tag'
-            }
+            **{key: val[()] for key, val in hdf5_handle.items() if key != "type_tag"}
         )

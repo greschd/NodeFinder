@@ -26,8 +26,7 @@ def nodal_line_properties():
 
     def gap_fct(pos):
         dx, dy, dz = (np.array(pos) % 1) - 0.5
-        return np.sqrt(np.abs(dx**2 + dy**2 - radius**2) +
-                       dz**2) * (0.1 + 10 * dx**2)
+        return np.sqrt(np.abs(dx**2 + dy**2 - radius**2) + dz**2) * (0.1 + 10 * dx**2)
 
     def parametrization(t):
         phi = 2 * np.pi * t
@@ -46,7 +45,7 @@ def test_nodal_line(nodal_line_properties, score_nodal_line):  # pylint: disable
         gap_fct=gap_fct,
         gap_threshold=2e-4,
         feature_size=0.05,
-        refinement_stencil='auto',
+        refinement_stencil="auto",
         initial_mesh_size=(3, 3, 3),
         use_fake_potential=True,
     )
@@ -65,6 +64,7 @@ def nodal_line_2d_properties():
     Fixture which defines the helper functions describing the properties of the
     two 2D nodal lines.
     """
+
     def gap_fct(pos):
         x, y = pos
         return abs(np.sin(x) + 0.8 * np.cos(y))
@@ -90,7 +90,7 @@ def test_nodal_line_2d(nodal_line_2d_properties, score_nodal_line):  # pylint: d
         limits=[(0, 2 * np.pi), (0, 2 * np.pi)],
         gap_threshold=2e-4,
         feature_size=0.05,
-        refinement_stencil='auto',
+        refinement_stencil="auto",
         initial_mesh_size=3,
         use_fake_potential=True,
     )
@@ -109,6 +109,7 @@ def nodal_line_1d_properties():
     Fixture which defines the helper functions describing the properties of the
     two 2D nodal lines.
     """
+
     def gap_fct(pos):  # pylint: disable=unused-argument
         return 0
 
@@ -129,7 +130,7 @@ def test_nodal_line_1d(nodal_line_1d_properties, score_nodal_line):  # pylint: d
         limits=[(0, 1)],
         gap_threshold=2e-4,
         feature_size=0.05,
-        refinement_stencil='auto',
+        refinement_stencil="auto",
         initial_mesh_size=3,
         use_fake_potential=True,
     )
@@ -148,6 +149,7 @@ def nodal_line_nonperiodic_properties():  # pylint: disable=invalid-name
     Fixture which defines the helper functions describing the properties of the
     nodal non-periodic line.
     """
+
     def gap_fct(pos):
         return np.abs(1 - np.max(np.abs(pos)))
 
@@ -164,9 +166,7 @@ def nodal_line_nonperiodic_properties():  # pylint: disable=invalid-name
     return gap_fct, gap_fct, parametrization
 
 
-def test_nodal_line_nonperiodic(
-    nodal_line_nonperiodic_properties, score_nodal_line
-):  # pylint: disable=redefined-outer-name,invalid-name
+def test_nodal_line_nonperiodic(nodal_line_nonperiodic_properties, score_nodal_line):  # pylint: disable=redefined-outer-name,invalid-name
     """
     Test a nodal line of a non-periodic potential.
     """
@@ -177,10 +177,10 @@ def test_nodal_line_nonperiodic(
         limits=[(-1, 1)] * 2,
         gap_threshold=1e-3,
         feature_size=0.2,
-        refinement_stencil='auto',
+        refinement_stencil="auto",
         initial_mesh_size=3,
         use_fake_potential=True,
-        periodic=False
+        periodic=False,
     )
     score_nodal_line(
         result=result,

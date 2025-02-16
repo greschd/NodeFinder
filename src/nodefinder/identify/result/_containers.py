@@ -10,11 +10,17 @@ from types import SimpleNamespace
 
 import numpy as np
 from fsc.export import export
-from fsc.hdf5_io import subscribe_hdf5, SimpleHDF5Mapping, HDF5Enabled, to_hdf5, from_hdf5
+from fsc.hdf5_io import (
+    subscribe_hdf5,
+    SimpleHDF5Mapping,
+    HDF5Enabled,
+    to_hdf5,
+    from_hdf5,
+)
 
 
 @export
-@subscribe_hdf5('nodefinder.identification_result_container')
+@subscribe_hdf5("nodefinder.identification_result_container")
 class IdentificationResultContainer(SimpleNamespace, SimpleHDF5Mapping):
     """Container class for the result of the identification step.
 
@@ -27,7 +33,8 @@ class IdentificationResultContainer(SimpleNamespace, SimpleHDF5Mapping):
     feature_size : float
         The ``feature_size`` used when identifying the objects.
     """
-    HDF5_ATTRIBUTES = ['coordinate_system', 'results', 'feature_size']
+
+    HDF5_ATTRIBUTES = ["coordinate_system", "results", "feature_size"]
 
     def __init__(self, *, coordinate_system, feature_size, results=()):
         self.coordinate_system = coordinate_system
@@ -45,7 +52,7 @@ class IdentificationResultContainer(SimpleNamespace, SimpleHDF5Mapping):
 
 
 @export
-@subscribe_hdf5('nodefinder.identification_result')
+@subscribe_hdf5("nodefinder.identification_result")
 class IdentificationResult(SimpleNamespace, HDF5Enabled):
     """Contains the attributes of an identified object.
 
@@ -69,24 +76,24 @@ class IdentificationResult(SimpleNamespace, HDF5Enabled):
         self.shape = shape
 
     def __repr__(self):
-        return 'IdentificationResult(dimension={}, shape={}, positions=<{} values>)'.format(
+        return "IdentificationResult(dimension={}, shape={}, positions=<{} values>)".format(
             self.dimension, self.shape, len(self.positions)
         )
 
     def to_hdf5(self, hdf5_handle):
-        to_hdf5(self.dimension, hdf5_handle.create_group('dimension'))
-        hdf5_handle['positions'] = np.array(self.positions)
-        to_hdf5(self.shape, hdf5_handle.create_group('shape'))
+        to_hdf5(self.dimension, hdf5_handle.create_group("dimension"))
+        hdf5_handle["positions"] = np.array(self.positions)
+        to_hdf5(self.shape, hdf5_handle.create_group("shape"))
 
     @classmethod
     def from_hdf5(cls, hdf5_handle):
-        shape = from_hdf5(hdf5_handle['shape'])
+        shape = from_hdf5(hdf5_handle["shape"])
         try:
-            dimension = hdf5_handle['dimension'][()]
+            dimension = hdf5_handle["dimension"][()]
         except (AttributeError, TypeError):
-            dimension = from_hdf5(hdf5_handle['dimension'])
+            dimension = from_hdf5(hdf5_handle["dimension"])
         try:
-            positions = [tuple(x) for x in hdf5_handle['positions'][()]]
+            positions = [tuple(x) for x in hdf5_handle["positions"][()]]
         except (AttributeError, TypeError):
-            positions = from_hdf5(hdf5_handle['positions'])
+            positions = from_hdf5(hdf5_handle["positions"])
         return cls(positions=positions, dimension=dimension, shape=shape)

@@ -11,12 +11,12 @@ import matplotlib.pyplot as plt
 
 def gap_func(pos):
     x, y = pos
-    return abs(np.sin(x)**3 + 0.8 * np.cos(y))
+    return abs(np.sin(x) ** 3 + 0.8 * np.cos(y))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     try:
-        search_result = nf.io.load('search_result.hdf5')
+        search_result = nf.io.load("search_result.hdf5")
     except IOError:
         search_result = nf.search.run(
             gap_func,
@@ -26,12 +26,12 @@ if __name__ == '__main__':
             gap_threshold=1e-4,
             use_fake_potential=True,
         )
-        nf.io.save(search_result, 'search_result.hdf5')
+        nf.io.save(search_result, "search_result.hdf5")
     try:
-        identify_result = nf.io.load('identify_result.hdf5')
+        identify_result = nf.io.load("identify_result.hdf5")
     except IOError:
         identify_result = nf.identify.run(search_result)
-        nf.io.save(identify_result, 'identify_result.hdf5')
+        nf.io.save(identify_result, "identify_result.hdf5")
     print(identify_result)
 
     nf.search.plot.points(search_result)

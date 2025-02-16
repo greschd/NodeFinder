@@ -20,7 +20,7 @@ class ObjectQueue(HDF5Enabled, ABC):
     HDF5 serialization on top of the built-in Queue.
     """
 
-    HDF5_ATTRIBUTES = ['objects']
+    HDF5_ATTRIBUTES = ["objects"]
 
     def __init__(self, objects=frozenset()):
         all_objects = self.normalize(objects)
@@ -72,13 +72,13 @@ class ObjectQueue(HDF5Enabled, ABC):
     @classmethod
     def from_hdf5(cls, hdf5_handle):
         # try:
-        objects = np.array(hdf5_handle['objects'])
+        objects = np.array(hdf5_handle["objects"])
         # except
         return cls(objects=objects)
 
     def to_hdf5(self, hdf5_handle):
         objects = np.array(self.objects)
-        hdf5_handle['objects'] = objects
+        hdf5_handle["objects"] = objects
 
 
 class RunningQueue(ObjectQueue, HDF5Enabled):  # pylint: disable=abstract-method
@@ -88,6 +88,7 @@ class RunningQueue(ObjectQueue, HDF5Enabled):  # pylint: disable=abstract-method
     need to be set to 'finished' to be removed from the queue. When reloading
     the queue, all running objects are put back into the queue.
     """
+
     def __init__(self, objects=frozenset()):
         super().__init__(objects=objects)
         self._running_objects = set()
@@ -129,25 +130,24 @@ class RunningQueue(ObjectQueue, HDF5Enabled):  # pylint: disable=abstract-method
 
 
 @export
-@subscribe_hdf5('nodefinder.simplex_queue')
+@subscribe_hdf5("nodefinder.simplex_queue")
 class SimplexQueue(RunningQueue):
     """
     Queue class for the simplices which should be minimized.
     """
+
     @staticmethod
     def normalize(objects):
-        return [
-            tuple(sorted(tuple(coord) for coord in simplex))
-            for simplex in objects
-        ]
+        return [tuple(sorted(tuple(coord) for coord in simplex)) for simplex in objects]
 
 
 @export
-@subscribe_hdf5('nodefinder.position_queue')
+@subscribe_hdf5("nodefinder.position_queue")
 class PositionQueue(ObjectQueue):
     """
     Queue class for the positions which should be refined.
     """
+
     @staticmethod
     def normalize(objects):
         return [tuple(pos) for pos in objects]

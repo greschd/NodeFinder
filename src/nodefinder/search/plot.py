@@ -53,11 +53,7 @@ def points(result, *, axis=None):
 
 @export
 def simplices(
-    result,
-    *,
-    nodes=(),
-    axis=None,
-    line_settings=MappingProxyType(dict(color='C0'))
+    result, *, nodes=(), axis=None, line_settings=MappingProxyType(dict(color="C0"))
 ):
     """
     Plot the simplices used in the minimization for a given node.
@@ -85,10 +81,10 @@ def stencil(
     stcl,
     *,
     axis=None,
-    line_settings=MappingProxyType(dict(color='C0')),
-    origin_settings=MappingProxyType(dict(color='C1')),
+    line_settings=MappingProxyType(dict(color="C0")),
+    origin_settings=MappingProxyType(dict(color="C1")),
     plot_sphere=True,
-    sphere_settings=MappingProxyType(dict(color='C2', alpha=0.2))
+    sphere_settings=MappingProxyType(dict(color="C2", alpha=0.2)),
 ):
     """
     Plot a refinement stencil.

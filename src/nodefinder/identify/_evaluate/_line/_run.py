@@ -18,11 +18,11 @@ from ._ballistic import _evaluate_line_ballistic
 _METHOD_FUNC_LOOKUP = dict(
     shortest_path=_evaluate_line_shortest_path,
     dominating_set=_evaluate_line_dominating_set,
-    ballistic=_evaluate_line_ballistic
+    ballistic=_evaluate_line_ballistic,
 )
 
 
-def _evaluate_line(graph, coordinate_system, feature_size, method='ballistic'):
+def _evaluate_line(graph, coordinate_system, feature_size, method="ballistic"):
     """
     Evaluate the positions of a nodal line.
     """
@@ -32,9 +32,7 @@ def _evaluate_line(graph, coordinate_system, feature_size, method='ballistic'):
     except KeyError:
         raise ValueError("Invalid value for 'method': {}".format(method))
     result_graph = method_func(
-        graph=graph,
-        coordinate_system=coordinate_system,
-        feature_size=feature_size
+        graph=graph, coordinate_system=coordinate_system, feature_size=feature_size
     )
     return NodalLine(
         graph=result_graph, degree_count=_create_degree_count(result_graph)

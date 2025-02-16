@@ -24,20 +24,11 @@ from ..result._minimization import MinimizationResult
 
 # standard status messages of optimizers
 _status_message = {
-    'success':
-    'Optimization terminated successfully.',
-    'maxfev':
-    'Maximum number of function evaluations has '
-    'been exceeded.',
-    'maxiter':
-    'Maximum number of iterations has been '
-    'exceeded.',
-    'pr_loss':
-    'Desired error not necessarily achieved due '
-    'to precision loss.',
-    'fprime_cutoff':
-    'Cutoff for the maximum estimated derivative'
-    'has been exceeded.',
+    "success": "Optimization terminated successfully.",
+    "maxfev": "Maximum number of function evaluations has been exceeded.",
+    "maxiter": "Maximum number of iterations has been exceeded.",
+    "pr_loss": "Desired error not necessarily achieved due to precision loss.",
+    "fprime_cutoff": "Cutoff for the maximum estimated derivativehas been exceeded.",
 }
 
 
@@ -61,7 +52,7 @@ async def root_nelder_mead(
     maxiter=None,
     maxfev=None,
     fprime_cutoff=None,
-    keep_history=True
+    keep_history=True,
 ):
     """
     Minimization of scalar function of one or more variables using the
@@ -114,7 +105,7 @@ async def root_nelder_mead(
     assert sim.shape == (N + 1, N)
 
     fsim = np.array(await asyncio.gather(*[func(x) for x in sim]), dtype=float)
-    assert fsim.shape == (N + 1, )
+    assert fsim.shape == (N + 1,)
 
     ind = np.argsort(fsim)
     fsim = np.take(fsim, ind, 0)
@@ -128,7 +119,7 @@ async def root_nelder_mead(
 
     iterations = 1
 
-    while (fcalls[0] < maxfun and iterations < maxiter):
+    while fcalls[0] < maxfun and iterations < maxiter:
         if (
             fprime_cutoff is not None
             and _get_fprime_estimate(sim=sim, fval=fsim[0]) > fprime_cutoff
@@ -137,7 +128,7 @@ async def root_nelder_mead(
         with warnings.catch_warnings():
             # Ignore subtraction 'inf - inf' in fsim, since it will correctly
             # evaluate to False.
-            warnings.simplefilter('ignore')
+            warnings.simplefilter("ignore")
             if (
                 np.max(np.ravel(np.abs(sim[1:] - sim[0]))) <= xtol
                 and np.max(np.abs(fsim[0] - fsim[1:])) <= ftol
@@ -206,23 +197,23 @@ async def root_nelder_mead(
 
     if fcalls[0] >= maxfun:
         warnflag = 1
-        msg = _status_message['maxfev']
+        msg = _status_message["maxfev"]
     elif iterations >= maxiter:
         warnflag = 2
-        msg = _status_message['maxiter']
+        msg = _status_message["maxiter"]
     elif (
         fprime_cutoff is not None
         and _get_fprime_estimate(sim=sim, fval=fval) > fprime_cutoff
     ):
         warnflag = 3
-        msg = _status_message['fprime_cutoff']
+        msg = _status_message["fprime_cutoff"]
     else:
-        msg = _status_message['success']
+        msg = _status_message["success"]
 
     if keep_history:
         hist_kwargs = dict(
             simplex_history=np.array(simplex_history),
-            fun_simplex_history=np.array(fun_simplex_history)
+            fun_simplex_history=np.array(fun_simplex_history),
         )
     else:
         hist_kwargs = dict(simplex_history=np.array(simplex_history))
@@ -234,7 +225,7 @@ async def root_nelder_mead(
         status=warnflag,
         success=(warnflag == 0),
         message=msg,
-        **hist_kwargs
+        **hist_kwargs,
     )
     return result
 
@@ -243,10 +234,8 @@ def _get_fprime_estimate(sim, fval):
     return fval / np.sqrt(
         np.max(
             np.sum(
-                np.square([
-                    p2 - p1 for p1, p2 in itertools.combinations(sim, r=2)
-                ]),
-                axis=-1
+                np.square([p2 - p1 for p1, p2 in itertools.combinations(sim, r=2)]),
+                axis=-1,
             )
         )
     )

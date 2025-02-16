@@ -18,6 +18,7 @@ class CellList:
     """
     Cell list container for the NodalPoint objects.
     """
+
     def __init__(self, num_cells, periodic):
         self.periodic = periodic
         self.num_cells = np.array(num_cells, dtype=int)
@@ -52,7 +53,8 @@ class CellList:
         if self.periodic:
             return [tuple(i % self._total_num_cells) for i in indices]
         return [
-            tuple(i) for i in indices
+            tuple(i)
+            for i in indices
             if np.all(i >= 0) and np.all(i < self._total_num_cells)
         ]
 
