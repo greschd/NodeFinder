@@ -11,7 +11,7 @@ import operator
 
 import pytest
 
-from score_fixtures import *  # pylint: disable=unused-wildcard-import
+from score_fixtures import *  # noqa: F403
 
 
 def pytest_addoption(parser):

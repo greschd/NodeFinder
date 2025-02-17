@@ -11,8 +11,6 @@ from concurrent.futures import ProcessPoolExecutor
 
 import z2pack
 
-logging.getLogger("z2pack").setLevel(logging.WARNING)
-
 import phasemap as pm
 import nodefinder as nf
 
@@ -20,6 +18,8 @@ import matplotlib.pyplot as plt
 
 from split import Hamilton_split
 from splitting_fct import gap_fct
+
+logging.getLogger("z2pack").setLevel(logging.WARNING)
 
 FEATURE_SIZE = 1e-4
 

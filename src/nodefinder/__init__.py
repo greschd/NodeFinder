@@ -12,6 +12,6 @@ from . import coordinate_system
 from . import search
 from . import identify
 from . import io
-from . import _logging
+from . import _logging  # noqa: F401
 
 __all__ = ["search", "identify", "io", "coordinate_system"]

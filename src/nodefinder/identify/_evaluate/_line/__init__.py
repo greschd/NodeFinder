@@ -6,4 +6,6 @@
 Defines the function for evaluating the shape of a line.
 """
 
+# ruff: noqa: F401
+
 from ._run import _evaluate_line

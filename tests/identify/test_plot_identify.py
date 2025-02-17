@@ -11,7 +11,7 @@ import os
 import pytest
 import nodefinder as nf
 
-from plottest_helpers import *  # pylint: disable=unused-wildcard-import
+from plottest_helpers import *  # noqa: F403
 
 
 @pytest.mark.parametrize(

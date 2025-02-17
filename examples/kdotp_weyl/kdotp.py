@@ -4,6 +4,8 @@
 # © 2017-2019, ETH Zurich, Institut für Theoretische Physik
 # Author: Dominik Gresch <greschd@gmx.ch>
 
+# ruff: noqa: E741
+
 import os
 import json
 import functools
