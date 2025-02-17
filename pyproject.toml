@@ -56,7 +56,11 @@ dev = [
     "pylint>=2.13.9",
     "pytest>=7.4.4",
     "pytest-cov>=4.1.0",
+    "pytest-score",
     "sphinx>=5.3.0",
     "sphinx-rtd-theme>=2.0.0",
     "yapf>=0.43.0",
 ]
+
+[tool.uv.sources]
+pytest-score = { git = "https://github.com/greschd/pytest-score.git" }
