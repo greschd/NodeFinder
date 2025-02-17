@@ -64,3 +64,6 @@ dev = [
 
 [tool.uv.sources]
 pytest-score = { git = "https://github.com/greschd/pytest-score.git" }
+
+[tool.ruff.lint]
+ignore = ["E731"]

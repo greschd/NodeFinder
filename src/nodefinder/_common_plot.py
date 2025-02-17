@@ -16,7 +16,6 @@ def _setup_plot(limits, axis=None):
     dim = len(limits)
     if dim == 3:
         is_3d = True
-        from mpl_toolkits.mplot3d import Axes3D  # pylint: disable=import-outside-toplevel,unused-import
     else:
         is_3d = False
         assert dim == 2
